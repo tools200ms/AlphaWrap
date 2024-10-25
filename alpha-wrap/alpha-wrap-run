@@ -185,14 +185,6 @@ $(basename $0) init
 EOF
 }
 
-_carg_chain_v=
-
-readonly _CARG_MINE=1
-readonly _CARG_NOTMINE=0
-
-function _carg_subchain_add() {
-  return 0
-}
 
 # sd-card size must be of power 2, e.g.:
 # 512MiB, 1GiB, 2GiB, 4GiB ...
@@ -629,6 +621,337 @@ function set_validate_extstore_add() {
 # parse_now is the
 setter_fn=
 param_chain=
+
+function _carg_chain_read() {
+    local opt=$1
+  local _parse_now=$(first_arg ${param_chain})
+  local opt_param=0
+  local accepted=0
+
+  if [ -z "$_parse_now" ]; then
+    return 0
+  fi
+
+  param_chain=$(last_args ${param_chain})
+
+  local set_fn=${setter_fn}
+  if [ -z "${param_chain}" ]; then
+    setter_fn=
+  fi
+
+  if [[ "${_parse_now:0:1}" == '?' ]]; then
+    opt_param=1
+    _parse_now="${_parse_now:1}"
+  fi
+
+  # flag
+  if [[ "${opt:0:1}" == "-" ]]; then
+    if [ $opt_param -eq 0 ]; then
+      echo "Illegal parameter (starting with '-')"
+      exit 1
+    else
+      #if [ -n "$set_fn" ]; then
+        # option is a parameter, call only setter (no parser)
+      flag_$_parse_now ${opt}
+      accepted=$?
+      #else
+      #  accepted=0
+      #fi
+    fi
+  # parameter:
+  elif [ -n "$opt" ]; then
+    parse_$_parse_now ${opt}
+    accepted=$?
+
+    if [ -n "$set_fn" ]; then
+      # param setter:
+      set_$set_fn ${accepted} $_parse_now
+      accepted=$?
+    fi
+  elif [ ${opt_param} -eq 0 ]; then
+    if [ -n "$set_fn" ]; then
+      # param setter
+      # setter should terminate program as no required argument has been provided
+      set_$set_fn -1 $_parse_now
+      accepted=$?
+    fi
+
+    echo "No argument, while argumen has been expected"
+    exit 3
+  fi
+
+  if [ -n "$set_fn" ] && [ -z "$param_chain" ]; then
+    # final (chain) setter call
+    error=$(set_$set_fn)
+
+    if [ -z "${error}" ]; then
+      echo "ERROR: \n${error}"
+    fi
+  fi
+
+  return ${accepted}
+
+}
+
+readonly CARG_PARAM=1
+readonly CARG_FLAG=2
+
+ARGS=$@
+CARG=
+
+function _carg_chain_parse() {
+  local chain=$1
+  local name=$2
+  local arg_type=
+  declare -A flag_conv
+  declare -A flag_subch_sidx
+  declare -A chain_qant
+  local cflag=
+  local clflag=
+  local cflag_dist=
+  local qant=
+  local tmp=
+
+  read -a chain_arr <<< "$chain"
+
+  # scann for flags and named parameters:
+  for link_idx in ${!chain_arr[@]}; do
+    link=${chain_arr[$link_idx]}
+
+    tmp=${link:0,-1}
+    if [ "$tmp" == "?" ] || [ "$tmp" == "*" ]; then
+      chain_qant[$link_idx]=$tmp
+      link=${link:0:-1}
+    else
+      chain_qant[$link_idx]=
+    fi
+
+    tmp=${link:0,-2}
+    if [ ${link:0:1} == '-' ]; then
+      if [[ ! $tmp =~ ^\-[0-9A-Za-z]$ ]]; then
+        echo "Illegal syntax (flag '$link' in '$name: $chain')"
+        exit 1
+      fi
+
+      cflag=${tmp:1}
+
+      tmp=${link:0:-2}
+      if [ -n $tmp ]; then
+        if [[ ! $tmp =~ ^\-\-[0-9A-Za-z]{1,128}$ ]]; then
+          echo "Illegal syntax (flag '$link' in '$name: $chain')"
+          exit 1
+        fi
+
+        tmp=${tmp:2}
+        flag_conv[$cflag]=$tmp
+        flag_conv[$tmp]=$cflag
+      else
+        flag_conv[$cflag]=$cflag
+      fi
+
+      flag_subch_sidx[$cflag]=$(($link_idx+1))
+      link="-$cflag"
+    fi
+
+    # make correction:
+    chain_arr[$link_idx]=$link
+  done
+
+
+  local retry=0
+  local link_idx=0
+  link_cnt=${#chain_arr[@]}
+
+  while true; do
+    if [ $link_idx -lt $link_cnt ]; then
+      link=${chain_arr[$link_idx]}
+    else
+      # last element reached
+      break
+    fi
+
+    if [ -z "$CARG" ]; then
+      CARG=$(first_arg ${ARGS})
+      ARGS=$(last_args $ARGS)
+    fi
+
+    if [[ "${CARG:0:1}" == "-" ]]; then
+      # arg_type=CARG_FLAG
+      # if long form
+      if [[ "${CARG:0:2}" == "--" ]]; then
+        clflag=${CARG:2}
+        tmp=$(flag_conv[$clflag])
+        cflag=$tmp
+      else
+        cflag=${CARG:1}
+        tmp=$(flag_conv[$cflag])
+        clflag=$tmp
+      fi
+
+      if [ -z "$tmp" ]; then
+        # Flag does not exists in chain, continue search
+        break
+      fi
+
+      # flag exits, mark, and jump to flag specific index
+      if [ -n $_carg_${name}_${clflag}_flag ]; then
+        echo "Repeated flag: --$clflag (-cflag)"
+        exit 3
+      fi
+
+      declare "_carg_${name}_${clflag}_flag=1"
+      cflag_dist=0
+      link_idx=flag_subch_sidx[$cflag]
+      CARG=
+      continue
+    else
+      # arg_type=CARG_PARAM
+      if [ ${link:0:1} == '-' ]; then
+        if [ -z $qant ]; then
+          tmp=flag_conv[${link:1}]
+          echo "Expecting '--$tmp (-$link)' but '$CARG' encountered"
+          exit 2
+        fi
+
+        # next try
+        link_idx=$(($link_idx + 1))
+        continue
+      fi
+
+      if ! declare -F parse_$name_$link > /dev/null; then
+        echo "Function 'parse_$name_$link' not defined!"
+        exit 3
+      fi
+
+      if [ -n "$cflag_dist" ]; then
+        cflag_dist=$(($cflag_dist + 1))
+      fi
+
+      declare "_carg_${name}_${link}_param="
+      if $(parse_$name_$link "_carg_${name}_${link}_param" $a $cflag $cflag_dist); then
+        # next try
+        link_idx=$(($link_idx + 1))
+        CARG=
+        continue
+      else
+        if [ -z $qant ]; then
+          # quantifier is not '?' nor '*'
+          echo "Failed to read '$link': $name"
+          exit 3
+        fi
+
+        link_idx=$(($link_idx + 1))
+      # else keep argument, try it with next link
+      fi
+    fi
+
+     #   if [ -z $qant ]; then
+     #     echo "Expecting '$link', but parameter '$a' encountered"
+     #     exit 2
+     #   fi
+
+    # if [ -z $qant ]; then
+    #      echo "Expecting '$link', but flag '$a' encountered"
+    #      exit 2
+    #    fi
+  done
+
+  check_$name
+}
+
+function _carg_chain_recheck() {
+
+}
+
+function parse_MODE() {
+  local carg=$
+
+  case $2 in
+    command)
+      _carg_chain "command*" $1
+    ;;
+    sync)
+      _carg_chain "path_local path_remote? --reverse-r?" $1
+    ;;
+    enter|console|stop|waitfor|init)
+      # no argumans for these options
+    ;;
+    ls)
+      _carg_chain "?--full-f" $1
+    ;;
+    extstore)
+      _carg_chain "MODE" $1
+    ;;
+    run|create)
+      # to be handled by 'parse_create' or 'parse_run'
+    ;;
+    help|--help|-h)
+      #print_help
+    *)
+      return 1
+  esac
+
+  $carg=$2
+  return 0
+}
+
+function parse_extstore_MODE() {
+  case $1 in
+    ls)
+      _carg_chain "--full-f?" "extstore_mode"
+    ;;
+    add)
+      _carg_chain "name_or_path size?"
+    ;;
+    eject)
+    ;;
+    *)
+      echo "Unknown option: $1"
+  esac
+
+  return 0
+}
+
+function parse_create() {
+  if [ -z $_carg_mode ] || [ "$_carg_mode" == "create" ]; then
+    _carg_mode="create"
+
+    _carg_chain_recheck "?--device-d name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? name?" "create"
+    return $?
+  fi
+
+  retun 1
+}
+
+function parse_run_name() {
+  echo ""
+}
+
+function check_run() {
+  echo ""
+}
+
+function parse_run() {
+  if [ -z $_carg_mode ] || [ "$_carg_mode" == "run" ]; then
+    _carg_mode="run"
+
+    _carg_chain "name --wait-w?" "run"
+    return $?
+  fi
+
+  return 1
+}
+
+
+function check__() {
+  echo ""
+}
+
+# function, pass control to
+_carg_chain "MODE? create? run?"
+
+
+exit 1
 
 # Return value:
 #     1 - argument has been read
