@@ -7,6 +7,10 @@
 [ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         set -xe || set -e
 
+function trace_line(){
+  caller
+}
+#trap trace_line debug
 
 function first_arg() {
   echo $1
@@ -690,7 +694,6 @@ function _carg_chain_read() {
   fi
 
   return ${accepted}
-
 }
 
 readonly CARG_PARAM=1
@@ -706,6 +709,7 @@ function _carg_chain_parse() {
   declare -A flag_conv
   declare -A flag_subch_sidx
   declare -A chain_qant
+  declare -A chain_param_fn
   local cflag=
   local clflag=
   local cflag_dist=
@@ -714,7 +718,8 @@ function _carg_chain_parse() {
 
   read -a chain_arr <<< "$chain"
 
-  # scann for flags and named parameters:
+  local link_idx=0
+  # First chain pass: scann for flags and named parameters:
   for link_idx in ${!chain_arr[@]}; do
     link=${chain_arr[$link_idx]}
 
@@ -729,28 +734,38 @@ function _carg_chain_parse() {
     tmp=${link:0,-2}
     if [ ${link:0:1} == '-' ]; then
       if [[ ! $tmp =~ ^\-[0-9A-Za-z]$ ]]; then
-        echo "Illegal syntax (flag '$link' in '$name: $chain')"
-        exit 1
+        echo "Internal error: "
+        echo "    Illegal syntax (flag '$link' in '$name: $chain')"
+        exit 52
       fi
 
       cflag=${tmp:1}
 
       tmp=${link:0:-2}
-      if [ -n $tmp ]; then
+      if [ -n "$tmp" ]; then
         if [[ ! $tmp =~ ^\-\-[0-9A-Za-z]{1,128}$ ]]; then
-          echo "Illegal syntax (flag '$link' in '$name: $chain')"
-          exit 1
+          echo "Internal error: "
+          echo "    Illegal syntax (flag '$link' in '$name: $chain')"
+          exit 51
         fi
 
         tmp=${tmp:2}
-        flag_conv[$cflag]=$tmp
-        flag_conv[$tmp]=$cflag
+        flag_conv["$cflag"]="$tmp"
+        flag_conv["$tmp"]="$cflag"
       else
         flag_conv[$cflag]=$cflag
       fi
 
       flag_subch_sidx[$cflag]=$(($link_idx+1))
       link="-$cflag"
+
+      chain_param_fn[$link_idx]=
+    else # parameter
+      if declare -F parse_$name_$link > /dev/null; then
+        chain_param_fn[$link_idx]="parse_$name_$link"
+      else
+        chain_param_fn[$link_idx]="parse___autoparam"
+      fi
     fi
 
     # make correction:
@@ -758,21 +773,22 @@ function _carg_chain_parse() {
   done
 
 
-  local retry=0
-  local link_idx=0
+  link_idx=0
   link_cnt=${#chain_arr[@]}
 
   while true; do
     if [ $link_idx -lt $link_cnt ]; then
       link=${chain_arr[$link_idx]}
+      qant=${chain_qant[$link_idx]}
     else
       # last element reached
       break
     fi
 
     if [ -z "$CARG" ]; then
+      # read and rewind arguments
       CARG=$(first_arg ${ARGS})
-      ARGS=$(last_args $ARGS)
+      ARGS=$(last_args ${ARGS})
     fi
 
     if [[ "${CARG:0:1}" == "-" ]]; then
@@ -780,31 +796,32 @@ function _carg_chain_parse() {
       # if long form
       if [[ "${CARG:0:2}" == "--" ]]; then
         clflag=${CARG:2}
-        tmp=$(flag_conv[$clflag])
+        tmp=${flag_conv["$clflag"]}
         cflag=$tmp
       else
         cflag=${CARG:1}
-        tmp=$(flag_conv[$cflag])
+        tmp=${flag_conv["$cflag"]}
         clflag=$tmp
       fi
 
       if [ -z "$tmp" ]; then
         # Flag does not exists in chain, continue search
-        break
+        # by giving control to parent chain
+        return
       fi
 
       # flag exits, mark, and jump to flag specific index
-      if [ -n $_carg_${name}_${clflag}_flag ]; then
+      if [[ -v $_carg_${name}_${clflag}_flag ]]; then
         echo "Repeated flag: --$clflag (-cflag)"
         exit 3
       fi
 
-      declare "_carg_${name}_${clflag}_flag=1"
+      declare -g "_carg_${name}_${clflag}_flag=1"
       cflag_dist=0
-      link_idx=flag_subch_sidx[$cflag]
+      link_idx=${flag_subch_sidx[$cflag]}
       CARG=
       continue
-    else
+    else # 'CARG' is a parameter OR AN EMPTY string
       # arg_type=CARG_PARAM
       if [ ${link:0:1} == '-' ]; then
         if [ -z $qant ]; then
@@ -818,31 +835,46 @@ function _carg_chain_parse() {
         continue
       fi
 
-      if ! declare -F parse_$name_$link > /dev/null; then
-        echo "Function 'parse_$name_$link' not defined!"
-        exit 3
+      # accept empty parameter to do trought all chain links, so if
+      # something is required a proper message is shown
+      if [ -z "$CARG" ]; then
+        # quantifier is not '?' nor '*'
+        if [ -z "$qant" ]; then
+          # if not main chain,
+          if [ -n "$name" ]; then
+            return 1
+          fi
+
+          echo "Syntax error: "
+          echo "    Required parameter is missing: '$name:$link'"
+          exit 31
+        fi
+
+        link_idx=$(($link_idx + 1))
+        continue
+      # else keep argument, try it with next link
       fi
 
       if [ -n "$cflag_dist" ]; then
         cflag_dist=$(($cflag_dist + 1))
       fi
 
-      declare "_carg_${name}_${link}_param="
-      if $(parse_$name_$link "_carg_${name}_${link}_param" $a $cflag $cflag_dist); then
+      if ${chain_param_fn[$link_idx]} "${name}" ${link} $CARG $cflag $cflag_dist; then
+
+        str=_carg_${name}_${link}_param
+        var="${str}"
+          echo "Param set: $var"
+        if ! $(carg_isparam_set "${name}" ${link}); then
+          echo "No return value has been set."
+          exit 8
+        fi
         # next try
         link_idx=$(($link_idx + 1))
         CARG=
         continue
-      else
-        if [ -z $qant ]; then
-          # quantifier is not '?' nor '*'
-          echo "Failed to read '$link': $name"
-          exit 3
-        fi
-
-        link_idx=$(($link_idx + 1))
-      # else keep argument, try it with next link
       fi
+      echo "No-Auto: $value"
+      exit 2
     fi
 
      #   if [ -z $qant ]; then
@@ -856,42 +888,68 @@ function _carg_chain_parse() {
     #    fi
   done
 
+  if ! declare -F check_$name > /dev/null; then
+        echo "Internal error: "
+        echo "    Function 'check_$name' not defined!"
+        exit 44
+  fi
+
   check_$name
 }
 
-function _carg_chain_recheck() {
 
+function carg_set_param() {
+  local cname=$1
+  local clink=$2
+  local value=$3
+
+  if [ -z ${value} ]; then
+    echo "Internel error: "
+    echo "    Missing link value: $cname:$clink"
+    exit 44
+  fi
+
+  declare -gr "_carg_${cname}_${clink}_param=${value}"
+}
+
+function carg_isparam_set() {
+  local cname=$1
+  local clink=$2
+
+  [[ -v "_carg_${cname}_${clink}_param" ]] && return 0 || return 1
 }
 
 function parse_MODE() {
-  local carg=$
+  local cname=$1
+  local clink=$2
+  local mode=$3
 
-  case $2 in
+  case $mode in
     command)
-      _carg_chain "command*" $1
+      _carg_chain "command*" $mode
     ;;
     sync)
-      _carg_chain "path_local path_remote? --reverse-r?" $1
+      _carg_chain "path_local path_remote? --reverse-r?" $mode
     ;;
     enter|console|stop|waitfor|init)
       # no argumans for these options
     ;;
     ls)
-      _carg_chain "?--full-f" $1
+      _carg_chain "?--full-f" $mode
     ;;
     extstore)
-      _carg_chain "MODE" $1
+      _carg_chain "MODE" $mode
     ;;
     run|create)
       # to be handled by 'parse_create' or 'parse_run'
     ;;
-    help|--help|-h)
-      #print_help
     *)
       return 1
   esac
 
-  $carg=$2
+  # set value
+  carg_set_param "$cname" $clink $mode
+
   return 0
 }
 
@@ -913,7 +971,7 @@ function parse_extstore_MODE() {
 }
 
 function parse_create() {
-  if [ -z $_carg_mode ] || [ "$_carg_mode" == "create" ]; then
+  if [ -z $_carg_MODE ] || [ "$_carg_MODE" == "create" ]; then
     _carg_mode="create"
 
     _carg_chain_recheck "?--device-d name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? name?" "create"
@@ -925,6 +983,34 @@ function parse_create() {
 
 function parse_run_name() {
   echo ""
+}
+
+function parse___autoparam() {
+  local cname=$1
+  local clink=$2
+  local value=$3
+
+  if [ $clink == $value ]; then
+    carg_set_param "$cname" $clink 1
+    return 0
+  fi
+
+  return 1
+}
+
+# check main chain:
+function check_() {
+
+  if [[ -n $_carg__help_param ]] || [[ -n $_carg__help_flag ]]; then
+    print_help
+  elif [[ -z $_carg_MODE ]]; then
+    echo "Nothing to do"
+    echo "    type '--help' for help"
+  fi
+
+  echo $_carg__help_param
+
+  return 0
 }
 
 function check_run() {
@@ -943,12 +1029,8 @@ function parse_run() {
 }
 
 
-function check__() {
-  echo ""
-}
-
 # function, pass control to
-_carg_chain "MODE? create? run?"
+_carg_chain_parse "help? --help-h? MODE? create? run?"
 
 
 exit 1
