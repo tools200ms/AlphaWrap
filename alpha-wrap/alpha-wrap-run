@@ -350,71 +350,9 @@ function set_create_container() {
 }
 
 
-function parse_yes_no() {
-  if [ -z "$1" ]; then
-    echo "Empty argument (fix code?)"
-    exit 55
-  fi
 
-  if [[ $(echo "$1" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] ; then
-    return 1
-  elif [[ $(echo "$1" | tr '[:upper:]' '[:lower:]') =~ ^n|no|0|off$ ]] ; then
-    return 0
-  else
-    echo "Correct option is one of: yes, y, on, 1 or no, n, 0, off"
-    exit 3
-  fi
-}
-
-function parse_devmodel_name() {
-  if [[ ! "$1" =~ ^([a-zA-Z0-9\._-]){1,128}$ ]]; then
-    echo "Illegal machine (device) name"
-    exit 3
-  fi
-
-  MACHINE=$(qemu-system-aarch64 -machine help | grep "^$1[[:space:]].*")
-
-  if [ -z "$MACHINE" ]; then
-    echo "Machine (device) has not been found: $1"
-    exit 3
-  fi
-
-  _MACHINE=$(first_arg $MACHINE)
-  echo "Loading: $_MACHINE"
-}
-
-function parse_kernel_name() {
-  if [[ ! "$1" =~ ^([a-zA-Z0-9\._/-]){1,128}$ ]]; then
-    echo "Illegal kernel name"
-    exit 3
-  fi
-
-  _KERNEL=$1
-}
-
-function parse_initramfs_name() {
-  if [[ ! "$1" =~ ^([a-zA-Z0-9\._/-]){1,128}$ ]]; then
-    echo "Illegal initramfs name"
-    exit 3
-  fi
-
-  _INITRAMFS=$1
-}
-
-function parse_imgfile_path() {
-  if [ ! -f "$1" ]; then
-    echo "Provide path to an existing file"
-    exit 3
-  fi
-
-  _IMG_FILE=$(realpath "$1")
-}
 
 function parse_container_name() {
-  if [[ ! "$1" =~ ^([_a-zA-Z0-9-]){1,128}$ ]]; then
-    echo "Illegal name"
-    exit 3
-  fi
 
   _CONTAINER_NAME=$1
 }
@@ -517,17 +455,18 @@ function parse_size() {
   local number
   local unit
   local result
+  local size
 
   # Use regular expression to match the number and unit (MB, GB, MiB, GiB)
-  if [[ "$input" =~ ^([0-9]+(\.[0-9]+)?)\ ?(MB|GB|MiB|GiB)$ ]]; then
+  if [[ "$input" =~ ^([0-9]+(\.[0-9]+)?)\ ?(m|g|M|G|MB|GB|MiB|GiB)$ ]]; then
     number="${BASH_REMATCH[1]}"
     unit="${BASH_REMATCH[3]}"
 
     case "$unit" in
-      MB)
+      m|M|MB)
         result=$(echo "scale=2; $number * 0.953674" | bc)
       ;;
-      GB)
+      g|G|GB)
         result=$(echo "scale=2; $number * 953.674" | bc)
       ;;
       MiB)
@@ -539,14 +478,14 @@ function parse_size() {
     esac
 
     # Round up to the nearest integer using awk
-    _EXTSTORAGE_SIZE=$(echo "$result" | awk '{print ($1 == int($1)) ? $1 : int($1)+1}')
-    #echo "$_EXTSTORAGE_SIZE"
+    size=$(echo "$result" | awk '{print ($1 == int($1)) ? $1 : int($1)+1}')
+    echo "$size"
 
-    return 1
+    return 0
     #echo "Invalid input. Please provide a number followed by MB, GB, MiB, or GiB."
   fi
 
-  return 0
+  return 1
 }
 
 function parse_probeparam() {
@@ -626,75 +565,6 @@ function set_validate_extstore_add() {
 setter_fn=
 param_chain=
 
-function _carg_chain_read() {
-    local opt=$1
-  local _parse_now=$(first_arg ${param_chain})
-  local opt_param=0
-  local accepted=0
-
-  if [ -z "$_parse_now" ]; then
-    return 0
-  fi
-
-  param_chain=$(last_args ${param_chain})
-
-  local set_fn=${setter_fn}
-  if [ -z "${param_chain}" ]; then
-    setter_fn=
-  fi
-
-  if [[ "${_parse_now:0:1}" == '?' ]]; then
-    opt_param=1
-    _parse_now="${_parse_now:1}"
-  fi
-
-  # flag
-  if [[ "${opt:0:1}" == "-" ]]; then
-    if [ $opt_param -eq 0 ]; then
-      echo "Illegal parameter (starting with '-')"
-      exit 1
-    else
-      #if [ -n "$set_fn" ]; then
-        # option is a parameter, call only setter (no parser)
-      flag_$_parse_now ${opt}
-      accepted=$?
-      #else
-      #  accepted=0
-      #fi
-    fi
-  # parameter:
-  elif [ -n "$opt" ]; then
-    parse_$_parse_now ${opt}
-    accepted=$?
-
-    if [ -n "$set_fn" ]; then
-      # param setter:
-      set_$set_fn ${accepted} $_parse_now
-      accepted=$?
-    fi
-  elif [ ${opt_param} -eq 0 ]; then
-    if [ -n "$set_fn" ]; then
-      # param setter
-      # setter should terminate program as no required argument has been provided
-      set_$set_fn -1 $_parse_now
-      accepted=$?
-    fi
-
-    echo "No argument, while argumen has been expected"
-    exit 3
-  fi
-
-  if [ -n "$set_fn" ] && [ -z "$param_chain" ]; then
-    # final (chain) setter call
-    error=$(set_$set_fn)
-
-    if [ -z "${error}" ]; then
-      echo "ERROR: \n${error}"
-    fi
-  fi
-
-  return ${accepted}
-}
 
 readonly CARG_PARAM=1
 readonly CARG_FLAG=2
@@ -702,200 +572,15 @@ readonly CARG_FLAG=2
 ARGS=$@
 CARG=
 
-function _carg_chain_parse() {
-  local chain=$1
-  local name=$2
-  local arg_type=
-  declare -A flag_conv
-  declare -A flag_subch_sidx
-  declare -A chain_qant
-  declare -A chain_param_fn
-  local cflag=
-  local clflag=
-  local cflag_dist=
-  local qant=
-  local tmp=
-
-  read -a chain_arr <<< "$chain"
-
-  local link_idx=0
-  # First chain pass: scann for flags and named parameters:
-  for link_idx in ${!chain_arr[@]}; do
-    link=${chain_arr[$link_idx]}
-
-    tmp=${link:0,-1}
-    if [ "$tmp" == "?" ] || [ "$tmp" == "*" ]; then
-      chain_qant[$link_idx]=$tmp
-      link=${link:0:-1}
-    else
-      chain_qant[$link_idx]=
-    fi
-
-    tmp=${link:0,-2}
-    if [ ${link:0:1} == '-' ]; then
-      if [[ ! $tmp =~ ^\-[0-9A-Za-z]$ ]]; then
-        echo "Internal error: "
-        echo "    Illegal syntax (flag '$link' in '$name: $chain')"
-        exit 52
-      fi
-
-      cflag=${tmp:1}
-
-      tmp=${link:0:-2}
-      if [ -n "$tmp" ]; then
-        if [[ ! $tmp =~ ^\-\-[0-9A-Za-z]{1,128}$ ]]; then
-          echo "Internal error: "
-          echo "    Illegal syntax (flag '$link' in '$name: $chain')"
-          exit 51
-        fi
-
-        tmp=${tmp:2}
-        flag_conv["$cflag"]="$tmp"
-        flag_conv["$tmp"]="$cflag"
-      else
-        flag_conv[$cflag]=$cflag
-      fi
-
-      flag_subch_sidx[$cflag]=$(($link_idx+1))
-      link="-$cflag"
-
-      chain_param_fn[$link_idx]=
-    else # parameter
-      if declare -F parse_$name_$link > /dev/null; then
-        chain_param_fn[$link_idx]="parse_$name_$link"
-      else
-        chain_param_fn[$link_idx]="parse___autoparam"
-      fi
-    fi
-
-    # make correction:
-    chain_arr[$link_idx]=$link
-  done
-
-
-  link_idx=0
-  link_cnt=${#chain_arr[@]}
-
-  while true; do
-    if [ $link_idx -lt $link_cnt ]; then
-      link=${chain_arr[$link_idx]}
-      qant=${chain_qant[$link_idx]}
-    else
-      # last element reached
-      break
-    fi
-
-    if [ -z "$CARG" ]; then
-      # read and rewind arguments
-      CARG=$(first_arg ${ARGS})
-      ARGS=$(last_args ${ARGS})
-    fi
-
-    if [[ "${CARG:0:1}" == "-" ]]; then
-      # arg_type=CARG_FLAG
-      # if long form
-      if [[ "${CARG:0:2}" == "--" ]]; then
-        clflag=${CARG:2}
-        tmp=${flag_conv["$clflag"]}
-        cflag=$tmp
-      else
-        cflag=${CARG:1}
-        tmp=${flag_conv["$cflag"]}
-        clflag=$tmp
-      fi
-
-      if [ -z "$tmp" ]; then
-        # Flag does not exists in chain, continue search
-        # by giving control to parent chain
-        return
-      fi
-
-      # flag exits, mark, and jump to flag specific index
-      if [[ -v $_carg_${name}_${clflag}_flag ]]; then
-        echo "Repeated flag: --$clflag (-cflag)"
-        exit 3
-      fi
-
-      declare -g "_carg_${name}_${clflag}_flag=1"
-      cflag_dist=0
-      link_idx=${flag_subch_sidx[$cflag]}
-      CARG=
-      continue
-    else # 'CARG' is a parameter OR AN EMPTY string
-      # arg_type=CARG_PARAM
-      if [ ${link:0:1} == '-' ]; then
-        if [ -z $qant ]; then
-          tmp=flag_conv[${link:1}]
-          echo "Expecting '--$tmp (-$link)' but '$CARG' encountered"
-          exit 2
-        fi
-
-        # next try
-        link_idx=$(($link_idx + 1))
-        continue
-      fi
-
-      # accept empty parameter to do trought all chain links, so if
-      # something is required a proper message is shown
-      if [ -z "$CARG" ]; then
-        # quantifier is not '?' nor '*'
-        if [ -z "$qant" ]; then
-          # if not main chain,
-          if [ -n "$name" ]; then
-            return 1
-          fi
-
-          echo "Syntax error: "
-          echo "    Required parameter is missing: '$name:$link'"
-          exit 31
-        fi
-
-        link_idx=$(($link_idx + 1))
-        continue
-      # else keep argument, try it with next link
-      fi
-
-      if [ -n "$cflag_dist" ]; then
-        cflag_dist=$(($cflag_dist + 1))
-      fi
-
-      if ${chain_param_fn[$link_idx]} "${name}" ${link} $CARG $cflag $cflag_dist; then
-
-        str=_carg_${name}_${link}_param
-        var="${str}"
-          echo "Param set: $var"
-        if ! $(carg_isparam_set "${name}" ${link}); then
-          echo "No return value has been set."
-          exit 8
-        fi
-        # next try
-        link_idx=$(($link_idx + 1))
-        CARG=
-        continue
-      fi
-      echo "No-Auto: $value"
-      exit 2
-    fi
-
-     #   if [ -z $qant ]; then
-     #     echo "Expecting '$link', but parameter '$a' encountered"
-     #     exit 2
-     #   fi
-
-    # if [ -z $qant ]; then
-    #      echo "Expecting '$link', but flag '$a' encountered"
-    #      exit 2
-    #    fi
-  done
-
-  if ! declare -F check_$name > /dev/null; then
-        echo "Internal error: "
-        echo "    Function 'check_$name' not defined!"
-        exit 44
-  fi
-
-  check_$name
+_carg_dbg() {
+  echo "DEBUG: $*"
 }
+
+_carg_dbg_sink() {
+  return 0
+}
+
+_DBG_MSG=_carg_dbg
 
 
 function carg_set_param() {
@@ -919,7 +604,27 @@ function carg_isparam_set() {
   [[ -v "_carg_${cname}_${clink}_param" ]] && return 0 || return 1
 }
 
-function parse_MODE() {
+# Return value:
+#     0 - argument has been parsed successfully
+#     1 - argument can't be interpreted
+#
+# If parameter is accepted, it must be registered with:
+#   carg_set_param function
+function parse___autoparam() {
+  local cname=$1
+  local clink=$2
+  local value=$3
+
+  if [ $clink == $value ]; then
+    carg_set_param "$cname" $clink 1
+    return 0
+  fi
+
+  return 1
+}
+
+
+function parse__MODE() {
   local cname=$1
   local clink=$2
   local mode=$3
@@ -953,6 +658,207 @@ function parse_MODE() {
   return 0
 }
 
+
+function parse__create() {
+  if [ -z $_carg_MODE ] || [ "$_carg_MODE" == "create" ]; then
+
+    _carg_chain_parse "--device-d? dev_name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? cont_name?" "create"
+    return $?
+  fi
+
+  retun 1
+}
+
+function parse_create_dev_name() {
+  local cname=$1
+  local clink=$2
+  local name=$3
+  local prev_flag=$4
+  local prev_flag_dist=$5
+
+  if [ $prev_flag != 'd' ] || [ $prev_flag_dist -ne 1 ]; then
+    return 1
+  fi
+
+  if [[ ! "$name" =~ ^([a-zA-Z0-9\._-]){1,128}$ ]]; then
+    echo "Illegal machine (device) name"
+    exit 3
+  fi
+
+  local machine=$(qemu-system-aarch64 -machine help | grep "^${name}[[:space:]].*")
+
+  if [ -z "$machine" ]; then
+    echo "Machine (device) has not been found: $name"
+    exit 3
+  fi
+
+  # echo "Loading: $_MACHINE"
+  carg_set_param "$cname" $clink $(first_arg $machine)
+
+  return 0
+}
+
+function parse_create_file_path() {
+  local cname=$1
+  local clink=$2
+  local path=$3
+
+  if [ -n "$path" ]; then
+    path=$(realpath $path)
+    if [ -f $path ]; then
+      # set value
+      carg_set_param "$cname" $clink $path
+      return 0
+    fi
+
+    echo "Provide path to an existing file"
+    exit 3
+  fi
+
+  return 1
+}
+
+function parse_create_extr_size() {
+  local cname=$1
+  local clink=$2
+  local size="$3"
+  local res=
+
+  if [ "${size:0:1}" != '+' ]; then
+    return 1
+  fi
+
+  size="${size:1}"
+  size="$(parse_size "$size")"
+  res=$?
+
+  if [ $res -ne 0 ]; then
+    echo "Incorrect size format"
+    exit 22
+  fi
+
+  carg_set_param "$cname" $clink "$size"
+  return 0
+}
+
+function parse_create_yesno() {
+  local cname=$1
+  local clink=$2
+  local value=$3
+  local prev_flag=$4
+  local prev_flag_dist=$5
+
+  if [ $prev_flag != 'i' ] || [ $prev_flag_dist -ne 1 ]; then
+    return 1
+  fi
+
+  if [[ $(echo "$value" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] ; then
+    carg_set_param "$cname" $clink true
+  elif [[ $(echo "$value" | tr '[:upper:]' '[:lower:]') =~ ^n|no|0|off$ ]] ; then
+    carg_set_param "$cname" $clink false
+  else
+    echo "Correct option is one of: yes, y, on, 1 or no, n, 0, off"
+    exit 3
+  fi
+
+  return 0
+}
+
+# default kernel:
+_carg_create_kelner_param=vmlinuz
+function parse_create_kelner() {
+  local cname=$1
+  local clink=$2
+  local name=$3
+  local prev_flag=$4
+  local prev_flag_dist=$5
+
+  if [ $prev_flag != 'i' ] || [ $prev_flag_dist -ne 2 ]; then
+    return 1
+  fi
+
+  if [[ ! "$name" =~ ^([a-zA-Z0-9\._/-]){1,128}$ ]]; then
+    echo "Illegal kernel name"
+    exit 3
+  fi
+
+  carg_set_param "$cname" $clink "$name"
+  return 0
+}
+
+_carg_create_initramfs_param=
+function parse_create_initramfs() {
+  local cname=$1
+  local clink=$2
+  local name=$3
+  local prev_flag=$4
+  local prev_flag_dist=$5
+
+  if [ $prev_flag != 'i' ] || [ $prev_flag_dist -ne 3 ]; then
+    return 1
+  fi
+
+  if [[ ! "$name" =~ ^([a-zA-Z0-9\._/-]){1,128}$ ]]; then
+    echo "Illegal initramfs name"
+    exit 3
+  fi
+
+  carg_set_param "$cname" $clink "$name"
+  return 0
+}
+
+function parse_create_cont_name() {
+  local cname=$1
+  local clink=$2
+  local name=$3
+  local prev_flag=$4
+  local prev_flag_dist=$5
+
+  if [ $prev_flag != 'n' ] || [ $prev_flag_dist -ne 1 ]; then
+    return 1
+  fi
+
+  if [[ ! "$name" =~ ^([_a-zA-Z0-9-]){1,128}$ ]]; then
+    echo "Illegal name"
+    exit 3
+  fi
+}
+
+
+function check_create() {
+  if  [ -n "$_carg_create_file_path_param" ] && \
+      [ -n "$_carg_create_yesno_param" ]; then
+
+      if ! ${_carg_create_yesno_param}; then
+        # set realpath
+        _carg_create_kelner_param=$(realpath $_carg_create_kelner_param)
+
+        if [ -n "$_carg_create_initramfs_param" ]; then
+          _carg_create_initramfs_param=$(realpath $_carg_create_initramfs_param)
+        fi
+      fi
+
+
+      return 0
+  fi
+
+  return 1
+}
+
+# check main chain:
+function check_() {
+
+  if [[ -n $_carg__help_param ]] || [[ -n $_carg__help_flag ]]; then
+    print_help
+  elif [[ -z $_carg_MODE ]]; then
+    echo "Nothing to do"
+    echo "    type '--help' for help"
+    return 1
+  fi
+
+  return 0
+}
+
 function parse_extstore_MODE() {
   case $1 in
     ls)
@@ -970,54 +876,17 @@ function parse_extstore_MODE() {
   return 0
 }
 
-function parse_create() {
-  if [ -z $_carg_MODE ] || [ "$_carg_MODE" == "create" ]; then
-    _carg_mode="create"
-
-    _carg_chain_recheck "?--device-d name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? name?" "create"
-    return $?
-  fi
-
-  retun 1
-}
 
 function parse_run_name() {
   echo ""
 }
 
-function parse___autoparam() {
-  local cname=$1
-  local clink=$2
-  local value=$3
-
-  if [ $clink == $value ]; then
-    carg_set_param "$cname" $clink 1
-    return 0
-  fi
-
-  return 1
-}
-
-# check main chain:
-function check_() {
-
-  if [[ -n $_carg__help_param ]] || [[ -n $_carg__help_flag ]]; then
-    print_help
-  elif [[ -z $_carg_MODE ]]; then
-    echo "Nothing to do"
-    echo "    type '--help' for help"
-  fi
-
-  echo $_carg__help_param
-
-  return 0
-}
 
 function check_run() {
   echo ""
 }
 
-function parse_run() {
+function parse__run() {
   if [ -z $_carg_mode ] || [ "$_carg_mode" == "run" ]; then
     _carg_mode="run"
 
@@ -1029,85 +898,243 @@ function parse_run() {
 }
 
 
+# shellcheck disable=SC2112
+function _carg_chain_parse() {
+  local chain=$1
+  local name=$2
+  local arg_type=
+  declare -A flag_conv
+  declare -A flag_subch_sidx
+  declare -A chain_qant
+  declare -A chain_param_fn
+  local cflag=
+  local clflag=
+  local cflag_dist=
+  local qant=
+  local tmp=
+
+  read -a chain_arr <<< "$chain"
+
+  local link_idx=0
+  # First chain pass: scann for flags and named parameters:
+  $_DBG_MSG "Loading chain: _$name"
+  $_DBG_MSG "    $chain"
+
+  for link_idx in ${!chain_arr[@]}; do
+    link=${chain_arr[$link_idx]}
+
+    tmp=${link:0,-1}
+    if [ "$tmp" == "?" ] || [ "$tmp" == "*" ]; then
+      chain_qant[$link_idx]=$tmp
+      link=${link:0:-1}
+    else
+      chain_qant[$link_idx]=
+    fi
+
+    tmp=${link:0,-2}
+    if [ ${link:0:1} == '-' ]; then
+      if [[ ! $tmp =~ ^\-[0-9A-Za-z]$ ]]; then
+        echo "Internal error: "
+        echo "    Illegal syntax (flag '$link' in '$name: $chain')"
+        exit 52
+      fi
+
+      cflag=${tmp:1}
+
+      tmp=${link:0:-2}
+      if [ -n "$tmp" ]; then
+        if [[ ! $tmp =~ ^\-\-[0-9A-Za-z]{1,128}$ ]]; then
+          echo "Internal error: "
+          echo "    Illegal syntax (flag '$link' in '$name: $chain')"
+          exit 51
+        fi
+
+        clflag=${tmp:2}
+        flag_conv["$cflag"]="$clflag"
+        flag_conv["$tmp"]="$cflag"
+      else
+        flag_conv[$cflag]=$cflag
+        clflag=$cflag
+      fi
+
+      flag_subch_sidx[$cflag]=$(($link_idx+1))
+      link="-$cflag"
+
+      $_DBG_MSG "      ($link_idx) adding flag: $clflag($cflag)${chain_qant[$link_idx]}"
+      # it's a flag, 'param function' does not apply here:
+      chain_param_fn[$link_idx]=
+    else # parameter
+      if declare -F parse_${name}_${link} > /dev/null; then
+        chain_param_fn[$link_idx]="parse_${name}_${link}"
+      else
+        chain_param_fn[$link_idx]="parse___autoparam"
+      fi
+
+      $_DBG_MSG "      ($link_idx) adding param. fn.: ${chain_param_fn[$link_idx]} ${chain_qant[$link_idx]} expecting: 'parse_${name}_${link}'"
+    fi
+
+    # make correction:
+    chain_arr[$link_idx]=$link
+  done
+
+
+  link_idx=0
+  link_cnt=${#chain_arr[@]}
+  # flag_as_param
+  local flag_is_flag=true
+
+  $_DBG_MSG "Parsing arguments: "
+
+  while true; do
+    if [ $link_idx -ge $link_cnt ]; then
+      # last element reached
+      $_DBG_MSG "      End of chain: _$name"
+      break
+    fi
+
+    if [ -z "$CARG" ]; then
+      # read and rewind arguments
+      CARG=$(first_arg ${ARGS})
+      ARGS=$(last_args ${ARGS})
+
+      $_DBG_MSG "    Loading: $CARG"
+    fi
+
+    if $flag_is_flag && [[ "${CARG:0:1}" == "-" ]]; then
+      # arg_type=CARG_FLAG
+      # if long form
+      if [[ "${CARG:0:2}" == "--" ]]; then
+        clflag=${CARG:2}
+        tmp=${flag_conv["$clflag"]}
+        cflag=$tmp
+      else
+        cflag=${CARG:1}
+        tmp=${flag_conv["$cflag"]}
+        clflag=$tmp
+      fi
+
+      if [ -z "$tmp" ]; then
+        $_DBG_MSG "      unidentified flag, mark 'flag_is_flag=true' to keep matching in other chains"
+        # Flag does not exists in a current chain, but it might be in other one
+
+        flag_is_flag=false
+        link_idx=$(($link_idx + 1))
+        continue
+      fi
+
+      cflag_dist=0
+      link_idx=${flag_subch_sidx[$cflag]}
+
+      tmp=$(($link_idx - 1))
+      $_DBG_MSG "      identified as a flag: $clflag($cflag) ${chain_qant[$tmp]}"
+      # flag exits, mark, and jump to flag specific index
+      if [[ -v $_carg_${name}_${clflag}_flag ]]; then
+        echo "Repeated flag: --$clflag (-cflag)"
+        exit 3
+      fi
+
+      declare -g "_carg_${name}_${clflag}_flag=1"
+
+      CARG=
+      continue
+    else # 'CARG' is a parameter OR an EMPTY string
+      link=${chain_arr[$link_idx]}
+      qant=${chain_qant[$link_idx]}
+
+      # if param is not defined, arg. is a flag
+      if [ -z ${chain_param_fn[$link_idx]} ]; then
+        if [ -z $qant ]; then
+          tmp=flag_conv[${link}]
+          echo "Expecting '--$tmp (-$link)' but '$CARG' encountered"
+          exit 2
+        fi
+
+        $_DBG_MSG "    Flag in chain encountered: ${flag_conv[$link]}($link)$qant, checking arg. with next chain link"
+        # next try
+        link_idx=$(($link_idx + 1))
+        continue
+      fi
+
+      $_DBG_MSG "    Testing arg. against parameter: $link$qant"
+      # accept empty parameter to do trought all chain links, so if
+      # something is required a proper message is shown
+      if [ -z "$CARG" ]; then
+        # quantifier is not '?' nor '*'
+        $_DBG_MSG "      All arguments exploited, exiting _$name chain"
+
+        break
+
+        #if [ -z "$qant" ]; then
+
+        #  # if not main chain,
+        #  if [ -n "$name" ]; then
+
+        #    return 1
+        #  fi
+
+        #  echo "Syntax error: "
+        #  echo "    Required parameter is missing: '$name:$link'"
+        #  exit 31
+        #fi
+
+        # rewind to the next link
+        #link_idx=$(($link_idx + 1))
+        #continue
+      fi
+
+      if [ -n "$cflag_dist" ]; then
+        cflag_dist=$(($cflag_dist + 1))
+      fi
+
+      $_DBG_MSG "      Calling: ${chain_param_fn[$link_idx]} \"${name}\" ${link} $CARG $cflag $cflag_dist"
+      if ${chain_param_fn[$link_idx]} "${name}" ${link} $CARG $cflag $cflag_dist; then
+        str=_carg_${name}_${link}_param
+        tmp="${str}"
+
+        if $flag_is_flag && ! $(carg_isparam_set "${name}" ${link}); then
+          echo "No return value has been set."
+          exit 8
+        fi
+
+        if $flag_is_flag; then
+          $_DBG_MSG "      Param variable '$str' has been set with value: '" "${tmp}" "'"
+        else
+          $_DBG_MSG "      Flag as param. '$CARG' has been accepted by parser"
+          flag_is_flag=true
+        fi
+
+        # next try
+        link_idx=$(($link_idx + 1))
+        CARG=
+        continue
+      fi
+
+      if [ -z $qant ]; then
+        echo "Missing required parameter: $link:$name"
+        exit 44
+      fi
+
+      $_DBG_MSG "      Param have not meet parser conditions, continue maching with a next link"
+      link_idx=$(($link_idx + 1))
+    fi
+  done
+
+  if ! declare -F check_$name > /dev/null; then
+        echo "Internal error: "
+        echo "    Function 'check_$name' not defined!"
+        exit 44
+  fi
+
+  check_$name
+  return $?
+}
+
 # function, pass control to
 _carg_chain_parse "help? --help-h? MODE? create? run?"
 
 
 exit 1
 
-# Return value:
-#     1 - argument has been read
-#     0 - argument can't be interpreted by current setter and parser,
-#         continue parsing
-function parse() {
-  local opt=$1
-  local _parse_now=$(first_arg ${param_chain})
-  local opt_param=0
-  local accepted=0
-
-  if [ -z "$_parse_now" ]; then
-    return 0
-  fi
-
-  param_chain=$(last_args ${param_chain})
-
-  local set_fn=${setter_fn}
-  if [ -z "${param_chain}" ]; then
-    setter_fn=
-  fi
-
-  if [[ "${_parse_now:0:1}" == '?' ]]; then
-    opt_param=1
-    _parse_now="${_parse_now:1}"
-  fi
-
-  # flag
-  if [[ "${opt:0:1}" == "-" ]]; then
-    if [ $opt_param -eq 0 ]; then
-      echo "Illegal parameter (starting with '-')"
-      exit 1
-    else
-      #if [ -n "$set_fn" ]; then
-        # option is a parameter, call only setter (no parser)
-      flag_$_parse_now ${opt}
-      accepted=$?
-      #else
-      #  accepted=0
-      #fi
-    fi
-  # parameter:
-  elif [ -n "$opt" ]; then
-    parse_$_parse_now ${opt}
-    accepted=$?
-
-    if [ -n "$set_fn" ]; then
-      # param setter:
-      set_$set_fn ${accepted} $_parse_now
-      accepted=$?
-    fi
-  elif [ ${opt_param} -eq 0 ]; then
-    if [ -n "$set_fn" ]; then
-      # param setter
-      # setter should terminate program as no required argument has been provided
-      set_$set_fn -1 $_parse_now
-      accepted=$?
-    fi
-
-    echo "No argument, while argumen has been expected"
-    exit 3
-  fi
-
-  if [ -n "$set_fn" ] && [ -z "$param_chain" ]; then
-    # final (chain) setter call
-    error=$(set_$set_fn)
-
-    if [ -z "${error}" ]; then
-      echo "ERROR: \n${error}"
-    fi
-  fi
-
-  return ${accepted}
-}
 
 function root_required() {
   if [ -z "$RUN" ] && [ $(id -u) -ne 0 ]; then
