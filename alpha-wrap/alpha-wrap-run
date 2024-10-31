@@ -480,70 +480,6 @@ function parse_size() {
   return 1
 }
 
-function parse_probeparam() {
-  # validation is in: set_validate_extstore_add
-  _EXTSTORAGE_REF=$1
-
-  if [[ "${_EXTSTORAGE_REF}" =~ ^[a-zA-Z0-9/\._\-]{1,1024}$ ]] && \
-      [ -f ${_EXTSTORAGE_REF} ]; then
-    # External extsotrage found:
-    _EXTSTORAGE_REF_ISINTERNAL=0
-  elif [[ "${_EXTSTORAGE_REF}" =~ ^[a-zA-Z0-9\._\-]{1,256}$ ]] && \
-        [ -f ${EXTSTORE_DIR}/${_EXTSTORAGE_REF} ]; then
-    _EXTSTORAGE_REF_ISINTERNAL=1
-  elif [ "${_EXTSTORAGE_REF}" == "ls" ] || \
-        [ "${_EXTSTORAGE_REF}" == "add" ] || \
-        [ "${_EXTSTORAGE_REF}" == "eject" ]; then
-    # this might be propper command :O:
-    _EXTSTORAGE_MODE=${_EXTSTORAGE_REF}
-  elif [[ "${_EXTSTORAGE_REF}" =~ ^[a-zA-Z0-9/\._\-]{1,1024}$ ]]; then
-    _EXTSTORAGE_REF_ISINTERNAL=0
-  else
-    return 0
-  fi
-
-  return 1
-}
-
-function set_validate_extstore_add() {
-  local FILENAME=
-
-  if [ -n "${2}" ]; then
-    # v "per parameter" setter call
-    # proceed in the case of "finale" call (when all variables are ready)
-    return 1
-  fi
-
-
-  if [ -z ${_EXTSTORAGE_MODE} ]; then
-    echo "No ext. storage mode defined"
-    exit 3
-  fi
-
-  if [ -z ${_EXTSTORAGE_REF} ]; then
-    echo "Provide storage name or file path."
-    exit 3
-  fi
-
-  if [ -n "${_EXTSTORAGE_REF_ISINTERNAL}" ] && [ -n "${_EXTSTORAGE_SIZE}" ]; then
-    echo "Image already exists, excess size declaration, exiting"
-    exit 5
-  fi
-
-  if [ -f ${_EXTSTORAGE_REF} ] || [ -f ${EXTSTORE_DIR}/${_EXTSTORAGE_REF} ]; then
-    if [ -n "${_EXTSTORAGE_SIZE}" ]; then
-      echo "Image already exists, excess size declaration, exiting"
-      exit 5
-    fi
-
-    return 1
-  fi
-
-  # create image if size was given:
-  prepare_usbstick "${_EXTSTORAGE_REF}" ${_EXTSTORAGE_SIZE}
-
-  return 1
-}
 
 # Parser 'global' variables
 # "parse_now", "param_chain" and "setter_fn" has been defined to handle
@@ -635,38 +571,43 @@ function parse___autoparam() {
 function parse__MODE() {
   local cname=$1
   local clink=$2
-  local mode=$3
+  local cmd=$3
 
-  case $mode in
-    command)
-      _carg_chain "command*" $mode
+  case $cmd in
+    command|exec)
+      _carg_chain_parse "command arg*" "command"
     ;;
     sync)
-      _carg_chain "path_local path_remote? --reverse-r?" $mode
+      _carg_chain_parse "sync --reverse-r? path_local path_remote?" $cmd
     ;;
-    enter|console|stop|waitfor|init)
+    enter|console)
+      # no parameters
+      cmd="console"
+    ;;
+    stop|waitfor|init)
       # no argumans for these options
     ;;
     ls)
-      _carg_chain "?--full-f" $mode
+      _carg_chain_parse "ls --full-f?" $cmd
     ;;
-    extstore)
-      _carg_chain "MODE" $mode
+    extstore|es)
+      cmd="es"
+      _carg_chain_parse "extstore? es? MODE" $cmd
     ;;
     create|run)
       # chain to be called later
     ;;
     *)
-      # mode to be defined later from context
+      # cmd to be defined later from context
       # it might be run or create
-      mode=
+      cmd=
     ;;
   esac
 
   # set value
-  carg_set_param "$cname" $clink $mode
+  carg_set_param "$cname" $clink $cmd
 
-  [ -n "$mode" ]
+  [ -n "$cmd" ]
   return $?
 }
 
@@ -836,6 +777,12 @@ function validate_cont_name() {
   return $?
 }
 
+function validate_path() {
+  [[ "${1}" =~ ^[a-zA-Z0-9/\._\-]{1,1024}$ ]]
+  return $?
+}
+
+
 function parse_create_cont_name() {
   local cname=$1
   local clink=$2
@@ -889,10 +836,14 @@ function check_create() {
   return 0
 }
 
+function check_ls() {
+  return 0
+}
+
 # check main chain:
 function check_() {
 
-  if [[ -v $_carg__help_param ]] || [[ -v $_carg__help_flag ]]; then
+  if [ -n "$_carg__help_param" ] || [ -n "$_carg__help_flag" ]; then
     print_help
   elif [ -z $_carg__MODE_param ]; then
     echo "Wrong syntax"
@@ -905,19 +856,125 @@ function check_() {
   return 0
 }
 
-function parse_extstore_MODE() {
-  case $1 in
+function parse_es_MODE() {
+  local cname=$1
+  local clink=$2
+  local subcmd=$3
+
+  case $subcmd in
     ls)
-      _carg_chain "--full-f?" "extstore_mode"
+      _carg_chain_parse "ls --full-f?" ${cname}_${subcmd}
     ;;
     add)
-      _carg_chain "name_or_path size?"
+      _carg_chain_parse "add ref size?" ${cname}_${subcmd}
     ;;
     eject)
+      # no parameters
     ;;
     *)
-      echo "Unknown option: $1"
+      echo "Unknown option: $subcmd"
+    ;;
   esac
+
+  # set value
+  carg_set_param "$cname" $clink $subcmd
+
+  return 0
+}
+
+function parse_es_add_ref() {
+  local cname=$1
+  local clink=$2
+  local ref=$3
+
+  # set value
+  carg_set_param "$cname" $clink $ref
+
+  return 0
+}
+
+function parse_es_add_size() {
+  local cname=$1
+  local clink=$2
+  local size=$3
+
+  size="$(parse_size "$size")"
+  if [ $? -ne 0 ]; then
+    _attach_errormsg "Unrecognized size"
+    return 1
+  fi
+
+  # set vanle
+  carg_set_param "$cname" $clink $size
+
+  return 0
+}
+
+function check_es_ls() {
+  return 0
+}
+
+function check_es_add() {
+  local cont_name
+  local file_name
+  local path=
+  local is_internal=
+
+  if [ -n "$_carg_es_add_size_param" ]; then
+    # size defined, so expecting file name of non-existing file:
+    if [ -e "$_carg_es_add_ref_param" ]; then
+      _attach_errormsg "File exists ('$_carg_es_add_ref_param'), not touching it!"
+      return 1
+    fi
+
+    touch "$_carg_es_add_ref_param" &> /dev/null
+    if [ $? -ne 0 ]; then
+      _attach_errormsg "Cannot create file: $_carg_es_add_ref_param"
+      return 1
+    fi
+
+    path=$(realpath "$_carg_es_add_ref_param")
+  else
+    validate_cont_name "$_carg_es_add_ref_param"
+    cont_name=$?
+    validate_path "$_carg_es_add_ref_param"
+    file_name=$?
+
+    if [ $cont_name -ne 0 ] && [ $file_name -ne 0 ]; then
+      _attach_errormsg "Illegal name"
+      return 1
+    fi
+
+    path="${AWSTORE_DIR}/${_carg_es_add_ref_param}.img"
+    if [ $cont_name -eq 0 ] && [ -f "$path" ]; then
+      # it's a container
+      is_internal=true
+    fi
+
+    if [ $file_name -eq 0 ] && [ -f "${_carg_es_add_ref_param}" ]; then
+      # it's a file
+      path="${_carg_es_add_ref_param}"
+      is_internal=false
+    fi
+
+    if [ -z "$is_internal" ]; then
+      _attach_errormsg "Cannot find storage to attach (neither file nor container)"
+      return 1
+    fi
+  fi
+
+  # add special parameter
+  carg_set_param "es_add" "path" "${path}"
+
+  return 0
+}
+
+function check_es() {
+
+  if [ -z $_carg_es_MODE_param ]; then
+    _attach_errormsg "Undefined extstore command"
+    return 1
+  fi
 
   return 0
 }
@@ -966,6 +1023,54 @@ function check_run() {
   return 0
 }
 
+_carg_command_arg_param=
+function parse_command_arg() {
+  local cname=$1
+  local clink=$2
+  local arg=$3
+
+  _carg_command_arg_param="$_carg_command_arg_param $arg"
+  # carg_set_param "$cname" $clink $arg
+}
+
+function check_command() {
+  return 0
+}
+
+function parse_sync_path_local() {
+  local cname=$1
+  local clink=$2
+  local path=$(realpath $3)
+
+  if [ ! -f $path ] && [ ! -d $path ]; then
+    _attach_errormsg "Provide correc file or directory path."
+    return 1
+  fi
+
+  carg_set_param "$cname" $clink $path
+
+  return 0
+}
+
+_carg_sync_path_remote_param=/usr/local/bin
+function parse_sync_path_remote() {
+  local cname=$1
+  local clink=$2
+  local path="$3"
+
+  if ! validate_path "$path"; then
+    _attach_errormsg "Incorrect path: $path"
+
+    return 1
+  fi
+
+  carg_set_param "$cname" $clink $path
+  return 0
+}
+
+function check_sync() {
+  return 0
+}
 
 # shellcheck disable=SC2112
 function _carg_chain_parse() {
@@ -982,6 +1087,7 @@ function _carg_chain_parse() {
   local qant=
   local tmp=
 
+  local chain_arr
   read -a chain_arr <<< "$chain"
 
   local link=
@@ -1041,7 +1147,7 @@ function _carg_chain_parse() {
         chain_param_fn[$link_idx]="parse___autoparam"
       fi
 
-      $_DBG_MSG "      ($link_idx) adding param. fn.: ${chain_param_fn[$link_idx]} ${chain_qant[$link_idx]} expecting: 'parse_${name}_${link}'"
+      $_DBG_MSG "      ($link_idx) adding param. fn.: ${chain_param_fn[$link_idx]}${chain_qant[$link_idx]} expecting: 'parse_${name}_${link}' storing value into: '_carg_${name}_${link}_param'"
     fi
 
     # make correction:
@@ -1066,11 +1172,6 @@ function _carg_chain_parse() {
   $_DBG_MSG "Parsing arguments: "
 
   while true; do
-    if [ $link_idx -ge $link_cnt ]; then
-      # last element reached
-      $_DBG_MSG "      End of chain: _$name"
-      break
-    fi
 
     if [ -z "$CARG" ]; then
       # read and rewind arguments
@@ -1125,11 +1226,16 @@ function _carg_chain_parse() {
       CARG=
       continue
     else # 'CARG' is a parameter OR an EMPTY string
+      if [ $link_idx -ge $link_cnt ]; then
+        # last element exceeded
+        $_DBG_MSG "      End of chain: _$name"
+
+        break
+      fi
+
       link=${chain_arr[$link_idx]}
       qant=${chain_qant[$link_idx]}
 
-      echo "          $link_idx"
-      echo "${chain_param_fn[$link_idx]}"
       # if param is not defined, arg. is a flag
       if [ -z ${chain_param_fn[$link_idx]} ]; then
         if [ -z $qant ]; then
@@ -1155,7 +1261,7 @@ function _carg_chain_parse() {
       if ${chain_param_fn[$link_idx]} "${name}" ${link} $CARG $cflag $cflag_dist; then
 
         if $flag_is_flag && ! $(carg_isparam_set "${name}" ${link}); then
-          $_DBG_MSG "No parameter has been set by parser, it is legal for chains"
+          $_DBG_MSG "No parameter has been set by parser, it is legal for chains (and multicast parsers)"
         fi
 
         if $flag_is_flag; then
@@ -1167,7 +1273,10 @@ function _carg_chain_parse() {
         fi
 
         # next try
-        link_idx=$(($link_idx + 1))
+        if [ "$qant" != "*" ]; then
+          $_DBG_MSG "     Trying next link"
+          link_idx=$(($link_idx + 1))
+        fi
         CARG=
         continue
       fi
@@ -1197,6 +1306,7 @@ function _carg_chain_parse() {
     exit 44
   fi
 
+  $_DBG_MSG "Calling checker: check_$name"
   check_$name && tmp=0 || tmp=$?
 
   if ${arg_consumed_but_failed}; then
@@ -1208,12 +1318,70 @@ function _carg_chain_parse() {
     echo "$_errors"
   fi
 
+  if [ -n "$CARG" ] || [ ${#ARGS} -ne 0 ]; then
+    echo "Unrecognized argument(s): $CARG ${ARGS[@]}"
+    tmp=1
+  fi
+
   return $tmp
 }
 
-# function, pass control to
-_carg_chain_parse "help? --help-h? MODE? create? run?"
 
+function main() {
+  # function, pass control to
+  _carg_chain_parse "help? --help-h? MODE? create? run?"
+
+  case $_carg__MODE_param in
+    create)
+      echo "create"
+    ;;
+    run)
+      echo "Run"
+    ;;
+    command)
+      echo $_carg_command_arg_param
+    ;;
+    sync)
+      echo "Sync: " $_carg_sync_path_local_param $_carg_sync_path_remote_param "$_carg_sync_reverse_flag"
+    ;;
+    console)
+      echo "Console"
+    ;;
+    ls)
+      echo "ls: $_carg_ls_full_flag"
+      check_environment
+
+      load_containersettings || true
+      op_list
+    ;;
+    stop)
+    ;;
+    waitfor)
+    ;;
+    es)
+      case $_carg_es_MODE_param in
+        ls)
+          echo "ls $_carg_es_ls_full_flag"
+        ;;
+        add)
+          echo "add ${_carg_es_add_ref_param} ${_carg_es_add_size_param}: ${_carg_es_add_path_param}"
+          if [ -n "${_carg_es_add_size_param}" ]; then
+            prepare_usbstick "${_carg_es_add_path_param}" ${_carg_es_add_size_param}
+          fi
+        ;;
+        eject)
+          echo "Exect"
+        ;;
+      esac
+    ;;
+    init)
+    ;;
+  esac
+
+  return 0
+}
+
+main
 
 exit 1
 
@@ -1226,120 +1394,7 @@ function root_required() {
   fi
 }
 
-function lock_mode() {
-  local mode=$1
 
-  if [ -z "${_MODE}" ]; then
-    _MODE=${mode}
-  elif [ "${_MODE}" != ${mode} ]; then
-    echo "Syntax error."
-    exit 2
-  fi
-}
-
-function has_mode() {
-  if [ -n "${_MODE}" ] && [ "${_MODE}" == "$1" ]; then
-    # True
-    return 0
-  fi
-
-  # False
-  return 1
-}
-
-
-# parse argument loop
-for opt in "$@"; do
-
-  if ! parse "${opt}"; then
-    # take next argument
-    continue
-  fi
-
-  case $opt in
-    --device|-d)
-      lock_mode "image"
-      param_chain="devmodel_name"
-    ;;
-    --imgboot|-i)
-      lock_mode "image"
-
-      setter_fn="flag_imgboot"
-      param_chain="yes_no ?kernel_name ?initramfs_name"
-    ;;
-    --name|-n)
-      param_chain="?container_name"
-      setter_fn="create_container"
-    ;;
-    extstore)
-      lock_mode "extstore"
-
-      param_chain="probeparam ?opt ?probeparam ?size"
-      setter_fn="validate_extstore_add"
-    ;;
-    add)
-      lock_mode "extstore"
-
-      _EXTSTORAGE_MODE="add"
-    ;;
-    eject)
-      if $(has_mode "extstore"); then
-        _EXTSTORAGE_MODE="eject"
-      else
-        echo "Wrong syntax"
-        exit 2
-      fi
-    ;;
-    command)
-      lock_mode "command"
-      param_chain="guestcmd"
-      setter_fn="guestcmd"
-    ;;
-    sync)
-      lock_mode "sync"
-
-      param_chain="sync_path1 ?sync_path2 ?reverse_sync"
-      setter_fn="sync"
-    ;;
-    enter|console)
-      lock_mode "enter"
-    ;;
-    stop)
-      lock_mode "stop"
-    ;;
-    waitfor)
-      lock_mode "waitfor"
-    ;;
-    ls)
-      #if $(has_mode "extstore"); then
-      #  _EXTSTORAGE_MODE="ls"
-      #else
-      lock_mode "list"
-      #fi
-    ;;
-    --full|-f)
-      _LIST_WITH_DETAILS=1
-    ;;
-    --help|-h)
-      print_help
-      exit 0
-    ;;
-    init)
-      lock_mode "init"
-    ;;
-    *)
-      # probe (for image and if not exists check if name is a valid container name):
-      if [ -f "$opt" ]; then
-        parse_imgfile_path $opt
-      else
-        parse_container_name $opt
-      fi
-    ;;
-  esac
-done
-
-# parse remaining arguments if exists
-parse || true
 
 function stop_machine() {
   /usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF
@@ -1402,7 +1457,7 @@ function op_list() {
       details="Temporary   "
     fi
 
-    if [ $_LIST_WITH_DETAILS -eq 1 ]; then
+    if [ "$_carg_ls_full_flag" == "1" ]; then
       size_h=$(first_arg $(du -h ${cont_path}))
       details="${details}${size_h}"
     fi
@@ -1568,7 +1623,7 @@ EOF
   ;;
 
   container)
-    check_environment $_MODE
+    check_environment
 
     _MACHINE=$(second_arg $(cat $DB_DIR/${_CONTAINER_NAME}/config.txt | grep '^device'))
     _IMG_BOOT=$(second_arg $(cat $DB_DIR/${_CONTAINER_NAME}/config.txt | grep '^imgboot'))
@@ -1609,15 +1664,7 @@ EOF
     fi
   ;;
   list)
-    check_environment $_MODE
 
-    load_containersettings || true
-    op_list
-#    if [ $_LIST_WITH_DETAILS -eq 1 ]; then
-#      ls -lh $DB_DIR
-#    else
-#      ls $DB_DIR
-#    fi
 
     exit 0
   ;;
