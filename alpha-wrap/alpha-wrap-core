@@ -1,0 +1,106 @@
+#!/bin/bash
+
+[ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+        set -xe || set -e
+
+
+declare -A devices_dtb
+declare -A devices_cpu
+
+# arm:
+devices_dtb["raspi0"]="alpine-standard/bcm2835-rpi-zero.dtb"
+devices_cpu["raspi0"]="arm1176"
+
+# aarch:
+devices_dtb["raspi3b"]="raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb"
+devices_cpu["raspi3b"]="cortex-a53"
+
+
+readonly BOOT_MNT_DIR="/mnt/img.boot"
+
+readonly AWSTORE_DIR="/var/lib/alphawrap"
+readonly DTB_LIB="/var/lib/alphawrap/_dtb"
+readonly DB_DIR="/var/lib/alphawrap/_db"
+
+readonly EXTSTORE_DIR="/var/lib/alphawrap/ext_storage"
+
+readonly LOCK_FILE="/tmp/alpha_wrap-run.lock"
+
+readonly SHARE_SPACE_FILE=${AWSTORE_DIR}/__share_space.iso
+readonly SHARE_SPACE_SIZE_MIB=100
+
+readonly QEMU_MONITOR_UNIXSOCKET="/tmp/qemu-monitor"
+
+
+function exit_if_not_root() {
+  if [ -z "$RUN" ] && [ $(id -u) -ne 0 ]; then
+    echo "Run it as root"
+    echo "    sorry for disturbing safe realm"
+    exit 0
+  fi
+}
+
+# Check environment:
+function check_environment() {
+
+  if [ ! -w ${AWSTORE_DIR} ] || [ ! -w ${DB_DIR} ] || [ ! -w ${EXTSTORE_DIR} ]; then
+    echo "${BASE_SCRIPT} seems to be uninitiated, use '${BASE_SCRIPT} init' command as root to initiate"
+    echo "    '${BASE_SCRIPT} help' for help"
+    return 1
+  fi
+
+  return 0
+}
+
+function init() {
+  $RUN mkdir -p ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR}2>/dev/null || true
+  $RUN chgrp libvirt ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR}
+  $RUN chmod g+w ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR}
+}
+
+function load_containersettings() {
+  if [ ! -e ${LOCK_FILE} ]; then
+    echo "No running container!"
+
+    return 1
+  fi
+
+  _CONTAINER_NAME=$(tail -n 1 ${LOCK_FILE})
+
+  CONTAINER_SSH_KEY_PATH=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_KEY_NAME}
+
+  return 0
+}
+
+
+function op_list() {
+  shopt -s nullglob
+  local size_h
+  local details
+  local cont_path
+
+  for cont_db_path in $DB_DIR/*; do
+    cont_name=$(basename $cont_db_path)
+    details=
+    echo -n "${cont_name}"
+
+    cont_path=${AWSTORE_DIR}/${cont_name}.img
+
+    if [ ${cont_name:0:4} == "tmp." ]; then
+      details="Temporary   "
+    fi
+
+    if [ "$_carg_ls_full_flag" == "1" ]; then
+      size_h=$(first_arg $(du -h ${cont_path}))
+      details="${details}${size_h}"
+    fi
+
+    if [ "$_CONTAINER_NAME" == "${cont_name}" ]; then
+      echo " RUNNING ${details}"
+    else
+      echo "    ${details}"
+    fi
+
+  done
+}
+

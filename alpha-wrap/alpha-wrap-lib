@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+        set -xe || set -e
+
+
+readonly ONE_MIB=$(( 1024 * 1024 ))
+readonly ONE_GIB=$(( 1024 * $ONE_MIB ))
+

@@ -53,11 +53,11 @@ Copy DTB files and `alpha-wrap`:
 sudo mkdir -p /var/lib/alphawrap/_dtb
 sudo cp -r alpha-wrap/dtbs/* /var/lib/alphawrap/_dtb
 
-sudo cp ./alpha-wrap/alpha-wrap-run /usr/local/bin/
+sudo cp ./alpha-wrap/alpha-wrap /usr/local/bin/
 ```
 and finally initialize directory structure and databases: 
 ```bash
-alpha-wrap-run init
+alpha-wrap init
 ```
 AlphaWrap uses `/var/lib/alphawrap` for storage, ensure that you have enough free space under this location. Containers might take about 10 GB, the rule of thumb is to have at least half of the disk space to be free (and trimmed if it's SSD). Make sure you are well below half of the available storage capacity.
 
@@ -80,7 +80,7 @@ Below are the instructions on how to run popular Raspberry Pi Linuxes.
 [Download Raspberry Pi OS (preferably 64-bit and Lite version - who needs Desktop?)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit), once done and saved run emulation: 
 
 ```bash
-alpha-wrap-run -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
+alpha-wrap -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
         -i y kernel8.img initramfs8
 ```
 
@@ -89,7 +89,7 @@ Once when `Raspberry Pi OS` is boot it will grow filesystem to span over entire 
 #### DietPi
 DietPi is Debian based distribution tuned for a performance, it is available for a wide variety of a Single Board Computers. Download ["Raspberry Pi 2/3/4/Zero 2"](https://dietpi.com/#download) image and run emulation with: 
 ```bash
-alpha-wrap-run -d raspi3b <pathto>/DietPi_RPi-ARMv8-<release_name>.img \
+alpha-wrap -d raspi3b <pathto>/DietPi_RPi-ARMv8-<release_name>.img \
         -i y kernel8.img
 ```
 **Note:** Diet Pi does not require Initial ramdisk (initramfs). Kernel is tuned for a specific board and system, so it does not need initramfs 'stage' - that is the case for more generic distribution (one for multiple boards and configurations).
@@ -102,7 +102,7 @@ Download [Alpine for Raspberry Pi, preferebly aarch64](https://www.alpinelinux.o
 
 Run emulation with: 
 ```bash
-alpha-wrap-run -d raspi3b <pathto>/alpine-rpi-<version>-aarch64.img \
+alpha-wrap -d raspi3b <pathto>/alpine-rpi-<version>-aarch64.img \
         -i y boot/vmlinuz-rpi boot/initramfs-rpi
 ```
 
@@ -111,7 +111,7 @@ This will boot Alpine linux, to install login as root (no password) and issue `s
 ### Listing containers
 To see the list of containers and its statuses use `ls` (`-f` for more detailed view): 
 ```bash
-$ alpha-wrap-run ls -f
+$ alpha-wrap ls -f
 alpine-alpbase-aarch64    1.1G
 drive-river 257M
 tmp.SlmE1dsYnY-container RUNNING Temporary   257M
@@ -123,13 +123,13 @@ In this example there is a container named 'alpine-alpbase-aarch64', one with a 
 If no `--name` (`-n`) parameter is provided created container is temporary and will live until machine shutdown. To define persistent continer add `--name` followed by choosen name, or without parameter if you want to relay on a random name.
 
 ```bash
-alpha-wrap-run -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
+alpha-wrap -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
         -i y kernel8.img initramfs8 \
         --name
 ```
 this will create container with a random name.
 ```bash
-alpha-wrap-run -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
+alpha-wrap -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
         -i y kernel8.img initramfs8 \
         --name this_is_raspberrypios01
 ```
@@ -138,16 +138,16 @@ or this named 'this_is_raspberrypios01'.
 ### Virtual USB storage `extstore`
 Below command: 
 ```bash
-alpha-wrap-run extstore add usbstick01 1GB
+alpha-wrap extstore add usbstick01 1GB
 ```
 Creates virtual USB storage device (with a given size) and attaches it to currently running VM. Entire space of the device is 'zeroed' before attaching to the machine.
 The list of available storages can be checked with: 
 ```bash
-alpha-wrap-run extstore ls
+alpha-wrap extstore ls
 ```
 If storage is already created, it can be attached to curently running machine with: 
 ```bash
-alpha-wrap-run extstore add usbstick01
+alpha-wrap extstore add usbstick01
 ```
 
 ### Guest interaction
