@@ -104,3 +104,28 @@ function op_list() {
   done
 }
 
+# Guest command call:
+function op_gcommand() {
+  local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
+
+  $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost ${_carg_command_arg_param}
+}
+
+function op_sync() {
+  local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
+  local sync_res=
+
+  if [ "${_carg_sync_reverse_flag}" != "0" ]; then
+    sync_res="root@localhost:${_carg_sync_path_remote_param} ${_carg_sync_path_local_param}"
+  else
+    sync_res="${_carg_sync_path_local_param} root@localhost:${_carg_sync_path_remote_param}"
+  fi
+
+  $RUN rsync -avz -e "ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path}" ${sync_res}
+}
+
+function op_enter() {
+  local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
+
+  $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost
+}

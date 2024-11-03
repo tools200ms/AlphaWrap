@@ -7,3 +7,32 @@
 readonly ONE_MIB=$(( 1024 * 1024 ))
 readonly ONE_GIB=$(( 1024 * $ONE_MIB ))
 
+
+_VERBS="run
+jump
+fly
+walk
+sing
+drive"
+
+_NOUNS="carpet
+house
+river
+road
+mountain
+car"
+
+function get_random_name() {
+  echo "$(echo "$_VERBS" | shuf -n 1)-$(echo "$_NOUNS" | shuf -n 1)"
+}
+
+function validate_cont_name() {
+  [[ "$1" =~ ^([_a-zA-Z0-9-]){1,128}$ ]]
+  return $?
+}
+
+function validate_path() {
+  [[ "${1}" =~ ^[a-zA-Z0-9/\._\-]{1,1024}$ ]]
+  return $?
+}
+

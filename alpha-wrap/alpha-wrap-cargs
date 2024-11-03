@@ -173,10 +173,10 @@ function _carg_chain_parse() {
         $_DBG_MSG "      unidentified flag, mark 'flag_is_flag=false' to keep matching in other chains"
         # Flag does not exists in a current chain, but it might be in other one
 
-        #flag_is_flag=false
-        #link_idx=$(($link_idx + 1))
-        #continue
-        break
+        flag_is_flag=false
+        link_idx=$(($link_idx + 1))
+        continue
+        #break
       fi
 
       cflag_dist=0
@@ -249,8 +249,8 @@ function _carg_chain_parse() {
         fi
 
         # if we quit from chain:
-        if [[ "${name^^}" == "${name}" ]]; then
-          echo "Exited from chain, chain should always rewind argument to the one that has not been recognized"
+        if [ -n "${link}" ] && [[ "${link^^}" == "${link}" ]]; then
+          echo "Exited from chain: '_${link}'. Chain should always rewind argument to the one that has not been recognized"
         else
           CARG=
         fi
@@ -259,7 +259,6 @@ function _carg_chain_parse() {
 
       if [ -z $qant ]; then
         echo "Missing required parameter: $link:$name"
-        #exit 44
         return 1
       fi
 
