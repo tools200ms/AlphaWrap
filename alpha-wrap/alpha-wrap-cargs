@@ -23,17 +23,25 @@ $msg"
 _DBG_MSG=_carg_dbg
 
 function first_arg() {
-  echo $1
+  printf '%s' "$1"
 }
 
 function second_arg() {
-  echo $2
+  printf '%s' $2
 }
 
 function last_args() {
   [ -n "$1" ] && shift
 
-  echo "$@"
+  if [ -z $1 ]; then
+    return
+  fi
+
+  printf '%s' "$1"
+  shift
+  for a in "$@"; do
+    printf ' %s' "$a"
+  done
 }
 
 # prepare arguments:
@@ -53,6 +61,7 @@ function _carg_chain_parse() {
   local clflag=
   local cflag_dist=
   local qant=
+  local res=0
   local tmp=
 
   local chain_arr
@@ -126,8 +135,11 @@ function _carg_chain_parse() {
 
   link_idx=0
   link_cnt=${#chain_arr[@]}
-  # flag_as_param
-  local flag_is_flag=true
+
+  local carg_loc=
+  local flag_as_param=
+  local pass_flag_to_next_chain=false
+  local pass_flag_to_mcast_link=false
   local tailing_cnt=
   local arg_consumed_but_failed=false
 
@@ -147,17 +159,24 @@ function _carg_chain_parse() {
       CARG=$(first_arg ${ARGS})
       ARGS=$(last_args ${ARGS})
 
-      $_DBG_MSG "    Loading: $CARG"
-
       if [ -z "$CARG" ]; then
         # quantifier is not '?' nor '*'
         $_DBG_MSG "      All arguments exploited, exiting _$name chain"
 
+        if [ $res -ne 0 ] && [ "${link^^}" == "${link}" ]; then
+          $_DBG_MSG "      Chain parser '${name}_${link} exited with an error"
+          arg_consumed_but_failed=true
+        fi
+
         break
       fi
-    fi
 
-    if $flag_is_flag && [[ "${CARG:0:1}" == "-" ]]; then
+      $_DBG_MSG "    Loading: $CARG"
+    fi
+    carg_loc=$CARG
+
+    flag_as_param=$($pass_flag_to_next_chain || $pass_flag_to_mcast_link && echo true || echo false)
+    if ! $flag_as_param && [[ "${CARG:0:1}" == "-" ]]; then
       # if long form
       if [[ "${CARG:0:2}" == "--" ]]; then
         clflag=${CARG:2}
@@ -173,7 +192,8 @@ function _carg_chain_parse() {
         $_DBG_MSG "      unidentified flag, mark 'flag_is_flag=false' to keep matching in other chains"
         # Flag does not exists in a current chain, but it might be in other one
 
-        flag_is_flag=false
+        # flag_is_flag=false
+        pass_flag_to_next_chain=true
         link_idx=$(($link_idx + 1))
         continue
         #break
@@ -206,6 +226,8 @@ function _carg_chain_parse() {
       link=${chain_arr[$link_idx]}
       qant=${chain_qant[$link_idx]}
 
+      $_DBG_MSG "    Parsing argument against: ${name}:${link}${qant}"
+
       # if param is not defined, arg. is a flag
       if [ -z ${chain_param_fn[$link_idx]} ]; then
         if [ -z $qant ]; then
@@ -226,51 +248,78 @@ function _carg_chain_parse() {
         cflag_dist=$(($cflag_dist + 1))
       fi
 
-      $_DBG_MSG "      Calling: ${chain_param_fn[$link_idx]} \"${name}\" ${link} $CARG $cflag $cflag_dist"
-      tailing_cnt=${#ARGS}
-      if ${chain_param_fn[$link_idx]} "${name}" ${link} $CARG $cflag $cflag_dist; then
+      if ${pass_flag_to_next_chain} && [[ "${link^^}" != "${link}" ]]; then
+        $_DBG_MSG "Link '_$link' is not a CHAIN link, continue parsing within parent chain"
+        break
+      fi
 
-        if $flag_is_flag && ! $(carg_isparam_set "${name}" ${link}); then
+      if ${pass_flag_to_mcast_link} && [ "${qant}" != "*" ]; then
+        $_DBG_MSG "Link is not 'match many' quantified, continue parsing within parent chain"
+        break
+      fi
+
+      $_DBG_MSG "      Calling: ${chain_param_fn[$link_idx]} \"${name}\" ${link} $carg_loc $cflag $cflag_dist"
+      tailing_cnt=${#ARGS}
+
+      ${chain_param_fn[$link_idx]} "${name}" ${link} $carg_loc $cflag $cflag_dist && res=0 || res=$?
+
+      if [ $res -eq 0 ]; then
+
+        if ${flag_is_flag} && ! $(carg_isparam_set "${name}" ${link}); then
           $_DBG_MSG "No parameter has been set by parser, it is legal for chains (and multicast parsers)"
         fi
 
-        if $flag_is_flag; then
-          tmp=_carg_${name}_${link}_param
-          $_DBG_MSG "      Param variable '$tmp' has been set with value: '${!tmp}'"
+        tmp=_carg_${name}_${link}_param
+        if ${pass_flag_to_next_chain}; then
+          $_DBG_MSG "      Flag as param. '$carg_loc' has been accepted by parser '$tmp'"
+          pass_flag_to_next_chain=false
         else
-          $_DBG_MSG "      Flag as param. '$CARG' has been accepted by parser"
-          flag_is_flag=true
+          $_DBG_MSG "      Param variable '$tmp' has been set with value: '${!tmp}'"
         fi
 
         # next try
         if [ "$qant" != "*" ]; then
           $_DBG_MSG "     Trying next link"
+          # keep 'pass_flag_to_mcast_link' for next maches
           link_idx=$(($link_idx + 1))
+        else
+          $_DBG_MSG "     mcast quantifier, match against '${name}:${link}', including flags"
+          pass_flag_to_mcast_link=true
         fi
 
         # if we quit from chain:
-        if [ -n "${link}" ] && [[ "${link^^}" == "${link}" ]]; then
-          echo "Exited from chain: '_${link}'. Chain should always rewind argument to the one that has not been recognized"
-        else
+        # if [ -n "${link}" ] &&
+        if [[ "${link^^}" != "${link}" ]]; then
           CARG=
+        else
+          $_DBG_MSG "     Exited from chain: '_${link}'. Chain should always rewind argument to the one that has not been recognized"
         fi
+
         continue
       fi
 
       if [ -z $qant ]; then
-        echo "Missing required parameter: $link:$name"
+        echo "Missing required parameter: $name:$link"
+        # exit and skip checker function
         return 1
       fi
 
       # Was argument rewind?
       if [ $tailing_cnt -ne ${#ARGS} ]; then
-        # the argument was eaten by chain that fail to parse arguments
+        # the argument was eaten by link, but it has not been validated sucesfully by parser
         # indicating wrong syntax
         arg_consumed_but_failed=true
         break
       fi
 
       $_DBG_MSG "      Param have not meet parser conditions, continue maching with a next link"
+
+      if [ "$qant" == "*" ]; then
+        $_DBG_MSG "     mcast not mached, arg.: ${carg_loc}"
+        # disable 'pass_flag_to_mcast_link'
+        pass_flag_to_mcast_link=false
+      fi
+
       link_idx=$(($link_idx + 1))
     fi
   done

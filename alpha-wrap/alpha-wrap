@@ -283,7 +283,7 @@ function parse_sync_path1() {
   return 0
 }
 
-function parse_sync_path2() {
+function parse_SYNC_path2() {
   # accept anything
   if [ -n "${1}" ]; then
     _RSYNC_REMOTE=$1
@@ -454,15 +454,19 @@ function parse__MODE() {
   local cname=$1
   local clink=$2
   local cmd=$3
+  local res=0
 
   case $cmd in
     command|exec)
       CARG=
-      _carg_chain_parse "arg*" "command"
+      cmd="command"
+      _carg_chain_parse "arg*" "COMMAND"
+      res=$?
     ;;
     sync)
       CARG=
-      _carg_chain_parse "--reverse-r? path_local path_remote?" $cmd
+      _carg_chain_parse "--reverse-r? path_local path_remote?" "SYNC"
+      res=$?
     ;;
     enter|console)
       # no parameters
@@ -476,11 +480,13 @@ function parse__MODE() {
     ls)
       CARG=
       _carg_chain_parse "--full-f?" $cmd
+      res=$?
     ;;
     extstore|es)
       cmd="es"
       CARG=
-      _carg_chain_parse "MODE" $cmd
+      _carg_chain_parse "MODE" "ES"
+      res=$?
     ;;
     create|run)
       CARG=
@@ -490,14 +496,15 @@ function parse__MODE() {
       # cmd to be defined later from context
       # it might be run or create
       cmd=
+      res=1
     ;;
   esac
 
   # set value
   carg_set_param "$cname" $clink $cmd
 
-  [ -n "$cmd" ]
-  return $?
+#  [ -n "$cmd" ]
+  return $res
 }
 
 
@@ -526,7 +533,7 @@ function parse_CREATE_dev_name() {
   local prev_flag=$4
   local prev_flag_dist=$5
 
-  if [ $prev_flag != 'd' ] || [ $prev_flag_dist -ne 1 ]; then
+  if [ "$prev_flag" != "d" ] || [ "$prev_flag_dist" != "1" ]; then
     return 1
   fi
 
@@ -709,9 +716,9 @@ function check_CREATE() {
   fi
 
   # Create random name if user did not assign
-  if [ -n "${_carg_CREATE_name_flag}" ] && [ -z ${parse_CREATE_cont_name_param} ]; then
-    parse_create_cont_name=$(get_random_name)
-    echo "Random name assigned: $parse_create_cont_name"
+  if [ "${_carg_CREATE_name_flag}" == "1" ] && [ -z ${parse_CREATE_cont_name_param} ]; then
+    parse_CREATE_cont_name_param=$(get_random_name)
+    echo "Random name assigned: ${parse_CREATE_cont_name_param}"
   fi
 
   return 0
@@ -721,20 +728,24 @@ function check_ls() {
   return 0
 }
 
-function parse_es_MODE() {
+function parse_ES_MODE() {
   local cname=$1
   local clink=$2
   local subcmd=$3
+  local res=0
 
   case $subcmd in
     ls)
-      _carg_chain_parse "ls --full-f?" ${cname}_${subcmd}
+      _carg_chain_parse "ls --full-f?" "${cname}_LS"
+      res=$?
     ;;
     add)
-      _carg_chain_parse "add ref size?" ${cname}_${subcmd}
+      _carg_chain_parse "add ref size?" "${cname}_ADD"
+      res=$?
     ;;
     eject)
       # no parameters
+      CARG=
     ;;
     *)
       echo "Unknown option: $subcmd"
@@ -744,10 +755,10 @@ function parse_es_MODE() {
   # set value
   carg_set_param "$cname" $clink $subcmd
 
-  return 0
+  return $res
 }
 
-function parse_es_add_ref() {
+function parse_ES_ADD_ref() {
   local cname=$1
   local clink=$2
   local ref=$3
@@ -758,7 +769,7 @@ function parse_es_add_ref() {
   return 0
 }
 
-function parse_es_add_size() {
+function parse_ES_ADD_size() {
   local cname=$1
   local clink=$2
   local size=$3
@@ -775,34 +786,34 @@ function parse_es_add_size() {
   return 0
 }
 
-function check_es_ls() {
+function check_ES_LS() {
   return 0
 }
 
-function check_es_add() {
+function check_ES_ADD() {
   local cont_name
   local file_name
   local path=
   local is_internal=
 
-  if [ -n "$_carg_es_add_size_param" ]; then
+  if [ -n "$_carg_ES_ADD_size_param" ]; then
     # size defined, so expecting file name of non-existing file:
-    if [ -e "$_carg_es_add_ref_param" ]; then
-      _attach_errormsg "File exists ('$_carg_es_add_ref_param'), not touching it!"
+    if [ -e "$_carg_ES_ADD_ref_param" ]; then
+      _attach_errormsg "File exists ('$_carg_ES_ADD_ref_param'), not touching it!"
       return 1
     fi
 
-    touch "$_carg_es_add_ref_param" &> /dev/null
+    touch "$_carg_ES_ADD_ref_param" &> /dev/null
     if [ $? -ne 0 ]; then
-      _attach_errormsg "Cannot create file: $_carg_es_add_ref_param"
+      _attach_errormsg "Cannot create file: $_carg_ES_ADD_ref_param"
       return 1
     fi
 
-    path=$(realpath "$_carg_es_add_ref_param")
+    path=$(realpath "$_carg_ES_ADD_ref_param")
   else
-    validate_cont_name "$_carg_es_add_ref_param"
+    validate_cont_name "$_carg_ES_ADD_ref_param"
     cont_name=$?
-    validate_path "$_carg_es_add_ref_param"
+    validate_path "$_carg_ES_ADD_ref_param"
     file_name=$?
 
     if [ $cont_name -ne 0 ] && [ $file_name -ne 0 ]; then
@@ -810,15 +821,15 @@ function check_es_add() {
       return 1
     fi
 
-    path="${AWSTORE_DIR}/${_carg_es_add_ref_param}.img"
+    path="${AWSTORE_DIR}/${_carg_ES_ADD_ref_param}.img"
     if [ $cont_name -eq 0 ] && [ -f "$path" ]; then
       # it's a container
       is_internal=true
     fi
 
-    if [ $file_name -eq 0 ] && [ -f "${_carg_es_add_ref_param}" ]; then
+    if [ $file_name -eq 0 ] && [ -f "${_carg_ES_ADD_ref_param}" ]; then
       # it's a file
-      path="${_carg_es_add_ref_param}"
+      path="${_carg_ES_ADD_ref_param}"
       is_internal=false
     fi
 
@@ -829,14 +840,14 @@ function check_es_add() {
   fi
 
   # add special parameter
-  carg_set_param "es_add" "path" "${path}"
+  carg_set_param "ES_ADD" "path" "${path}"
 
   return 0
 }
 
-function check_es() {
+function check_ES() {
 
-  if [ -z $_carg_es_MODE_param ]; then
+  if [ -z $_carg_ES_MODE_param ]; then
     _attach_errormsg "Undefined extstore command"
     return 1
   fi
@@ -851,7 +862,7 @@ function parse__RUN() {
     return 1
   fi
 
-  _carg_chain_parse "--wait-w? name" "run"
+  _carg_chain_parse "--wait-w? name" "RUN"
   res=$?
 
   if [ -z $_carg__MODE_param ]; then
@@ -861,7 +872,7 @@ function parse__RUN() {
   return $res
 }
 
-function parse_run_name() {
+function parse_RUN_name() {
   local cname=$1
   local clink=$2
   local name=$3
@@ -873,6 +884,7 @@ function parse_run_name() {
     return 1
   fi
 
+  echo HIT "$cname" $clink $name
   if [ ! -d "$DB_DIR/$name" ]; then
     _attach_errormsg "Container does not exists"
     return 1
@@ -884,25 +896,25 @@ function parse_run_name() {
 }
 
 
-function check_run() {
+function check_RUN() {
   return 0
 }
 
-_carg_command_arg_param=
-function parse_command_arg() {
+_carg_COMMAND_arg_param=
+function parse_COMMAND_arg() {
   local cname=$1
   local clink=$2
   local arg=$3
 
-  _carg_command_arg_param="$_carg_command_arg_param $arg"
+  _carg_COMMAND_arg_param="$_carg_COMMAND_arg_param $arg"
   # carg_set_param "$cname" $clink $arg
 }
 
-function check_command() {
+function check_COMMAND() {
   return 0
 }
 
-function parse_sync_path_local() {
+function parse_SYNC_path_local() {
   local cname=$1
   local clink=$2
   local path=$(realpath $3)
@@ -917,8 +929,8 @@ function parse_sync_path_local() {
   return 0
 }
 
-_carg_sync_path_remote_param=/usr/local/bin
-function parse_sync_path_remote() {
+_carg_SYNC_path_remote_param=/usr/local/bin
+function parse_SYNC_path_remote() {
   local cname=$1
   local clink=$2
   local path="$3"
@@ -948,7 +960,7 @@ function check_() {
 }
 
 
-function check_sync() {
+function check_SYNC() {
   return 0
 }
 
@@ -961,17 +973,17 @@ function main() {
 
   case $_carg__MODE_param in
     create)
-      echo "create: '${_carg_CREATE_device_flag}' '${_carg_CREATE_file_path_param}' ${_carg_CREATE_extr_size_param} ${_carg_CREATE_yesno_param} ${_carg_CREATE_kelner_param} ${_carg_CREATE_initramfs_param} ${_carg_CREATE_name_flag} ${_carg_CREATE_cont_name_param}"
+      echo "create: '${_carg_CREATE_device_flag}' '${_carg_CREATE_file_path_param}' ${_carg_CREATE_extr_size_param} ${_carg_CREATE_yesno_param} ${_carg_CREATE_kelner_param} ${_carg_CREATE_initramfs_param} ${_carg_CREATE_name_flag} ${parse_CREATE_cont_name_param}"
       #--device-d? dev_name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? cont_name?" "create
     ;;
     run)
-      echo "Run"
+      echo "Run '${_carg_RUN_name_param}'"
     ;;
     command)
-      echo $_carg_command_arg_param
+      echo "Command: " $_carg_COMMAND_arg_param
     ;;
     sync)
-      echo "Sync: " $_carg_sync_path_local_param $_carg_sync_path_remote_param "$_carg_sync_reverse_flag"
+      echo "Sync: " $_carg_SYNC_path_local_param $_carg_SYNC_path_remote_param "$_carg_SYNC_reverse_flag"
     ;;
     console)
       echo "Console"
@@ -984,18 +996,20 @@ function main() {
       op_list
     ;;
     stop)
+      echo "Stop"
     ;;
     waitfor)
+      echo "WaitRor"
     ;;
     es)
-      case $_carg_es_MODE_param in
+      case $_carg_ES_MODE_param in
         ls)
           echo "ls $_carg_es_ls_full_flag"
         ;;
         add)
-          echo "add ${_carg_es_add_ref_param} ${_carg_es_add_size_param}: ${_carg_es_add_path_param}"
-          if [ -n "${_carg_es_add_size_param}" ]; then
-            prepare_usbstick "${_carg_es_add_path_param}" ${_carg_es_add_size_param}
+          echo "add ${_carg_ES_ADD_ref_param} ${_carg_ES_ADD_size_param}: ${_carg_ES_ADD_path_param}"
+          if [ -n "${_carg_ES_ADD_size_param}" ]; then
+            prepare_usbstick "${_carg_ES_ADD_path_param}" ${_carg_ES_ADD_size_param}
           fi
         ;;
         eject)
@@ -1004,7 +1018,8 @@ function main() {
       esac
     ;;
     init)
-      root_required
+      exit_if_not_root
+
       echo "Initializing $SCRIPT_BASE database and storage"
       init
 
