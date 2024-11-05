@@ -11,7 +11,7 @@ else
   CHROOTM_EXEC="chroot_master.sh"
 fi
 
-AW_RUN="./alpha-wrap/alpha-wrap-run"
+AW_RUN="./alpha-wrap/alpha-wrap"
 TEMP_DIR=./build.temp
 
 mkdir -p ${TEMP_DIR}
@@ -29,7 +29,8 @@ ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec chroot.armhf alpbase_bui
 
 ${AW_RUN} command "/bin/ash -l -c 'mount /dev/sda1 /mnt'"
 mkdir -p ${TEMP_DIR}/sl_boot
-${AW_RUN} sync /mnt/ ${TEMP_DIR}/sl_boot -r
+${AW_RUN} sync ${TEMP_DIR}/sl_boot/ "/mnt/*-rpi" -r
+${AW_RUN} sync ${TEMP_DIR}/sl_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
 # test
@@ -49,7 +50,8 @@ ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec chroot.aarch64 alpbase_b
 
 ${AW_RUN} command "/bin/ash -l -c 'mount /dev/sdb1 /mnt'"
 mkdir -p ${TEMP_DIR}/jl_boot
-${AW_RUN} sync /mnt/ ${TEMP_DIR}/jl_boot -r
+${AW_RUN} sync ${TEMP_DIR}/jl_boot/ "/mnt/*-rpi" -r
+${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
 # test
@@ -70,7 +72,8 @@ ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec chroot.aarch64 alpbase_b
 
 ${AW_RUN} command "/bin/ash -l -c 'mount /dev/sdc1 /mnt'"
 mkdir -p ${TEMP_DIR}/bd_boot
-${AW_RUN} sync /mnt/ ${TEMP_DIR}/bd_boot -r
+${AW_RUN} sync ${TEMP_DIR}/bd_boot/ "/mnt/*-rpi" -r
+${AW_RUN} sync ${TEMP_DIR}/bd_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
 # Do Tests
@@ -84,7 +87,7 @@ xz -c ${IMAGE_BD} > ${IMAGE_BD}.xz
 ${AW_RUN} stop
 
 # Do tests:
-${AW_RUN} -d raspi3b ${IMAGE_JL} -i y vmlinuz-rpi initramfs-rpi
+#${AW_RUN} -d raspi3b ${IMAGE_JL} -i y vmlinuz-rpi initramfs-rpi
 
 # rm -rf ${TEMP_DIR}
 
