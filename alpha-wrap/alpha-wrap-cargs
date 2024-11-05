@@ -44,10 +44,58 @@ function last_args() {
   done
 }
 
+
+function carg_set_param() {
+  local cname=$1
+  local clink=$2
+  local value=$3
+
+  if [ -z ${value} ]; then
+    # no thing to set
+    return 0
+  fi
+
+  # declare if value not defined, defined value is a default value
+  local param_name="_carg_${cname}_${clink}_param"
+  if [ -z ${!param_name} ]; then
+    declare -gr "${param_name}=${value}"
+  else
+    eval "${param_name}=${value}"
+  fi
+}
+
+function carg_isparam_set() {
+  local cname=$1
+  local clink=$2
+  local var="_carg_${cname}_${clink}_param"
+
+  [ -n "${!var}" ]
+  return $?
+}
+
+# Return value:
+#     0 - argument has been parsed successfully
+#     1 - argument can't be interpreted
+#
+# If parameter is accepted, it must be registered with:
+#   carg_set_param function
+function parse___autoparam() {
+  local cname=$1
+  local clink=$2
+  local value=$3
+
+  if [ $clink == $value ]; then
+    carg_set_param "$cname" $clink 1
+    return 0
+  fi
+
+  return 1
+}
+
+
 # prepare arguments:
 # ARGS exported by caller script
 CARG=
-
 
 function _carg_chain_parse() {
   local chain=$1

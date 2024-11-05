@@ -26,35 +26,6 @@ export ARGS="$@"
 include_all $0
 
 
-# Global variables:
-# From parameters:
-_MODE=
-
-_IMG_BOOT=0
-_NO_PART_TABLE_MODE=-1
-
-_DEV_MODEL=
-_MACHINE=$_DEV_MODEL
-
-_IMG_FILE=
-_KERNEL=vmlinuz
-_INITRAMFS=
-
-_PERMANENT_CONTAINER=0
-_CONTAINER_NAME=
-_OPTION_DETACH=1
-
-_LIST_WITH_DETAILS=0
-
-# Run-time globals
-_LOBOOT_DEV=
-
-# connection:
-SSH_GUEST_PORT=15022
-SSH_DEF_PRIV_KEY_NAME=id_ed25519
-
-CONTAINER_SSH_KEY_PATH=
-
 # shellcheck disable=SC2112
 function print_help() {
     cat <<EOF
@@ -62,7 +33,7 @@ Usage:
 Creating container:
 $SCRIPT_BASE --device|-d [raspi3b] <img file> [+SIZE] --imgboot|-i y|n <kernel> <initramfs> --name|-n <name>
 
-  --device|-d      - Model of the emulated device (default: '${_carg_create_dev_name_param}').
+  --device|-d      - Model of the emulated device (default: '${_carg_CREATE_dev_name_param}').
   <img file>       - Path to image file to be mounted as 'mmcblk0'.
   --imgboot|-i y|n - If 'y' load <kernel> and <initramfs> from a boot
                      partition of the image file.
@@ -212,50 +183,6 @@ function prepare_usbstick() {
   $RUN /usr/bin/dd bs=$ONE_MIB count=${SIZE_MB} if="/dev/zero" of="${PATH}"
 }
 
-function mount_boot() {
-  local WORK_IMG=$1
-
-  # Get available loop device, normally '/dev/loop0'
-  if [ -z "$RUN" ]; then
-    _LOBOOT_DEV=$(losetup -f)
-  else
-    _LOBOOT_DEV="/dev/loop0dummy"
-  fi
-  # Create device for mounting partition that will be used as 'boot'
-  $RUN losetup $_LOBOOT_DEV $WORK_IMG
-  $RUN partprobe -s $_LOBOOT_DEV
-
-  # mount first partition, or if no partition table mount filesystem directly
-  if [ -e ${_LOBOOT_DEV}p1 ]; then
-    $RUN mount ${_LOBOOT_DEV}p1 $BOOT_MNT_DIR -o ro || true
-    _NO_PART_TABLE_MODE=0
-
-    if findmnt -rno TARGET "${_LOBOOT_DEV}p1" >/dev/null; then
-      echo "Partition ${_LOBOOT_DEV}p1 is mounted."
-    else
-      echo "Falling back to mnount without partition table"
-      $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o ro
-      _NO_PART_TABLE_MODE=1;
-    fi
-  else
-    $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o ro
-    _NO_PART_TABLE_MODE=1
-  fi
-}
-
-function umount_boot() {
-  $RUN umount ${BOOT_MNT_DIR}
-  $RUN losetup -d ${_LOBOOT_DEV}
-}
-
-
-function rm_lock_file() {
-  if [ -e "${LOCK_FILE}" ]; then
-    rm "${LOCK_FILE}" 2>/dev/null || true
-  fi
-
-  return 0
-}
 
 
 # Command line parsing functions:
@@ -388,66 +315,11 @@ function parse_size() {
 }
 
 
-# Parser 'global' variables
-# "parse_now", "param_chain" and "setter_fn" has been defined to handle
-# variable parameter "chains"
-# Once when 'option' has been identified such as 'ls', '--name'
-# variables: 'parse_now', 'parse_chain' and 'setter_fn'
-# are used to handle variable argument length parsing
-# Thus, some options might be optional making command line
-# more user friendly.
-# parse_now is the
+
 setter_fn=
 param_chain=
 
 
-
-function carg_set_param() {
-  local cname=$1
-  local clink=$2
-  local value=$3
-
-  if [ -z ${value} ]; then
-    # no thing to set
-    return 0
-  fi
-
-  # declare if value not defined, defined value is a default value
-  local param_name="_carg_${cname}_${clink}_param"
-  if [ -z ${!param_name} ]; then
-    declare -gr "${param_name}=${value}"
-  else
-    eval "${param_name}=${value}"
-  fi
-}
-
-function carg_isparam_set() {
-  local cname=$1
-  local clink=$2
-  local var="_carg_${cname}_${clink}_param"
-
-  [ -n "${!var}" ]
-  return $?
-}
-
-# Return value:
-#     0 - argument has been parsed successfully
-#     1 - argument can't be interpreted
-#
-# If parameter is accepted, it must be registered with:
-#   carg_set_param function
-function parse___autoparam() {
-  local cname=$1
-  local clink=$2
-  local value=$3
-
-  if [ $clink == $value ]; then
-    carg_set_param "$cname" $clink 1
-    return 0
-  fi
-
-  return 1
-}
 
 
 function parse__MODE() {
@@ -525,7 +397,7 @@ function parse__CREATE() {
   return $res
 }
 
-_carg_create_dev_name_param=raspi3b
+_carg_CREATE_dev_name_param=raspi3b
 function parse_CREATE_dev_name() {
   local cname=$1
   local clink=$2
@@ -665,7 +537,8 @@ function parse_CREATE_initramfs() {
     exit 3
   fi
 
-  carg_set_param "$cname" $clink "$name"
+  # carg_set_param "$cname" $clink "$name"
+  _carg_CREATE_initramfs_param="$name"
   return 0
 }
 
@@ -686,6 +559,10 @@ function parse_CREATE_cont_name() {
     echo "Illegal name"
     exit 3
   fi
+
+  carg_set_param "$cname" $clink $name
+
+  return 0
 }
 
 
@@ -707,12 +584,34 @@ function check_CREATE() {
   fi
 
   if ! ${_carg_CREATE_yesno_param}; then
+    if [ ! -f "${_carg_CREATE_kelner_param}" ]; then
+      if [ -e "${_carg_CREATE_kelner_param}" ]; then
+        _attach_errormsg "Path '${_carg_CREATE_kelner_param}' should point to (kernel) file"
+      else
+        _attach_errormsg "Can not find kernel: '${_carg_CREATE_kelner_param}'"
+      fi
+      err_enc=true
+    fi
+
     # set realpath
     _carg_CREATE_kelner_param=$(realpath $_carg_CREATE_kelner_param)
 
     if [ -n "${_carg_CREATE_initramfs_param}" ]; then
+      if [ ! -f "${_carg_CREATE_initramfs_param}" ]; then
+        if [ -e "${_carg_CREATE_initramfs_param}" ]; then
+          _attach_errormsg "Path '${_carg_CREATE_initramfs_param}' should point to (initramfs) file"
+        else
+          _attach_errormsg "Can not find initramfs: '${_carg_CREATE_initramfs_param}'"
+        fi
+        err_enc=true
+      fi
+
       _carg_CREATE_initramfs_param=$(realpath $_carg_CREATE_initramfs_param)
     fi
+  fi
+
+  if $err_enc; then
+    return 1
   fi
 
   # Create random name if user did not assign
@@ -967,14 +866,29 @@ function check_SYNC() {
 
 
 function main() {
-  local res=
+  local res=0
   # Prse arguments, if error accounted returns non-0 what terminates script (set -e)
   _carg_chain_parse "help? --help-h? MODE? CREATE? RUN?"
 
   case $_carg__MODE_param in
     create)
-      echo "create: '${_carg_CREATE_device_flag}' '${_carg_CREATE_file_path_param}' ${_carg_CREATE_extr_size_param} ${_carg_CREATE_yesno_param} ${_carg_CREATE_kelner_param} ${_carg_CREATE_initramfs_param} ${_carg_CREATE_name_flag} ${parse_CREATE_cont_name_param}"
+      #echo "create:
+      # '${_carg_CREATE_device_flag}':
+      # ${_carg_CREATE_dev_name_param}
+      # '${_carg_CREATE_file_path_param}'
+      # ${_carg_CREATE_extr_size_param}
+      # ${_carg_CREATE_yesno_param} ${_carg_CREATE_kelner_param} ${_carg_CREATE_initramfs_param} ${_carg_CREATE_name_flag} ${parse_CREATE_cont_name_param}"
       #--device-d? dev_name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? cont_name?" "create
+      local cont_name=
+
+      if [ ! -z ${_carg_CREATE_name_flag} ]; then
+        cont_name=${_carg_CREATE_cont_name_param}
+      else
+        cont_name=$(basename $(mktemp --tmpdir=${AWSTORE_DIR} --suffix=.img) ".img")
+      fi
+
+      op_create $cont_name
+      op_run $cont_name 1
     ;;
     run)
       echo "Run '${_carg_RUN_name_param}'"
@@ -989,14 +903,24 @@ function main() {
       echo "Console"
     ;;
     ls)
-      echo "ls: $_carg_ls_full_flag"
       check_environment
 
       load_containersettings || res=$?
       op_list
     ;;
     stop)
-      echo "Stop"
+      load_containersettings
+      stop_machine && rm_lock_file || res=$?
+
+      if [ $res -ne 0 ]; then
+        echo "Errors has been encountered"
+        return $res
+      fi
+
+      if [ -n "$(echo ${_CONTAINER_NAME} | grep -e '^tmp\.')" ]; then
+        echo "Tempolary container has been removed"
+        op_remove ${_CONTAINER_NAME}
+      fi
     ;;
     waitfor)
       echo "WaitRor"
@@ -1034,20 +958,7 @@ main
 exit $?
 
 
-function stop_machine() {
-  /usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF
-quit
-EOF
-  local ret=$?
 
-  if [ $ret -eq 0 ]; then
-    echo "VM ${_CONTAINER_NAME} sucessfully stopped."
-  else
-    echo "Failed to stop VM ${_CONTAINER_NAME}"
-  fi
-
-  return $ret
-}
 
 function insert_usbstick() {
   local PATH=$(realpath $1)
@@ -1128,138 +1039,11 @@ fi
 
 case $_MODE in
   image)
-    $_carg_CREATE_yesno_param && exit_if_not_root
-    check_environment
 
-    echo "Run image... ${parse_create_dev_name} ${_carg_CREATE_file_path_param} ${_carg_CREATE_kelner_param} ${_carg_CREATE_initramfs_param}"
-
-    if [ ! -z ${_carg_CREATE_name_flag} ]; then
-      echo "Creating continer: ${_carg_CREATE_cont_name_param}"
-
-      CONT_FILE=${AWSTORE_DIR}/${_carg_CREATE_cont_name_param}.img
-      if [ -f ${CONT_FILE} ]; then
-        echo "Container '${_carg_CREATE_cont_name_param}' already exists."
-        exit 4
-      fi
-    else
-      # running tempolary container
-      CONT_FILE=$(mktemp --tmpdir=${AWSTORE_DIR} --suffix=.img)
-      _CONTAINER_NAME=$(basename ${CONT_FILE} ".img")
-    fi
-
-    prepare_mmc_imgfile ${_IMG_FILE} ${CONT_FILE}
-
-    # set container's permissions for unprivileged user:
-    chgrp libvirt ${CONT_FILE}
-    chmod g+rw    ${CONT_FILE}
-
-    mkdir -p ${DB_DIR}/${_CONTAINER_NAME}
-
-    local kernel=
-    local initrd=
-    local cmdline=
-
-    # root required
-    if $_carg_CREATE_yesno_param; then
-      # mount boot partition
-      mount_boot $CONT_FILE
-
-      kernel=${BOOT_MNT_DIR}/${_carg_CREATE_kelner_param}
-
-      if [ ! -f "${kernel}" ]; then
-        echo "Can not find kernel: ${kernel}"
-        exit 44
-      fi
-
-      if [ -n "${_carg_CREATE_initramfs_param}" ]; then
-        initrd=${BOOT_MNT_DIR}/${_carg_CREATE_initramfs_param}
-        if [ ! -f "${initrd}" ]; then
-          echo "Can not find initrd: ${initrd}"
-          exit 44
-        fi
-      fi
-
-      if [ -f ${BOOT_MNT_DIR}/cmdline.txt ]; then
-        cmdline=${BOOT_MNT_DIR}/cmdline.txt
-      fi
-    else
-      kernel=${_carg_CREATE_kelner_param}
-      initrd=${_carg_CREATE_initramfs_param}
-    fi
-
-    # installation
-    $RUN cp ${kernel} ${DB_DIR}/${_CONTAINER_NAME}/
-    kernel=${DB_DIR}/${_CONTAINER_NAME}/$(basename ${kernel})
-
-    if [ -n "${cmdline}" ]; then
-      $RUN cp ${cmdline} ${DB_DIR}/${_CONTAINER_NAME}/cmdline.txt
-      cmdline=${DB_DIR}/${_CONTAINER_NAME}/cmdline.txt
-    fi
-
-    if [ -n "${initrd}" ]; then
-      $RUN cp ${initrd} $DB_DIR/$_CONTAINER_NAME/
-      initrd=$DB_DIR/$_CONTAINER_NAME/$(basename ${initrd})
-    fi
-
-    cat <<EOF > $DB_DIR/${_CONTAINER_NAME}/config.txt
-# file auto-generated
-container $_CONTAINER_NAME
-device    $_carg_CREATE_dev_name_param
-kernel    ${kernel}
-initramfs ${initrd}
-imgboot   $_carg_CREATE_yesno_param
-
-rootimg   $_carg_CREATE_file_path_param
-cdate     $(date)
-EOF
-
-    $RUN chgrp libvirt -R ${DB_DIR}/${_CONTAINER_NAME}
-    $RUN chmod g+w -R ${DB_DIR}/${_CONTAINER_NAME}
-
-    # umount boot partition
-    $_carg_CREATE_yesno_param umount_boot || true
   ;;
 
   container)
-    check_environment
 
-    _MACHINE=$(second_arg $(cat $DB_DIR/${_CONTAINER_NAME}/config.txt | grep '^device'))
-    _IMG_BOOT=$(second_arg $(cat $DB_DIR/${_CONTAINER_NAME}/config.txt | grep '^imgboot'))
-    _KERNEL=$(second_arg $(cat $DB_DIR/${_CONTAINER_NAME}/config.txt | grep '^kernel'))
-    _INITRAMFS=$(second_arg $(cat $DB_DIR/${_CONTAINER_NAME}/config.txt | grep '^initramfs'))
-
-    echo "Run container... $_MACHINE $_IMG_FILE $_KERNEL $_INITRAMFS"
-
-    _KERNEL=$DB_DIR/${_CONTAINER_NAME}/$_KERNEL
-
-    if [ -n "$_INITRAMFS" ]; then
-      _INITRAMFS=$DB_DIR/${_CONTAINER_NAME}/$_INITRAMFS
-    fi
-
-    if [ -f "${DB_DIR}/${_CONTAINER_NAME}/cmdline.txt" ]; then
-      CMDLINE_FILE_PATH=${DB_DIR}/${_CONTAINER_NAME}/cmdline.txt
-    fi
-
-    CONT_FILE=${AWSTORE_DIR}/${_CONTAINER_NAME}.img
-
-    if [ ${_IMG_BOOT} -eq 1 ]; then
-      mount_boot ${CONT_FILE}
-
-      if ! $(cmp $BOOT_MNT_DIR/$(basename ${_KERNEL}) $_KERNEL); then
-        # update kernel:
-        $RUN cp $BOOT_MNT_DIR/$(basename ${_KERNEL}) ${_KERNEL}
-      fi
-
-      if [ -n "${_INITRAMFS}" ] && ! $(cmp $BOOT_MNT_DIR/$(basename ${_INITRAMFS}) ${_INITRAMFS}); then
-        $RUN cp $BOOT_MNT_DIR/$(basename ${_INITRAMFS}) ${_INITRAMFS}
-      fi
-
-      if [ -n "${CMDLINE_FILE_PATH}" ] && ! $(cmp ${BOOT_MNT_DIR}/cmdline.txt ${CMDLINE_FILE_PATH}); then
-        $RUN cp $BOOT_MNT_DIR/cmdline.txt ${CMDLINE_FILE_PATH}
-      fi
-
-      umount_boot
-    fi
   ;;
   command)
     load_containersettings
@@ -1280,8 +1064,7 @@ EOF
     exit 0
   ;;
   stop)
-    load_containersettings
-    stop_machine && rm_lock_file && exit 0 || exit $?
+
   ;;
   waitfor)
     load_containersettings
@@ -1327,7 +1110,6 @@ esac
 M_CPU=${devices_cpu[${_carg_CREATE_dev_name_param}]}
 M_DTB=${devices_dtb[${_carg_CREATE_dev_name_param}]}
 
-
 DTB_FILE=${DTB_LIB}/${M_DTB}
 
 if [ ! -f "${DTB_FILE}" ]; then
@@ -1335,95 +1117,7 @@ if [ ! -f "${DTB_FILE}" ]; then
   exit 3
 fi
 
-#   -chardev socket,id=com0,path=/tmp/builder1.sock,server=on,wait=off \
-# mount /dev/loop1p2 /mnt/dir
-# cd /mnt/dir
-# rm ./systemd/system/multi-user.target.wants/userconfig.service
-#
 
-# PCI required:
-#   -virtfs local,path=./share,mount_tag=host0,security_model=passthrough,id=host0 \
-
-# looks like system does not create /dev/ttyAMA0 device,
-# as a result only boot messages are print, can't login
-# All (Ethernet and mass storage) USB devices running at USB 1.1 speed
-# slow, but works well and no rush
-function run() {
-  KERNEL_LINE="-kernel ${_KERNEL}"
-
-  # add initrd if its used
-  if [ -n "${_INITRAMFS}" ]; then
-    KERNEL_LINE="${KERNEL_LINE} -initrd ${_INITRAMFS}"
-  fi
-
-  if [ -n "${CMDLINE_FILE_PATH}" ]; then
-    KERNEL_PARAMS=$(tail -n 1 "${CMDLINE_FILE_PATH}")
-  else
-    # default kernel parameters
-    KERNEL_PARAMS="console=tty1 console=ttyAMA0 root=/dev/mmcblk0p2 rw"
-    # console=ttyAMA1
-
-    # Set parameters
-    if [ ${_NO_PART_TABLE_MODE} -eq 0 ]; then
-      KERNEL_PARAMS="${KERNEL_PARAMS} root=/dev/mmcblk0p2 rw"
-    else
-      KERNEL_PARAMS="${KERNEL_PARAMS} modules=loop,squashfs,sd-mod,usb-storage"
-    fi
-  fi
-
-  if [ -e ${LOCK_FILE} ]; then
-    QEMU_ID=$(head -n 1 ${LOCK_FILE})
-
-    if ! kill -0 "$QEMU_ID" 2>/dev/null; then
-      echo "Lock file found, but no process"
-      echo "Removing: ${LOCK_FILE}"
-      echo "This indicates that program might have crash before."
-
-      rm "${LOCK_FILE}"
-    else
-      echo "Lock for container: "
-      tail -n 1 ${LOCK_FILE}
-      echo "Is it already running?"
-      exit 5
-    fi
-  fi
-
-  # add PID and container name
-  echo $$ > ${LOCK_FILE}
-  echo ${_CONTAINER_NAME} >> ${LOCK_FILE}
-
-  #  -cpu ${M_CPU} -m 1024
-
-  EXTR_OPT=""
-  if [ ${_OPTION_DETACH} -eq 1 ]; then
-    EXTR_OPT="${EXTR_OPT} -daemonize"
-  fi
-
-  $RUN /usr/bin/qemu-system-aarch64 \
-    -M ${_MACHINE} \
-    -monitor unix:$QEMU_MONITOR_UNIXSOCKET,server,nowait \
-    -serial pty \
-    ${KERNEL_LINE} -append "${KERNEL_PARAMS}" \
-    -drive id=sysdrive,if=none,format=raw,file=${CONT_FILE} \
-    -device sd-card,drive=sysdrive \
-    -usb \
-    -device usb-kbd,bus=usb-bus.0 \
-    -netdev user,id=net0,hostfwd=tcp::${SSH_GUEST_PORT}-:22 \
-    -device usb-net,bus=usb-bus.0,netdev=net0 \
-    -dtb ${DTB_FILE} \
-    -rtc base=localtime \
-    ${EXTR_OPT} -name "$_MACHINE emulator"
-
-    # lock file is removed by 'stop' command
-    #rm ${LOCK_FILE}
-
-    # Requiers PCI:
-    #     -virtfs local,id=sharedFolder,path=/tmp/aa,security_model=passthrough,mount_tag=hostshare \
-    #     -drive id=imgout0,if=none,format=raw,file="${EXTSTORE_DIR}/${_CONTAINER_NAME}-01.img" \
-    #      -device usb-storage,bus=usb-bus.0,drive=imgout0 \
-}
-
-run
 
 if [ "${_MODE}" == "image" ] && [ "${_carg_CREATE_name_flag}" != "0" ]; then
   $RUN rm "${CONT_FILE}"

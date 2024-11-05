@@ -4,17 +4,6 @@
         set -xe || set -e
 
 
-declare -A devices_dtb
-declare -A devices_cpu
-
-# arm:
-devices_dtb["raspi0"]="alpine-standard/bcm2835-rpi-zero.dtb"
-devices_cpu["raspi0"]="arm1176"
-
-# aarch:
-devices_dtb["raspi3b"]="raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb"
-devices_cpu["raspi3b"]="cortex-a53"
-
 
 readonly BOOT_MNT_DIR="/mnt/img.boot"
 
@@ -31,9 +20,20 @@ readonly SHARE_SPACE_SIZE_MIB=100
 
 readonly QEMU_MONITOR_UNIXSOCKET="/tmp/qemu-monitor"
 
+# connection:
+readonly SSH_GUEST_PORT=15022
+readonly SSH_DEF_PRIV_KEY_NAME=id_ed25519
+
+# Global variables:
+_NO_PART_TABLE_MODE=-1
+_CONTAINER_NAME=
+
+# Run-time globals
+_LOBOOT_DEV=
+
 
 function exit_if_not_root() {
-  if [ -z "$RUN" ] && [ $(id -u) -ne 0 ]; then
+  if [ $(id -u) -ne 0 ]; then
     echo "Run it as root"
     echo "    sorry for disturbing safe realm"
     exit 0
@@ -43,7 +43,7 @@ function exit_if_not_root() {
 # Check environment:
 function check_environment() {
 
-  if [ ! -w ${AWSTORE_DIR} ] || [ ! -w ${DB_DIR} ] || [ ! -w ${EXTSTORE_DIR} ]; then
+  if [ ! -w ${AWSTORE_DIR} ] || [ ! -w ${DB_DIR} ] || [ ! -w ${EXTSTORE_DIR} ] || [ ! -d ${BOOT_MNT_DIR} ]; then
     echo "${BASE_SCRIPT} seems to be uninitiated, use '${BASE_SCRIPT} init' command as root to initiate"
     echo "    '${BASE_SCRIPT} help' for help"
     return 1
@@ -53,9 +53,42 @@ function check_environment() {
 }
 
 function init() {
-  $RUN mkdir -p ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR}2>/dev/null || true
+  $RUN mkdir -p ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR} ${BOOT_MNT_DIR} 2>/dev/null || true
   $RUN chgrp libvirt ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR}
   $RUN chmod g+w ${AWSTORE_DIR} ${DB_DIR} ${EXTSTORE_DIR}
+}
+
+# lockfile functions
+
+function op_lock_aw() {
+  if [ -e ${LOCK_FILE} ]; then
+    QEMU_ID=$(head -n 1 ${LOCK_FILE})
+
+    if ! kill -0 "$QEMU_ID" 2>/dev/null; then
+      echo "Lock file found, but no process"
+      echo "Removing: ${LOCK_FILE}"
+      echo "This indicates that program might have crash before."
+
+      rm "${LOCK_FILE}"
+    else
+      echo "Lock for container: "
+      tail -n 1 ${LOCK_FILE}
+      echo "Is it already running?"
+      exit 5
+    fi
+  fi
+
+  # add PID and container name
+  echo $$ > ${LOCK_FILE}
+  echo ${_CONTAINER_NAME} >> ${LOCK_FILE}
+}
+
+function rm_lock_file() {
+  if [ -e "${LOCK_FILE}" ]; then
+    rm "${LOCK_FILE}" 2>/dev/null || true
+  fi
+
+  return 0
 }
 
 function load_containersettings() {
@@ -67,11 +100,344 @@ function load_containersettings() {
 
   _CONTAINER_NAME=$(tail -n 1 ${LOCK_FILE})
 
-  CONTAINER_SSH_KEY_PATH=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_KEY_NAME}
+  #CONTAINER_SSH_KEY_PATH=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_KEY_NAME}
 
   return 0
 }
 
+# mount operations:
+
+function mount_boot() {
+  local WORK_IMG=$1
+
+  # Get available loop device, normally '/dev/loop0'
+  if [ -z "$RUN" ]; then
+    _LOBOOT_DEV=$(losetup -f)
+  else
+    _LOBOOT_DEV="/dev/loop0dummy"
+  fi
+  # Create device for mounting partition that will be used as 'boot'
+  $RUN losetup $_LOBOOT_DEV $WORK_IMG
+  $RUN partprobe -s $_LOBOOT_DEV
+
+  # mount first partition, or if no partition table mount filesystem directly
+  if [ -e ${_LOBOOT_DEV}p1 ]; then
+    $RUN mount ${_LOBOOT_DEV}p1 $BOOT_MNT_DIR -o ro || true
+    _NO_PART_TABLE_MODE=0
+
+    if findmnt -rno TARGET "${_LOBOOT_DEV}p1" >/dev/null; then
+      echo "Partition ${_LOBOOT_DEV}p1 is mounted."
+    else
+      echo "Falling back to mnount without partition table"
+      $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o ro
+      _NO_PART_TABLE_MODE=1;
+    fi
+  else
+    $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o ro
+    _NO_PART_TABLE_MODE=1
+  fi
+}
+
+function umount_boot() {
+  $RUN umount ${BOOT_MNT_DIR}
+  $RUN losetup -d ${_LOBOOT_DEV}
+}
+
+# PCI required:
+#   -virtfs local,path=./share,mount_tag=host0,security_model=passthrough,id=host0 \
+
+# looks like system does not create /dev/ttyAMA0 device,
+# as a result only boot messages are print, can't login
+# All (Ethernet and mass storage) USB devices running at USB 1.1 speed
+# slow, but works well and no rush
+function _op_run() {
+  local mach=$1
+  local kern=$2
+  local irfs=$3
+  local cmdf=$4
+  local dtbf=$5
+  local cont_file=$6
+
+  local kern_line="-kernel ${kern}"
+  local kern_params=
+
+  # add initrd if its used
+  if [ -n "${_INITRAMFS}" ]; then
+    kern_line="${kern_line} -initrd ${irfs}"
+  fi
+
+  if [ -n "${cmdf}" ]; then
+    kern_params=$(tail -n 1 "${cmdf}")
+  else
+    # default kernel parameters
+    kern_params="console=tty1 console=ttyAMA0 root=/dev/mmcblk0p2 rw"
+    # console=ttyAMA1
+
+    # Set parameters
+    if [ ${_NO_PART_TABLE_MODE} -eq 0 ]; then
+      kern_params="${kern_params} root=/dev/mmcblk0p2 rw"
+    else
+      kern_params="${kern_params} modules=loop,squashfs,sd-mod,usb-storage"
+    fi
+  fi
+
+  #  -cpu ${M_CPU} -m 1024
+
+  local extr_opt=""
+  #if [ ${_OPTION_DETACH} -eq 1 ]; then
+    extr_opt="${extr_opt} -daemonize"
+  #fi
+
+  echo ${cont_file}
+  echo ${kern_params}
+
+  $RUN /usr/bin/qemu-system-aarch64 \
+    -M ${mach} \
+    -monitor unix:$QEMU_MONITOR_UNIXSOCKET,server,nowait \
+    -serial pty \
+    ${kern_line} -append "${kern_params}" \
+    -drive id=sysdrive,if=none,format=raw,file=${cont_file} \
+    -device sd-card,drive=sysdrive \
+    -usb \
+    -device usb-kbd,bus=usb-bus.0 \
+    -netdev user,id=net0,hostfwd=tcp::${SSH_GUEST_PORT}-:22 \
+    -device usb-net,bus=usb-bus.0,netdev=net0 \
+    -dtb ${dtbf} \
+    -rtc base=localtime \
+    ${extr_opt} -name "${mach} emulator"
+
+    # lock file is removed by 'stop' command
+
+    # Requiers PCI:
+    #     -virtfs local,id=sharedFolder,path=/tmp/aa,security_model=passthrough,mount_tag=hostshare \
+    #     -drive id=imgout0,if=none,format=raw,file="${EXTSTORE_DIR}/${_CONTAINER_NAME}-01.img" \
+    #      -device usb-storage,bus=usb-bus.0,drive=imgout0 \
+}
+
+function stop_machine() {
+  /usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF
+quit
+EOF
+  local ret=$?
+
+  if [ $ret -eq 0 ]; then
+    echo "VM ${_CONTAINER_NAME} successfully stopped."
+  else
+    echo "Failed to stop VM ${_CONTAINER_NAME}"
+  fi
+
+  return $ret
+}
+
+function op_create() {
+  local cont_name=$1
+  local cont_file=${AWSTORE_DIR}/${cont_name}.img
+
+  $_carg_CREATE_yesno_param && exit_if_not_root
+  check_environment
+
+  echo "Run image... ${parse_CREATE_dev_name} ${_carg_CREATE_file_path_param} ${_carg_CREATE_kelner_param} ${_carg_CREATE_initramfs_param}"
+
+  #if [ ! -z ${_carg_CREATE_name_flag} ]; then
+  echo "Creating continer: ${cont_name}"
+
+  if [ -s ${cont_file} ]; then
+    echo "Container '${cont_name}' already exists ('${cont_file}')."
+    exit 4
+  fi
+
+  prepare_mmc_imgfile ${_carg_CREATE_file_path_param} ${cont_file}
+
+  # set container's permissions for unprivileged user:
+  $RUN chgrp libvirt ${cont_file}
+  $RUN chmod g+rw    ${cont_file}
+
+  $RUN mkdir -p ${DB_DIR}/${cont_name}
+
+  local kernel=
+  local initrd=
+  local cmdline=
+
+  # root required
+  if $_carg_CREATE_yesno_param; then
+    # mount boot partition
+    mount_boot ${cont_file}
+
+    kernel=${BOOT_MNT_DIR}/${_carg_CREATE_kelner_param}
+
+    if [ ! -f "${kernel}" ]; then
+      echo "Can not find kernel: ${kernel}"
+      exit 44
+    fi
+
+    if [ -n "${_carg_CREATE_initramfs_param}" ]; then
+      initrd=${BOOT_MNT_DIR}/${_carg_CREATE_initramfs_param}
+      if [ ! -f "${initrd}" ]; then
+        echo "Can not find initrd: ${initrd}"
+        exit 44
+      fi
+    fi
+
+    if [ -f ${BOOT_MNT_DIR}/cmdline.txt ]; then
+      cmdline=${BOOT_MNT_DIR}/cmdline.txt
+    fi
+  else
+    kernel=${_carg_CREATE_kelner_param}
+    initrd=${_carg_CREATE_initramfs_param}
+  fi
+
+  # installation
+  $RUN cp ${kernel} ${DB_DIR}/${cont_name}/
+  kernel=${DB_DIR}/${cont_name}/$(basename ${kernel})
+
+  if [ -n "${cmdline}" ]; then
+    $RUN cp ${cmdline} ${DB_DIR}/${cont_name}/cmdline.txt
+    cmdline=${DB_DIR}/${cont_name}/cmdline.txt
+  fi
+
+  if [ -n "${initrd}" ]; then
+    $RUN cp ${initrd} $DB_DIR/${cont_name}/
+    initrd=${DB_DIR}/${cont_name}/$(basename ${initrd})
+  fi
+
+  local config_out=$([ -z $RUN ] && echo " $DB_DIR/${cont_name}/config.txt" || echo "")
+
+  cat <<EOF | tee ${config_out}
+# auto-generated file
+container ${cont_name}
+device    ${_carg_CREATE_dev_name_param}
+kernel    $(basename ${kernel})
+initramfs $(basename ${initrd})
+imgboot   ${_carg_CREATE_yesno_param}
+
+rootimg   ${_carg_CREATE_file_path_param}
+cdate     $(date)
+
+EOF
+
+      $RUN chgrp libvirt -R ${DB_DIR}/${cont_name}
+      $RUN chmod g+w -R ${DB_DIR}/${cont_name}
+
+      # umount boot partition
+      # $_carg_CREATE_yesno_param && umount_boot || true
+}
+
+function op_run() {
+  local cont_name=$1
+  local skip_mount=$2
+  local cont_file=
+  local cmdl_file=
+  local mach
+  local imgb
+  local kern
+  local irfs
+
+  check_environment
+
+  mach=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^device'))
+  imgb=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^imgboot'))
+  kern=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^kernel'))
+  irfs=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^initramfs'))
+
+  echo "Run ... $mach $cont_name $kern $irfs"
+
+  kern=$DB_DIR/${cont_name}/${kern}
+
+  if [ -n "${irfs}" ]; then
+    irfs=$DB_DIR/${cont_name}/${irfs}
+  fi
+
+  if [ -f "${DB_DIR}/${cont_name}/cmdline.txt" ]; then
+    cmdl_file=${DB_DIR}/${cont_name}/cmdline.txt
+  fi
+
+  cont_file=${AWSTORE_DIR}/${cont_name}.img
+
+  if [ -n "${skip_mount}" ] && [ ${skip_mount} -ne 0 ]; then
+    skip_mount=true
+  else
+    skip_mount=false
+  fi
+
+  if ! $skip_mount && ${imgb}; then
+    exit_if_not_root
+
+    mount_boot ${cont_file}
+
+    if ! $(cmp $BOOT_MNT_DIR/$(basename ${kern}) ${kern}); then
+      # update kernel:
+      $RUN cp $BOOT_MNT_DIR/$(basename ${kern}) ${kern}
+    fi
+
+    if [ -n "${irfs}" ] && ! $(cmp $BOOT_MNT_DIR/$(basename ${irfs}) ${irfs}); then
+      $RUN cp $BOOT_MNT_DIR/$(basename ${irfs}) ${irfs}
+    fi
+
+    if [ -n "${cmdl_file}" ] && ! $(cmp ${BOOT_MNT_DIR}/cmdline.txt ${cmdl_file}); then
+      $RUN cp $BOOT_MNT_DIR/cmdline.txt ${cmdl_file}
+    fi
+
+    umount_boot
+  fi
+
+  declare -A devices_dtb
+  declare -A devices_cpu
+  # arm:
+  devices_dtb["raspi0"]="alpine-standard/bcm2835-rpi-zero.dtb"
+  devices_cpu["raspi0"]="arm1176"
+  # aarch:
+  devices_dtb["raspi3b"]="raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb"
+  devices_cpu["raspi3b"]="cortex-a53"
+
+  local m_cpu=${devices_cpu[${_carg_CREATE_dev_name_param}]}
+  local m_dtd=${devices_dtb[${_carg_CREATE_dev_name_param}]}
+
+  local dtb_file=${DTB_LIB}/${m_dtd}
+
+  echo ${dtb_file}
+  if [ ! -f "${dtb_file}" ]; then
+    echo "DTB file has not been found: ${dtb_file}"
+    exit 3
+  fi
+
+  # run ...
+  _CONTAINER_NAME=${cont_name}
+  op_lock_aw
+
+  _op_run ${mach} ${kern} "${irfs}" "${cmdl_file}" ${dtb_file} ${cont_file}
+
+}
+
+function op_remove() {
+  local cont_name=$1
+
+  local mach
+  local imgb
+  local kern
+  local irfs
+
+  check_environment
+
+  mach=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^device'))
+  imgb=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^imgboot'))
+  kern=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^kernel'))
+  irfs=$(second_arg $(cat $DB_DIR/${cont_name}/config.txt | grep '^initramfs'))
+
+
+  $RUN rm $DB_DIR/${cont_name}/${kern}
+  if [ -n "${irfs}" ]; then
+    $RUN rm $DB_DIR/${cont_name}/${irfs}
+  fi
+
+  if [ -f ${DB_DIR}/${cont_name}/cmdline.txt ]; then
+    $RUN rm ${DB_DIR}/${cont_name}/cmdline.txt
+  fi
+
+  $RUN rm $DB_DIR/${cont_name}/config.txt
+  $RUN rmdir ${DB_DIR}/${cont_name}
+
+  $RUN rm ${AWSTORE_DIR}/${cont_name}.img
+}
 
 function op_list() {
   shopt -s nullglob
