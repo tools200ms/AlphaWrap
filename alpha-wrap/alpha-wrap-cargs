@@ -20,7 +20,7 @@ $msg"
   done
 }
 
-_DBG_MSG=_carg_dbg
+_DBG_MSG=_carg_dbg_sink
 
 function first_arg() {
   printf '%s' "$1"

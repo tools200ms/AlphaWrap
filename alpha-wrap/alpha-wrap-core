@@ -4,7 +4,6 @@
         set -xe || set -e
 
 
-
 readonly BOOT_MNT_DIR="/mnt/img.boot"
 
 readonly AWSTORE_DIR="/var/lib/alphawrap"
@@ -162,7 +161,7 @@ function _op_run() {
   local kern_params=
 
   # add initrd if its used
-  if [ -n "${_INITRAMFS}" ]; then
+  if [ -n "${irfs}" ]; then
     kern_line="${kern_line} -initrd ${irfs}"
   fi
 
@@ -228,6 +227,36 @@ EOF
 
   return $ret
 }
+
+
+function insert_usbstick() {
+  local PATH=$(realpath $1)
+
+  local USB_STICK_CNT=$(/usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF | /usr/bin/grep 'Product QEMU USB MSD' | /usr/bin/wc -l
+info usb
+EOF
+)
+
+  local USB_DEV_ID="usbdrive$USB_STICK_CNT"
+
+  /usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF
+drive_add 0 if=none,id=${USB_DEV_ID},format=raw,file=${PATH}
+device_add usb-storage,drive=${USB_DEV_ID},bus=usb-bus.0
+EOF
+
+  echo "USB mass storage device inserted: ${USB_DEV_ID}"
+
+  #device_del usbdrive1
+}
+
+function remove_usbstick() {
+# removing does not work!
+  /usr/bin/nc -U $QEMU_MONITOR_UNIXSOCKET -q 0 <<EOF
+drive_del usbdrive1
+device_del usb-storage
+EOF
+}
+
 
 function op_create() {
   local cont_name=$1
@@ -474,17 +503,17 @@ function op_list() {
 function op_gcommand() {
   local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
 
-  $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost ${_carg_command_arg_param}
+  $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost ${_carg_COMMAND_arg_param}
 }
 
 function op_sync() {
   local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
   local sync_res=
 
-  if [ "${_carg_sync_reverse_flag}" != "0" ]; then
-    sync_res="root@localhost:${_carg_sync_path_remote_param} ${_carg_sync_path_local_param}"
+  if [ -n "${_carg_SYNC_reverse_flag}" ] && [ ${_carg_SYNC_reverse_flag} -ne 0 ]; then
+    sync_res="root@localhost:${_carg_SYNC_path_remote_param} ${_carg_SYNC_path_local_param}"
   else
-    sync_res="${_carg_sync_path_local_param} root@localhost:${_carg_sync_path_remote_param}"
+    sync_res="${_carg_SYNC_path_local_param} root@localhost:${_carg_SYNC_path_remote_param}"
   fi
 
   $RUN rsync -avz -e "ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path}" ${sync_res}
@@ -495,3 +524,44 @@ function op_enter() {
 
   $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost
 }
+
+
+function op_waitfor() {
+  local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
+  local WAIT_TIMEOUT=300             # Timeout (in seconds)
+  local PING_INTERVAL=3
+  SSH_OPTIONS="-o ConnectTimeout=3 -o BatchMode=yes"
+
+  echo -n "Waiting for '${_CONTAINER_NAME}' to reach multi-user mode ."
+
+  local ctime=$(date +%s)
+  local wait_until=$((${ctime}+${WAIT_TIMEOUT}))
+
+  while ! $(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost "[ $(rc-status -r) == "default" ]" 2> /dev/null); do
+    sleep $PING_INTERVAL
+    echo -n '.'
+
+    if [ $(date +%s) -gt ${wait_until} ]; then
+      echo ''
+      echo "Container not accessible!"
+
+      return 1
+    fi
+  done
+
+  echo ''
+  echo "'${_CONTAINER_NAME}' avaliable"
+
+#  for (( sec=0; sec<=$WAIT_TIMEOUT; i+=$WAIT_INTERVAL )); do
+#    if ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no -o BatchMode=yes "$SSH_USER@$VM_IP" "systemctl is-active multi-user.target" 2>/dev/null | grep -q "active"; then
+#      echo "VM has reached multi-user mode!"
+#      exit 0
+#    fi
+#    echo "Waiting for VM (attempt $((i/WAIT_INTERVAL+1)))..."
+#    sleep $WAIT_INTERVAL
+#  done
+
+#  echo "Timed out waiting for VM to reach multi-user mode!"
+  return 0
+}
+

@@ -828,7 +828,7 @@ function parse_SYNC_path_local() {
   return 0
 }
 
-_carg_SYNC_path_remote_param=/usr/local/bin
+_carg_SYNC_path_remote_param=/usr/local/bin/
 function parse_SYNC_path_remote() {
   local cname=$1
   local clink=$2
@@ -891,16 +891,21 @@ function main() {
       op_run $cont_name 1
     ;;
     run)
-      echo "Run '${_carg_RUN_name_param}'"
+      op_run ${_carg_RUN_name_param}
     ;;
     command)
-      echo "Command: " $_carg_COMMAND_arg_param
+      # echo "Command: " $_carg_COMMAND_arg_param
+      load_containersettings
+      op_gcommand
     ;;
     sync)
-      echo "Sync: " $_carg_SYNC_path_local_param $_carg_SYNC_path_remote_param "$_carg_SYNC_reverse_flag"
+      # echo "Sync: " $_carg_SYNC_path_local_param $_carg_SYNC_path_remote_param "$_carg_SYNC_reverse_flag"
+      load_containersettings
+      op_sync
     ;;
     console)
-      echo "Console"
+      load_containersettings
+      op_enter
     ;;
     ls)
       check_environment
@@ -923,21 +928,30 @@ function main() {
       fi
     ;;
     waitfor)
-      echo "WaitRor"
+      load_containersettings
+      op_waitfor || res=$?
     ;;
     es)
       case $_carg_ES_MODE_param in
         ls)
-          echo "ls $_carg_es_ls_full_flag"
+          echo "External storage list: "
+          if [ "${_carg_es_ls_full_flag}" == "1" ]; then
+            ls -l "${EXTSTORE_DIR}"
+          else
+            ls "${EXTSTORE_DIR}"
+          fi
         ;;
         add)
-          echo "add ${_carg_ES_ADD_ref_param} ${_carg_ES_ADD_size_param}: ${_carg_ES_ADD_path_param}"
+          # echo "add ${_carg_ES_ADD_ref_param} ${_carg_ES_ADD_size_param}: ${_carg_ES_ADD_path_param}"
           if [ -n "${_carg_ES_ADD_size_param}" ]; then
             prepare_usbstick "${_carg_ES_ADD_path_param}" ${_carg_ES_ADD_size_param}
           fi
+
+          insert_usbstick "${_carg_ES_ADD_path_param}"
         ;;
         eject)
-          echo "Exect"
+          # issues: does not work
+          remove_usbstick
         ;;
       esac
     ;;
@@ -956,172 +970,3 @@ function main() {
 
 main
 exit $?
-
-
-
-
-function insert_usbstick() {
-  local PATH=$(realpath $1)
-
-  local USB_STICK_CNT=$(/usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF | /usr/bin/grep 'Product QEMU USB MSD' | /usr/bin/wc -l
-info usb
-EOF
-)
-
-  local USB_DEV_ID="usbdrive$USB_STICK_CNT"
-
-  /usr/bin/nc -U ${QEMU_MONITOR_UNIXSOCKET} -q 0 <<EOF
-drive_add 0 if=none,id=${USB_DEV_ID},format=raw,file=${PATH}
-device_add usb-storage,drive=${USB_DEV_ID},bus=usb-bus.0
-EOF
-
-  echo "USB mass storage device inserted: ${USB_DEV_ID}"
-
-  #device_del usbdrive1
-}
-
-function remove_usbstick() {
-# removing does not work!
-  /usr/bin/nc -U $QEMU_MONITOR_UNIXSOCKET -q 0 <<EOF
-drive_del usbdrive1
-device_del usb-storage
-EOF
-}
-
-
-
-function op_waitfor() {
-  local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
-  local WAIT_TIMEOUT=300             # Timeout (in seconds)
-  local PING_INTERVAL=3
-  SSH_OPTIONS="-o ConnectTimeout=3 -o BatchMode=yes"
-
-  echo -n "Waiting for '${_CONTAINER_NAME}' to reach multi-user mode ."
-
-  local ctime=$(date +%s)
-  local wait_until=$((${ctime}+${WAIT_TIMEOUT}))
-
-  while ! $(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost "[ $(rc-status -r) == "default" ]" 2> /dev/null); do
-    sleep $PING_INTERVAL
-    echo -n '.'
-
-    if [ $(date +%s) -gt ${wait_until} ]; then
-      echo ''
-      echo "Container not accessible!"
-
-      return 1
-    fi
-  done
-
-  echo ''
-  echo "'${_CONTAINER_NAME}' avaliable"
-
-#  for (( sec=0; sec<=$WAIT_TIMEOUT; i+=$WAIT_INTERVAL )); do
-#    if ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no -o BatchMode=yes "$SSH_USER@$VM_IP" "systemctl is-active multi-user.target" 2>/dev/null | grep -q "active"; then
-#      echo "VM has reached multi-user mode!"
-#      exit 0
-#    fi
-#    echo "Waiting for VM (attempt $((i/WAIT_INTERVAL+1)))..."
-#    sleep $WAIT_INTERVAL
-#  done
-
-#  echo "Timed out waiting for VM to reach multi-user mode!"
-  return 0
-}
-
-# determinate operation mode:
-if [ -n "$_IMG_FILE" ]; then
-  _MODE="image"
-elif [ -n "$_CONTAINER_NAME" ]; then
-  _MODE="container"
-  # load settings
-fi
-
-case $_MODE in
-  image)
-
-  ;;
-
-  container)
-
-  ;;
-  command)
-    load_containersettings
-    op_gcommand
-
-    exit 0
-  ;;
-  sync)
-    load_containersettings
-    op_sync
-
-    exit 0
-  ;;
-  enter)
-    load_containersettings
-    op_enter
-
-    exit 0
-  ;;
-  stop)
-
-  ;;
-  waitfor)
-    load_containersettings
-    op_waitfor && exit 0 || exit $?
-  ;;
-  extstore)
-    case $_EXTSTORAGE_MODE in
-      ls)
-        if [ ${_LIST_WITH_DETAILS} -eq 1 ]; then
-          ls -l "${EXTSTORE_DIR}"
-        else
-          ls "${EXTSTORE_DIR}"
-        fi
-      ;;
-      add)
-        insert_usbstick "${_EXTSTORAGE_REF}"
-      ;;
-      eject)
-        remove_usbstick
-      ;;
-    esac
-
-    exit 0
-  ;;
-
-  *)
-    # if undefined mode print help:
-    print_help
-    exit 2
-  ;;
-esac
-
-# Test and run:
-
-# At this point in the case of '--imgboot y' image boot partition is
-# mounted and ${_KERNEL} and ${_INITRAMFS} (if defined) is a path to
-# file within mounted boot partition.
-# Therefore below code tests for kernel and initramfs existsnce
-# regardless of '--imgboot' option.
-
-
-
-M_CPU=${devices_cpu[${_carg_CREATE_dev_name_param}]}
-M_DTB=${devices_dtb[${_carg_CREATE_dev_name_param}]}
-
-DTB_FILE=${DTB_LIB}/${M_DTB}
-
-if [ ! -f "${DTB_FILE}" ]; then
-  echo "DTB file has not been found: ${DTB_FILE}"
-  exit 3
-fi
-
-
-
-if [ "${_MODE}" == "image" ] && [ "${_carg_CREATE_name_flag}" != "0" ]; then
-  $RUN rm "${CONT_FILE}"
-  $RUN rm -rf ${DB_DIR}/${_CONTAINER_NAME}
-fi
-
-exit 0
