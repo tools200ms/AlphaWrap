@@ -31,7 +31,7 @@ function print_help() {
     cat <<EOF
 Usage:
 Creating container:
-$SCRIPT_BASE --device|-d [raspi3b] <img file> [+SIZE] --imgboot|-i y|n <kernel> <initramfs> --name|-n <name>
+$SCRIPT_BASE --device|-d [raspi3b] <img file> [+SIZE] --imgboot|-i y|n <kernel> <initramfs> --cmdline|-C <path|cmdl> --name|-n <name>
 
   --device|-d      - Model of the emulated device (default: '${_carg_CREATE_dev_name_param}').
   <img file>       - Path to image file to be mounted as 'mmcblk0'.
@@ -55,6 +55,20 @@ $SCRIPT_BASE --device|-d [raspi3b] <img file> [+SIZE] --imgboot|-i y|n <kernel> 
                      '${_KERNEL}' is loaded from boot image file partition
                      (if '-i y'), or current directory of a local file system
                      (if '-i n'). In this case initramfs can't be used.
+
+  --cmdline|-C     - Kernel command line line, or file path. If VM is loaded
+                     with '-i y' (boot from image's '/boot' partition) $SCRIPT_BASE
+                     uses 'cmdline.txt' that is found in an image.
+                     This parameter can be used with '-i n' when image is not
+                     examined to pass kernel command line parameters.
+                     Note, with '-i n' kernel and optionally initramfs must be
+                     provided to VM as an external files.
+                     If '--cmdline' is used in combination with '-i y', original
+                     'cmdline.txt' that is normally stored at boot partition is not
+                     loaded by $SCRIPT_BASE, instead provided command line with
+                     '--cmdline' is applied.
+                     '--cmdline' argument can be path to 'cmdline.txt' file, or an
+                     actual kernel command line.
 
   --name|-n        - Create named container, in option '-n' is followed by
                      <name> container with a given name is created.
@@ -387,7 +401,7 @@ function parse__CREATE() {
     return 1
   fi
 
-  _carg_chain_parse "--device-d? dev_name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --name-n? cont_name?" "CREATE"
+  _carg_chain_parse "--device-d? dev_name? file_path extr_size? --imgboot-i yesno kelner? initramfs? --cmdline-C? cmdline? --name-n? cont_name?" "CREATE"
   res=$?
 
   if [ $res -eq 0 ] && [ -z $_carg__MODE_param ]; then
@@ -542,7 +556,46 @@ function parse_CREATE_initramfs() {
   return 0
 }
 
+function parse_CREATE_cmdline() {
+  local cname=$1
+  local clink=$2
+  local cmdl=$3
+  local prev_flag=$4
+  local prev_flag_dist=$5
+  local cmdline=
+  local filesize=
 
+  echo "$cname $clink $cmdl $prev_flag $prev_flag_dist"
+
+  if [ $prev_flag != 'C' ] || [ $prev_flag_dist -ne 1 ]; then
+    return 1
+  fi
+
+  if $(validate_path "${cmdl}") && [ -f "${cmdl}" ]; then
+    filesize=$(stat -c%s "$cmdl")
+
+    # assuming file can have a lot of comments
+    # this treshold will not allow to load e.g. initramfs
+    # (in the case of mistake)
+    if (( filesize > 4096 )); then
+      _attach_errormsg "File too large, is 'cmdline.txt'?"
+        return 1
+    fi
+
+    cmdline=$(tail -n 1 "${cmdl}")
+  else
+    cmdline="${cmdl}"
+  fi
+
+  if ! $(validate_cmdline "${cmdl}"); then
+    _attach_errormsg "Provided 'command line' does not look legitimate."
+    return 2
+  fi
+
+  carg_set_param "$cname" $clink "${cmdline}"
+
+  return 0
+}
 
 function parse_CREATE_cont_name() {
   local cname=$1
@@ -616,8 +669,8 @@ function check_CREATE() {
 
   # Create random name if user did not assign
   if [ "${_carg_CREATE_name_flag}" == "1" ] && [ -z ${parse_CREATE_cont_name_param} ]; then
-    parse_CREATE_cont_name_param=$(get_random_name)
-    echo "Random name assigned: ${parse_CREATE_cont_name_param}"
+    _carg_CREATE_cont_name_param=$(get_random_name)
+    echo "Random name assigned: ${_carg_CREATE_cont_name_param}"
   fi
 
   return 0

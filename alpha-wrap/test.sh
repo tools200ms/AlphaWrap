@@ -38,6 +38,35 @@ while [ -n "$ARGS" ]; do
   cnt=$(($cnt+1))
 done
 
+validate_cmdline "root=UUID=864796f0-12e6-4dd7-92bb-272cad8beb7f modules=sd-mod,usb-storage,ext4 quiet rootfstype=ext4" && res=0 || res=$?
+
+if [ $res -ne 0 ]; then
+  echo "cmdline validation failed"
+else
+  echo "cmdline validation OK"
+fi
+
+validate_cmdline "BOOT_IMAGE=/vmlinuz-5.4.0 root=/dev/sda1 ro quiet splash" && res=0 || res=$?
+
+if [ $res -ne 0 ]; then
+  echo "cmdline validation failed"
+else
+  echo "cmdline validation OK"
+fi
+
+validate_cmdline "    " && res=0 || res=$?
+if [ $res -ne 0 ]; then
+  echo "cmdline validation failed"
+else
+  echo "cmdline validation OK"
+fi
+
+validate_cmdline "ddd" && res=0 || res=$?
+if [ $res -ne 0 ]; then
+  echo "cmdline validation failed"
+else
+  echo "cmdline validation OK"
+fi
 
 
 exit 0

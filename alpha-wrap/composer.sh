@@ -11,10 +11,18 @@ else
   CHROOTM_EXEC="chroot_master.sh"
 fi
 
-AW_RUN="./alpha-wrap/alpha-wrap"
+AW_RUN="$RUN ./alpha-wrap/alpha-wrap"
 TEMP_DIR=./build.temp
 
 mkdir -p ${TEMP_DIR}
+
+ALPINE_SETUP_CMDLINE_FILE="./res/cmdline-alpine_setup.txt"
+
+if [ ! -f "${ALPINE_SETUP_CMDLINE_FILE}" ]; then
+  echo "File: ${ALPINE_SETUP_CMDLINE_FILE} has not been found"
+  echo "It's essential for a further operations, exiting"
+  return 1
+fi
 
 ${AW_RUN} waitfor
 
@@ -29,13 +37,20 @@ ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec chroot.armhf alpbase_bui
 
 ${AW_RUN} command "/bin/ash -l -c 'mount /dev/sda1 /mnt'"
 mkdir -p ${TEMP_DIR}/sl_boot
-${AW_RUN} sync ${TEMP_DIR}/sl_boot/ "/mnt/*-rpi" -r
+${AW_RUN} sync ${TEMP_DIR}/sl_boot/ /mnt/vmlinuz-rpi -r
+${AW_RUN} sync ${TEMP_DIR}/sl_boot/ /mnt/initramfs-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/sl_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
 # test
+${AW_RUN} stop
 
-# ${AW_RUN} --device raspi3b ${IMAGE} --imgboot y vmlinuz-rpi initramfs-rpi
+${AW_RUN} --device raspi3b ${IMAGE_SL} \
+          --imgboot n ${TEMP_DIR}/sl_boot/vmlinuz-rpi ${TEMP_DIR}/sl_boot/initramfs-rpi \
+          --cmdline ${ALPINE_SETUP_CMDLINE_FILE}
+
+exit 0
+
 gzip -c ${IMAGE_SL} > ${IMAGE_SL}.gz
 bzip2 -c ${IMAGE_SL} > ${IMAGE_SL}.bz2
 xz -c ${IMAGE_SL} > ${IMAGE_SL}.xz
@@ -50,7 +65,8 @@ ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec chroot.aarch64 alpbase_b
 
 ${AW_RUN} command "/bin/ash -l -c 'mount /dev/sdb1 /mnt'"
 mkdir -p ${TEMP_DIR}/jl_boot
-${AW_RUN} sync ${TEMP_DIR}/jl_boot/ "/mnt/*-rpi" -r
+${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/vmlinuz-rpi -r
+${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/initramfs-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
@@ -72,7 +88,8 @@ ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec chroot.aarch64 alpbase_b
 
 ${AW_RUN} command "/bin/ash -l -c 'mount /dev/sdc1 /mnt'"
 mkdir -p ${TEMP_DIR}/bd_boot
-${AW_RUN} sync ${TEMP_DIR}/bd_boot/ "/mnt/*-rpi" -r
+${AW_RUN} sync ${TEMP_DIR}/bd_boot/ /mnt/vmlinuz-rpi -r
+${AW_RUN} sync ${TEMP_DIR}/bd_boot/ /mnt/initramfs-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/bd_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 

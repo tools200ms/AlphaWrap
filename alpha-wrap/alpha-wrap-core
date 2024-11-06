@@ -187,9 +187,6 @@ function _op_run() {
     extr_opt="${extr_opt} -daemonize"
   #fi
 
-  echo ${cont_file}
-  echo ${kern_params}
-
   $RUN /usr/bin/qemu-system-aarch64 \
     -M ${mach} \
     -monitor unix:$QEMU_MONITOR_UNIXSOCKET,server,nowait \
@@ -317,16 +314,20 @@ function op_create() {
 
   # installation
   $RUN cp ${kernel} ${DB_DIR}/${cont_name}/
-  kernel=${DB_DIR}/${cont_name}/$(basename ${kernel})
+  #kernel=${DB_DIR}/${cont_name}/$(basename ${kernel})
 
-  if [ -n "${cmdline}" ]; then
+  if [ -n "${_carg_CREATE_cmdline_param}" ]; then
+    cat << EOF | tee ${DB_DIR}/${cont_name}/cmdline.txt
+# Set with '--cmdline' flag
+${_carg_CREATE_cmdline_param}
+EOF
+  elif [ -n "${cmdline}" ]; then
     $RUN cp ${cmdline} ${DB_DIR}/${cont_name}/cmdline.txt
-    cmdline=${DB_DIR}/${cont_name}/cmdline.txt
   fi
 
   if [ -n "${initrd}" ]; then
     $RUN cp ${initrd} $DB_DIR/${cont_name}/
-    initrd=${DB_DIR}/${cont_name}/$(basename ${initrd})
+    #initrd=${DB_DIR}/${cont_name}/$(basename ${initrd})
   fi
 
   local config_out=$([ -z $RUN ] && echo " $DB_DIR/${cont_name}/config.txt" || echo "")

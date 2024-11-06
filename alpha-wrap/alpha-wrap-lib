@@ -36,3 +36,10 @@ function validate_path() {
   return $?
 }
 
+function validate_cmdline() {
+  local res=0
+  local regex='^(\S|\s){2,1024}$'
+
+  [[ "$1" =~ $regex ]] || res=$?
+  return $res
+}
