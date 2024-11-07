@@ -42,14 +42,6 @@ ${AW_RUN} sync ${TEMP_DIR}/sl_boot/ /mnt/initramfs-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/sl_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
-# test
-${AW_RUN} stop
-
-${AW_RUN} --device raspi3b ${IMAGE_SL} \
-          --imgboot n ${TEMP_DIR}/sl_boot/vmlinuz-rpi ${TEMP_DIR}/sl_boot/initramfs-rpi \
-          --cmdline ${ALPINE_SETUP_CMDLINE_FILE}
-
-exit 0
 
 gzip -c ${IMAGE_SL} > ${IMAGE_SL}.gz
 bzip2 -c ${IMAGE_SL} > ${IMAGE_SL}.bz2
@@ -69,9 +61,6 @@ ${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/vmlinuz-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/initramfs-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/jl_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
-
-# test
-
 
 # ${AW_RUN} --device raspi3b ${IMAGE} --imgboot y vmlinuz-rpi initramfs-rpi
 gzip -c ${IMAGE_JL} > ${IMAGE_JL}.gz
@@ -93,19 +82,19 @@ ${AW_RUN} sync ${TEMP_DIR}/bd_boot/ /mnt/initramfs-rpi -r
 ${AW_RUN} sync ${TEMP_DIR}/bd_boot/ /mnt/cmdline.txt -r
 ${AW_RUN} command "/bin/ash -l -c 'umount /mnt'"
 
-# Do Tests
 
-# Pack
 gzip -c ${IMAGE_BD} > ${IMAGE_BD}.gz
 bzip2 -c ${IMAGE_BD} > ${IMAGE_BD}.bz2
 xz -c ${IMAGE_BD} > ${IMAGE_BD}.xz
 
 
+# DO tests
+# stop mother machine:
 ${AW_RUN} stop
 
-# Do tests:
-#${AW_RUN} -d raspi3b ${IMAGE_JL} -i y vmlinuz-rpi initramfs-rpi
+${AW_RUN} --device raspi3b ${IMAGE_SL} \
+          --imgboot n ${TEMP_DIR}/sl_boot/vmlinuz-rpi ${TEMP_DIR}/sl_boot/initramfs-rpi \
+          --cmdline ${ALPINE_SETUP_CMDLINE_FILE}
 
-# rm -rf ${TEMP_DIR}
 
 exit 0
