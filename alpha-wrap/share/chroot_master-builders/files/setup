@@ -1,8 +1,9 @@
 #!/sbin/openrc-run
-# Auto-installation service, to be run at the beginning to perform setup.
+# Auto-setup service fo AlpBase, to be run at the
+# beginning after/before Alpine's 'firstboot''.
 # If installation is successful, script is not called again.
 
-readonly VERSION=0.2
+readonly VERSION=0.3
 
 # Setup configuration BEGIN
 

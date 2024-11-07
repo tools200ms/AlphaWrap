@@ -329,13 +329,6 @@ function parse_size() {
 }
 
 
-
-setter_fn=
-param_chain=
-
-
-
-
 function parse__MODE() {
   local cname=$1
   local clink=$2
@@ -374,7 +367,11 @@ function parse__MODE() {
       _carg_chain_parse "MODE" "ES"
       res=$?
     ;;
-    create|run)
+    run|start)
+      cmd="run"
+      CARG=
+    ;;
+    create)
       CARG=
       # chain to be called later
     ;;
@@ -869,12 +866,16 @@ function check_COMMAND() {
 function parse_SYNC_path_local() {
   local cname=$1
   local clink=$2
-  local path=$(realpath $3)
+  local path=$3
 
   if [ ! -f $path ] && [ ! -d $path ]; then
     _attach_errormsg "Provide correc file or directory path."
     return 1
   fi
+
+  #if [ -d $path ]; then
+  #  path="$path/"
+  #fi
 
   carg_set_param "$cname" $clink $path
 
