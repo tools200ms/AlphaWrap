@@ -22,6 +22,7 @@ readonly QEMU_MONITOR_UNIXSOCKET="/tmp/qemu-monitor"
 # connection:
 readonly SSH_GUEST_PORT=15022
 readonly SSH_DEF_PRIV_KEY_NAME=id_ed25519
+readonly SSH_OPTIONS="-o ConnectTimeout=3 -o BatchMode=yes"
 
 # Global variables:
 _NO_PART_TABLE_MODE=-1
@@ -521,9 +522,12 @@ function op_sync() {
 }
 
 function op_enter() {
+  local res=0
   local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
 
-  $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost
+  $RUN ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost || res=$?
+  echo $res
+  return $res
 }
 
 
@@ -531,14 +535,31 @@ function op_waitfor() {
   local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
   local WAIT_TIMEOUT=300             # Timeout (in seconds)
   local PING_INTERVAL=3
-  SSH_OPTIONS="-o ConnectTimeout=3 -o BatchMode=yes"
+  local SSH_MSG=
+  local cres=
 
   echo -n "Waiting for '${_CONTAINER_NAME}' to reach multi-user mode ."
 
   local ctime=$(date +%s)
   local wait_until=$((${ctime}+${WAIT_TIMEOUT}))
 
-  while ! $(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost "[ $(rc-status -r) == "default" ]" 2> /dev/null); do
+  while true; do
+    SSH_MSG=$(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost "[ $(rc-status -r) == "default" ]" 2>&1)
+    cres=$?
+
+    if [ $cres -eq 0 ]; then
+      # connected!
+      break
+    fi
+
+    if ! $(echo "$SSH_MSG" | grep -q -e "Connection refused" -e "Connection timed out" -e "No route to host"); then
+      # if there is en error that is not associated with connection
+      echo ""; echo ""
+      echo "SSH error: $SSH_MSG"
+      return 2
+    fi
+    # otherwise network related error, so do wait
+
     sleep $PING_INTERVAL
     echo -n '.'
 

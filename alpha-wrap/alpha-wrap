@@ -352,7 +352,11 @@ function parse__MODE() {
       CARG=
       cmd="console"
     ;;
-    stop|waitfor|init)
+    waitfor|wait4)
+      CARG=
+      cmd="waitfor"
+    ;;
+    stop|init)
       # no argumans for these options
       CARG=
     ;;
@@ -1019,7 +1023,7 @@ function main() {
     ;;
   esac
 
-  return 0
+  return $res
 }
 
 main
