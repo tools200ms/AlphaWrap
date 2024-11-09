@@ -3,7 +3,7 @@
 # beginning after/before Alpine's 'firstboot''.
 # If installation is successful, script is not called again.
 
-readonly VERSION=0.3
+readonly VERSION=0.4
 
 # Setup configuration BEGIN
 
@@ -17,14 +17,20 @@ RUN=
 for arg in "$@"; do
   case "$arg" in
     --dry-run|-Z)
-      RUN="einfo [pretend] "
-      break
-      ;;
+        RUN="einfo [pretend] "
+    ;;
+    -v)
+        set -xe
+    ;;
+    -V)
+        echo "${RC_SVCNAME}, version: ${VERSION}"
+        return 0
+    ;;
   esac
 done
 
 
-blkd_check_sizes() {
+blkd_check_sizes_and_grow_fs() {
     local sys_dev=$1
     local root_dev=$2
 
@@ -33,22 +39,24 @@ blkd_check_sizes() {
     local part_sum_size=0
 
     for blkd in $(ls ${sys_dev}*); do
-        if [ "${blkd}" == "${sys_blkd}" ]; then
-            bdev_size=$(blockdev --getsize64 ${sys_blkd})
+        if [ "${blkd}" == "${sys_dev}" ]; then
+            bdev_size=$(blockdev --getsize64 ${sys_dev})
             continue;
         fi
-        part_sum_size=(( $(blockdev --getsize64 ${blkd}) + ${part_sum_size} ))
+        part_sum_size=$(( $(blockdev --getsize64 ${blkd}) + ${part_sum_size} ))
     done
 
     echo "DIFF: $(($bdev_size - $part_sum_size))"
     echo "    $bdev_size $part_sum_size"
+
+    blkd_grow_fs $sys_dev $root_dev
 }
 
 blkd_grow_fs() {
-    local sys_blkd=$1
-    local root_blkd=$2
+    local sys_dev=$1
+    local root_dev=$2
 
-    $RUN fdisk ${sys_blkd} <<EOF
+    $RUN fdisk ${sys_dev} <<EOF
 d
 2
 n
@@ -60,16 +68,18 @@ N
 w
 EOF
 
-    partprobe ${sys_blkd}
+    $RUN partprobe ${sys_dev}
 
-    $RUN resize2fs ${root_blkd}
+    $RUN resize2fs ${root_dev}
+
+    mount -o remount,rw ${root_dev}
 }
 
-check_blockdev() {
+find_blockdev_check_sizes_and_grow_fs() {
     local root_dev=$(realpath /dev/root)
-    local sys_blkn="/dev/$(lsblk -no pkname ${root_dev})"
+    local sys_blkn=$(lsblk -no pkname ${root_dev})
 
-    blkd_check_sizes "/dev/${sys_blkn}" ${root_dev}
+    blkd_check_sizes_and_grow_fs "/dev/${sys_blkn}" ${root_dev}
 }
 
 check_devd() {
@@ -81,7 +91,7 @@ install_sshkeys() {
         return 0
     fi
 
-    for $key_file in "/boot/_ssh/*.pub"; do
+    for key_file in $(ls /boot/_ssh/*.pub 2>/dev/null); do
         echo "Found key: $key_file"
         #echo "$KOPT_ssh_key" > /root/.ssh/authorized_keys
     done
@@ -91,7 +101,7 @@ start() {
     ebegin "Starting ${RC_SVCNAME} (version: ${VERSION})"
 
     ls -aFl /boot
-    check_blockdev
+    find_blockdev_check_sizes_and_grow_fs
     check_devd
 
     echo $RUN

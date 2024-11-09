@@ -837,7 +837,6 @@ function parse_RUN_name() {
     return 1
   fi
 
-  echo HIT "$cname" $clink $name
   if [ ! -d "$DB_DIR/$name" ]; then
     _attach_errormsg "Container does not exists"
     return 1

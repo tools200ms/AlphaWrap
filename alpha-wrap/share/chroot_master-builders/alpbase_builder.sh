@@ -24,6 +24,10 @@ ${indent_p1}be_desktop  | bd    <device>
   AlpBase edition for installation: Super Light, Just Light, BeDesktop
   <device> - block device for installation of a selected edition
 
+$(basename $0) updates|u
+  Check if Alpine updates are avaliable. If so, updates are installed
+  and '0' is returned. Otherwise, 'non-zero' exit code is returned.
+
 $(basename $0) help
   Print this help and exit.
 
@@ -53,6 +57,16 @@ readonly LOG_FILE=/var/log/alpbase_alpine-setup.log
 
 MODE=$1
 SETUP_DEV=$2
+
+if [[ "$MODE" == "u" || "$MODE" == "updates" ]]; then
+  # if updates available
+  apk update
+  if [ $(apk version -a | wc -l) -ne 1 ]; then
+    apk upgrade
+    exit 0
+  fi
+  exit 1
+fi
 
 if [[ "$MODE" == "-h" || "$MODE" == "--help" || "$MODE" == "help" ]]; then
     print_help

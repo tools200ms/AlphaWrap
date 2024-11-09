@@ -63,8 +63,22 @@ compress_image() {
     xz -c "$image" > "${image}.xz"
 }
 
+res=0
 # Creating Editions
+# Based on Alpine ARMHF
+${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
+if [ $res -ne 0 ]; then
+  echo "No updates avaliable"
+fi
+
 create_edition "super_light" "chroot.armhf" "/dev/sda" "450MB"
+
+# Based on Alpine AARCH64
+${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.aarch64" alpbase_builder.sh updates'" || res=$?
+if [ $res -ne 0 ]; then
+  echo "No updates avaliable"
+fi
+
 create_edition "just_light" "chroot.aarch64" "/dev/sdb" "500MB"
 create_edition "bedesktop" "chroot.aarch64" "/dev/sdc" "5200MB"
 

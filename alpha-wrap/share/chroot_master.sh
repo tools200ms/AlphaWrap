@@ -7,7 +7,7 @@
 [ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         set -xe || set -e
 
-readonly VERSION="0.0.1"
+readonly VERSION="0.0.2"
 readonly mirror="http://alpine.sakamoto.pl/alpine"
 
 # Chroot directories for Alpine ARMHF (32-bit) and AARCH64 (64-bit)
@@ -205,6 +205,8 @@ function check_param_chroot() {
   return 0
 }
 
+res=0
+
 case $1 in
   make)
     # bind
@@ -232,9 +234,8 @@ case $1 in
     set_base
 
     shift 3
-    chroot ${chroot_dir} ${command} "$@"
+    chroot ${chroot_dir} ${command} "$@" || res=$?
   ;;
-
 
   close)
     unset_base
@@ -253,4 +254,4 @@ case $1 in
   ;;
 esac
 
-exit 0
+exit $res
