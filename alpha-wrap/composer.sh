@@ -13,6 +13,21 @@ AW_RUN="$RUN ./alpha-wrap/alpha-wrap"
 TEMP_DIR=./build.temp
 ALPINE_SETUP_CMDLINE_FILE="./res/cmdline-alpine_setup.txt"
 
+
+# Initialize an index variable to track the current device
+DEVICE_INDEX=0
+# Array of devices to cycle through
+DEVICES=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
+
+# Define the function to return the next device
+next_device() {
+    # Print the current device
+    echo "${DEVICES[$DEVICE_INDEX]}"
+
+    # Update the index to the next device, looping back to 0 if we exceed the array length
+    DEVICE_INDEX=$((DEVICE_INDEX + 1))
+}
+
 mkdir -p ${TEMP_DIR}
 
 # Check for essential file
@@ -28,13 +43,15 @@ ${AW_RUN} waitfor
 create_edition() {
     local edition=$1
     local chroot=$2
-    local device=$3
-    local size=$4
+    local size=$3
+
+    local device=$(next_device)
     local boot_dir="${TEMP_DIR}/${edition}_boot"
     local image="images/alpbase-${edition}-$(date +%m-%Y_d%d%H%M).iso"
 
     echo "Creating ${edition^} Edition"
     ${AW_RUN} extstore add "${image}" "$size"
+
     ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec ${chroot} alpbase_builder.sh ${edition} ${device}'"
 
     mount_and_sync "${device}1" "$boot_dir"
@@ -67,25 +84,26 @@ res=0
 # Creating Editions
 # Based on Alpine ARMHF
 ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
-if [ $res -ne 0 ]; then
-  echo "No updates avaliable"
+if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+  create_edition "super_light" "chroot.armhf" "450MB"
+else
+  echo "No updates available, or image already exists"
+  echo "Skipping build"
 fi
-
-create_edition "super_light" "chroot.armhf" "/dev/sda" "450MB"
 
 # Based on Alpine AARCH64
 ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.aarch64" alpbase_builder.sh updates'" || res=$?
-if [ $res -ne 0 ]; then
-  echo "No updates avaliable"
+if [ $res -eq 0 ] || \
+    [ $(ls images/alpbase-just_light*.iso 2>/dev/null | wc -l) -eq 0 ] || \
+    [ $(ls images/alpbase-be_desktop*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+  create_edition "just_light" "chroot.aarch64" "500MB"
+  create_edition "be_desktop" "chroot.aarch64" "5200MB"
+else
+  echo "No updates available, or image already exists"
+  echo "Skipping build"
 fi
-
-create_edition "just_light" "chroot.aarch64" "/dev/sdb" "500MB"
-create_edition "bedesktop" "chroot.aarch64" "/dev/sdc" "5200MB"
 
 # Finalization and Testing
 ${AW_RUN} stop
-#${AW_RUN} --device raspi3b "${TEMP_DIR}/sl_boot/vmlinuz-rpi" --imgboot n \
-#          "${TEMP_DIR}/sl_boot/vmlinuz-rpi" "${TEMP_DIR}/sl_boot/initramfs-rpi" \
-#          --cmdline "${ALPINE_SETUP_CMDLINE_FILE}"
 
 exit 0

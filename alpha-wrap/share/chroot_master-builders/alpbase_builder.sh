@@ -51,6 +51,20 @@ function require_chroot() {
   fi
 }
 
+CACHE_TIMESTAMP_FILE="/tmp/ab_builder_update_timestamp"
+CACHE_DURATION=$((60 * 60))  # 1 hour in seconds
+
+function update_frequency_limit_check() {
+    # If the cache file does not exist, or if it's more than an hour old
+    if [[ ! -f "$CACHE_TIMESTAMP_FILE" ]] || (( $(date +%s) - $(cat "$CACHE_TIMESTAMP_FILE") >= CACHE_DURATION )); then
+      # Update cache timestamp
+      date +%s > "$CACHE_TIMESTAMP_FILE"
+      return 0  # Indicates cache is expired or does not exist
+    else
+      return 1  # Indicates cache is still valid
+    fi
+}
+
 
 readonly RES_DIR=$(dirname $0)/files
 readonly LOG_FILE=/var/log/alpbase_alpine-setup.log
@@ -59,6 +73,11 @@ MODE=$1
 SETUP_DEV=$2
 
 if [[ "$MODE" == "u" || "$MODE" == "updates" ]]; then
+
+  if ! update_frequency_limit_check; then
+    exit 1
+  fi
+
   # if updates available
   apk update
   if [ $(apk version -a | wc -l) -ne 1 ]; then

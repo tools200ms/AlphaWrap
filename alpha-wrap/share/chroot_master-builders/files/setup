@@ -55,6 +55,17 @@ blkd_check_sizes_and_grow_fs() {
 blkd_grow_fs() {
     local sys_dev=$1
     local root_dev=$2
+    local resize_cmd=
+
+    case $(lsblk -no fstype ${root_dev}) in
+        ext4)
+            resize_cmd="resize2fs"
+        ;;
+        *)
+            echo "Unsupported filesystem"
+            return 1
+        ;;
+    esac
 
     $RUN fdisk ${sys_dev} <<EOF
 d
@@ -70,7 +81,7 @@ EOF
 
     $RUN partprobe ${sys_dev}
 
-    $RUN resize2fs ${root_dev}
+    $RUN ${resize_cmd} ${root_dev}
 
     mount -o remount,rw ${root_dev}
 }
