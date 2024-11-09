@@ -51,7 +51,7 @@ function require_chroot() {
   fi
 }
 
-CACHE_TIMESTAMP_FILE="/tmp/ab_builder_update_timestamp"
+CACHE_TIMESTAMP_FILE="/var/tmp/ab_builder_update_timestamp"
 CACHE_DURATION=$((60 * 60))  # 1 hour in seconds
 
 function update_frequency_limit_check() {
@@ -132,24 +132,30 @@ case $EDITION in
   super_light)
     # for one CPU core
     DEVD=mdev
-    ROOTFS=jffs2
+    ROOTFS=ext4
+    #jffs2
+    SSHD=dropbear
     DESKTOP=none
   ;;
   just_light)
     # multi-core CPU:
     DEVD=mdevd
-    ROOTFS=jffs2
+    ROOTFS=ext4
+    #jffs2
+    SSHD=dropbear
     DESKTOP=none
   ;;
   be_desktop)
     # fancy features
     DEVD=udev
     ROOTFS=f2fs
+    SSHD=dropbear
     DESKTOP=standard
   ;;
   iam_tablet)
     DEVD=mdevd
     ROOTFS=jffs2
+    SSHD=dropbear
     DESKTOP=tablet
   ;;
   *)
@@ -222,6 +228,9 @@ case $DEVD in
 esac
 
 case $ROOTFS in
+  ext4)
+    chroot ${SETUP_ROOT} apk add e2fsprogs-extra
+  ;;
   jffs2)
     # mkfs.jffs2: Used to create a JFFS2 filesystem.
     # jffs2dump: Dumps the contents of a JFFS2 filesystem.
@@ -235,6 +244,15 @@ case $ROOTFS in
   *)
     echo "This should not happen"
     exit 222
+  ;;
+esac
+
+case $SSHD in
+  dropbear)
+    chroot ${SETUP_ROOT} apk add dropbear
+  ;;
+  openssh)
+    chroot ${SETUP_ROOT} apk add openssh
   ;;
 esac
 
