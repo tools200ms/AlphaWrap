@@ -67,7 +67,6 @@ function update_frequency_limit_check() {
 
 
 readonly RES_DIR=$(dirname $0)/files
-readonly LOG_FILE=/var/log/alpbase_alpine-setup.log
 
 MODE=$1
 SETUP_DEV=$2
@@ -134,6 +133,7 @@ case $EDITION in
     DEVD=mdev
     ROOTFS=ext4
     #jffs2
+    NTP=none
     SSHD=dropbear
     DESKTOP=none
   ;;
@@ -142,13 +142,16 @@ case $EDITION in
     DEVD=mdevd
     ROOTFS=ext4
     #jffs2
+    NTP=busybox
     SSHD=dropbear
     DESKTOP=none
   ;;
   be_desktop)
     # fancy features
     DEVD=udev
-    ROOTFS=f2fs
+    ROOTFS=ext4
+    #f2fs
+    NTP=chrony
     SSHD=dropbear
     DESKTOP=standard
   ;;
@@ -164,6 +167,7 @@ case $EDITION in
   ;;
 esac
 
+readonly LOG_FILE=/var/log/alpbase_alpine-setup-$EDITION.log
 echo "Installing: $EDITION edition"
 echo ""
 
@@ -197,8 +201,11 @@ $RUN mount ${SETUP_DEV}1 ${SETUP_ROOT}/boot
 
 # === 1.2: Copy setup and add edition specific settings:
 $RUN cat $RES_DIR/setup | \
-      sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}\; DESKTOP=${DESKTOP}" \
+      sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}\; NTP=${NTP}\; DESKTOP=${DESKTOP}" \
       > ${SETUP_ROOT}/etc/init.d/setup && chmod +x ${SETUP_ROOT}/etc/init.d/setup
+
+$RUN cat $RES_DIR/setup-msg > ${SETUP_ROOT}/etc/init.d/setup-msg && chmod +x ${SETUP_ROOT}/etc/init.d/setup-msg
+$RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chmod +x ${SETUP_ROOT}/usr/local/bin/setup-finish
 
 # === 1.3: Bind system directories for jumping into chroot:
 chroot_bind.sh system ${SETUP_ROOT}
@@ -247,6 +254,15 @@ case $ROOTFS in
   ;;
 esac
 
+case $NTP in
+  chrony)
+    echo "Install"
+  ;;
+esac
+
+# create user
+setup-user -a master
+
 case $SSHD in
   dropbear)
     chroot ${SETUP_ROOT} apk add dropbear
@@ -257,7 +273,7 @@ case $SSHD in
 esac
 
 # === 2.2. Install desktop if applicable:
-if [ -z $DESKTOP ] && [ $DESKTOP != "none" ]; then
+if [ -n "$DESKTOP" ] && [ $DESKTOP != "none" ]; then
   # gnome||
   case $DESKTOP in
     tablet)
@@ -277,11 +293,7 @@ if [ -z $DESKTOP ] && [ $DESKTOP != "none" ]; then
   esac
 
   echo "Desktop to be installed: $DESKTOP_TYPE"
-  chroot ${SETUP_ROOT} setup-desktop $DESKTOP_TYPE <<EOF | tee ${LOG_FILE}
-master|no
-
-
-EOF
+  chroot ${SETUP_ROOT} setup-desktop $DESKTOP_TYPE | tee ${LOG_FILE}
 fi
 
 # y - to scann for devices
@@ -289,6 +301,11 @@ fi
 #$DEVD
 #n
 #EOF
+
+# make corrections:
+BOOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}1)
+ROOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}2)
+BOOT_UUID=${BOOT_UUID} ROOT_UUID=${ROOT_UUID} fstab.gen > /mnt/etc/fstab.new
 
 chroot_bind.sh --unbind system ${SETUP_ROOT}
 umount ${SETUP_ROOT}/boot

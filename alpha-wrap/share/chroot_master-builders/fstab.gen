@@ -1,0 +1,13 @@
+#!/bin/sh
+
+cat <<EOF
+UUID=${ROOT_UUID}  /       ext4    rw,discard,relatime 0 1
+UUID=${BOOT_UUID}  /boot   vfat    rw,discard,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro 0 2
+
+/dev/cdrom      /media/cdrom    iso9660 noauto,ro 0 0
+/dev/usbdisk    /media/usb      vfat    noauto  0 0
+
+tmpfs   /tmp    tmpfs   nosuid,nodev,noexec    0       0
+EOF
+
+exit 0

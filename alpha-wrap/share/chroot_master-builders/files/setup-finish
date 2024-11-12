@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+setup-keymap
+setup-timezone
+setup-hostname
+
+exit 0

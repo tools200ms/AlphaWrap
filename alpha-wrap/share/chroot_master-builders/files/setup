@@ -37,6 +37,7 @@ blkd_check_sizes_and_grow_fs() {
     # sizes in bytes ('--getsize64' option returns bytes):
     local bdev_size=
     local part_sum_size=0
+    local nopart_space=0
 
     for blkd in $(ls ${sys_dev}*); do
         if [ "${blkd}" == "${sys_dev}" ]; then
@@ -46,10 +47,12 @@ blkd_check_sizes_and_grow_fs() {
         part_sum_size=$(( $(blockdev --getsize64 ${blkd}) + ${part_sum_size} ))
     done
 
-    echo "DIFF: $(($bdev_size - $part_sum_size))"
-    echo "    $bdev_size $part_sum_size"
+    nopart_space=$(($bdev_size - $part_sum_size))
 
-    blkd_grow_fs $sys_dev $root_dev
+    if [ ${nopart_space} -gt 1048576 ]; then
+        einfo "Found $((${nopart_space}/1048576))MiB of un-partitioned space"
+        blkd_grow_fs $sys_dev $root_dev
+    fi
 }
 
 blkd_grow_fs() {
@@ -62,12 +65,12 @@ blkd_grow_fs() {
             resize_cmd="resize2fs"
         ;;
         *)
-            echo "Unsupported filesystem"
+            eerror "Unsupported filesystem"
             return 1
         ;;
     esac
 
-    $RUN fdisk ${sys_dev} <<EOF
+    $RUN fdisk ${sys_dev} <<EOF > /dev/null
 d
 2
 n
@@ -93,16 +96,10 @@ find_blockdev_check_sizes_and_grow_fs() {
     blkd_check_sizes_and_grow_fs "/dev/${sys_blkn}" ${root_dev}
 }
 
-setup_devd() {
-    setup-devd $DEVD
-}
 
-install_sshkeys() {
-    if [ ! -d "/boot/_ssh" ]; then
-        return 0
-    fi
-
-    for key_file in $(ls /boot/_ssh/*.pub 2>/dev/null); do
+dosetup() {
+    # ssh keys
+    for key_file in $(ls /boot/setup/*.pub 2>/dev/null); do
         echo "Found key: $key_file"
         #cat $key_file
         #echo "$KOPT_ssh_key" > /root/.ssh/authorized_keys
@@ -113,13 +110,27 @@ start() {
     local rc=0
     ebegin "Starting ${RC_SVCNAME} (version: ${VERSION})"
 
-    ls -aFl /boot
+    fstrim -va
     find_blockdev_check_sizes_and_grow_fs
 
-    setup_devd
-    install_sshkeys
+    setup-devd $DEVD
+    #setup-ntp $NTP
+
+    mount /boot
+    [ -f /boot/TESTING ] && TESTING_ON=1 || true
+
+    if [ -d "/boot/setup" ]; then
+        dosetup
+    fi
+    umount /boot
 
 	$RUN rm -f /etc/runlevels/*/$RC_SVCNAME
+
+	if [ -z $TESTING_ON ]; then
+	    einfo "Setup successful, rebooting system"
+	    sleep .5
+	    reboot
+	fi
 
 	eend $rc
 }

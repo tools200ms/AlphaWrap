@@ -6,13 +6,30 @@ CHROOT=/mnt/dist
 #blkdiscard $DEVICE
 #dd if=/dev/zero of=$DEVICE bs=4k
 
+# Alpine Installation:
+setup-alpine
+1. hostname (user-setup)
+2. password change (user-setup)
+3. time-zone (user-setup)
+4. setup mirror (user-setup)
 
-mkdir -p $CHROOT
-mount ${DEVICE}2 $CHROOT
+3. network (default - post_setup)
+4. proxy (default - post_setup)
 
-mount -o bind /dev $CHROOT/dev
-mount -t proc none $CHROOT/proc
-mount -o bind /sys $CHROOT/sys
+5. ntp (OK)
+6. user (ok)
+7. ssh (OK)
+8. disk (OK)
+
+# default rc-update:
+acpid - sysinit
+chronyd - default (OK)
+crond - sysinit
+hwdrivers - sysinit
+mdev - sysinit
+networking - boot
+seedrng - boot
+
 
 chroot $CHROOT /bin/ash -l -c "/install"
 # in chroot
@@ -39,25 +56,9 @@ admin
 EOF
 
 # at boot time
-setup-devd EOF<<
-mdevd
-EOF
-
-setup-ntp EOF<<
-busybox
-EOF
 
 exit
 
 # end of chroot operations
 umount $CHROOT
 sync
-
-
-setup-alpine $DEVICE EOF<<
-miniadmin
-eth1
-Europe/Warsaw
-EOF
-
-

@@ -525,7 +525,7 @@ function op_enter() {
   local res=0
   local ssh_key_path=${DB_DIR}/${_CONTAINER_NAME}/${SSH_DEF_PRIV_KEY_NAME}
 
-  $RUN ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost || res=$?
+  $RUN ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path} root@localhost || res=$?
   echo $res
   return $res
 }
@@ -552,7 +552,7 @@ function op_waitfor() {
       break
     fi
 
-    if ! $(echo "$SSH_MSG" | grep -q -e "Connection refused" -e "Connection timed out" -e "No route to host"); then
+    if ! $(echo "$SSH_MSG" | grep -q -e "Connection refused" -e "Connection timed out" -e "No route to host" -e "kex_exchange_identification: read: Connection reset by peer"); then
       # if there is en error that is not associated with connection
       echo ""; echo ""
       echo "SSH error: $SSH_MSG"
