@@ -197,7 +197,7 @@ function _op_run() {
     -device sd-card,drive=sysdrive \
     -usb \
     -device usb-kbd,bus=usb-bus.0 \
-    -netdev user,id=net0,hostfwd=tcp::${SSH_GUEST_PORT}-:22 \
+    -netdev "user,id=net0,hostfwd=tcp::${SSH_GUEST_PORT}-:22,guestfwd=tcp::3128-cmd:nc 127.0.0.1 3128" \
     -device usb-net,bus=usb-bus.0,netdev=net0 \
     -dtb ${dtbf} \
     -rtc base=localtime \
@@ -518,7 +518,7 @@ function op_sync() {
     sync_res="${_carg_SYNC_path_local_param} root@localhost:${_carg_SYNC_path_remote_param}"
   fi
 
-  $RUN rsync -avz -e "ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path}" ${sync_res}
+  $RUN rsync -avz --no-owner --no-group --inplace -e "ssh -p ${SSH_GUEST_PORT} -i ${ssh_key_path}" ${sync_res}
 }
 
 function op_enter() {

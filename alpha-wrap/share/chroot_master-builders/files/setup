@@ -3,7 +3,7 @@
 # beginning after/before Alpine's 'firstboot''.
 # If installation is successful, script is not called again.
 
-readonly VERSION=0.4
+readonly VERSION=0.5
 
 # Setup configuration BEGIN
 
@@ -64,6 +64,9 @@ blkd_grow_fs() {
         ext4)
             resize_cmd="resize2fs"
         ;;
+        f2fs)
+            resize_cmd="resize.f2fs"
+        ;;
         *)
             eerror "Unsupported filesystem"
             return 1
@@ -99,39 +102,61 @@ find_blockdev_check_sizes_and_grow_fs() {
 
 dosetup() {
     # ssh keys
-    for key_file in $(ls /boot/setup/*.pub 2>/dev/null); do
+    for key_file in $(ls /boot/conf/*.pub 2>/dev/null); do
         echo "Found key: $key_file"
-        #cat $key_file
-        #echo "$KOPT_ssh_key" > /root/.ssh/authorized_keys
+        #cat $key_file >> /home/master/.ssh/authorized_keys
     done
 }
 
 start() {
     local rc=0
-    ebegin "Starting ${RC_SVCNAME} (version: ${VERSION})"
+    local pass_no=1
 
-    fstrim -va
-    find_blockdev_check_sizes_and_grow_fs
-
-    setup-devd $DEVD
-    #setup-ntp $NTP
-
-    mount /boot
-    [ -f /boot/TESTING ] && TESTING_ON=1 || true
-
-    if [ -d "/boot/setup" ]; then
-        dosetup
+    if [ -f /root/.pass ]; then
+        pass_no=2
     fi
-    umount /boot
 
-	$RUN rm -f /etc/runlevels/*/$RC_SVCNAME
+    ebegin "Starting ${RC_SVCNAME} (version: ${VERSION}) Pass: $pass_no"
 
-	if [ -z $TESTING_ON ]; then
+    if [ $pass_no -eq 1 ]; then
+        fstrim -va
+        find_blockdev_check_sizes_and_grow_fs
+
+        setup-devd $DEVD
+
+        mount /boot
+        [ -f /boot/TESTING ] && TESTING_ON=1 || true
+
+        if [ -d "/boot/conf" ]; then
+            dosetup && shred /boot/conf/* && rmdir /boot/conf
+        fi
+        umount /boot
+
+        touch /root/.pass
+        sync
+    else
+        mount /boot
+        [ -f /boot/TESTING ] && TESTING_ON=1 || true
+        umount /boot
+
+        setup-interfaces -a
+        [ -n "$NTP" ] && [ $NTP != "none" ] && setup-ntp $NTP || ewarn "No NTP configured"
+
+        if [ -f /home/master/.ssh/authorized_keys ]; then
+            [ -f /etc/init.d/ssh ] && rc-update add ssh default || awarn "'authorized_keys' exists but no SSH server available"
+        fi
+
+        $RUN rm -f /etc/runlevels/*/$RC_SVCNAME
+    fi
+
+    eend $rc
+
+	if [ $pass -eq 1 ] && [ -z $TESTING_ON ]; then
 	    einfo "Setup successful, rebooting system"
 	    sleep .5
 	    reboot
+	else
+	    einfo "Distribution TESTING mode ON"
 	fi
-
-	eend $rc
 }
 

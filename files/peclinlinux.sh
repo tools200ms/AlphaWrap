@@ -3,15 +3,14 @@
 DEVICE=/dev/sda
 CHROOT=/mnt/dist
 
-#blkdiscard $DEVICE
-#dd if=/dev/zero of=$DEVICE bs=4k
+# add squid:
+ # Uncomment and adjust the following to add a disk cache directory.
+#75 cache_dir aufs /var/cache/squid 12800 32 256
+#76 maximum_object_size 45056 KB
+#77 minimum_object_size 0
 
 # Alpine Installation:
 setup-alpine
-1. hostname (user-setup)
-2. password change (user-setup)
-3. time-zone (user-setup)
-4. setup mirror (user-setup)
 
 3. network (default - post_setup)
 4. proxy (default - post_setup)
@@ -31,29 +30,7 @@ networking - boot
 seedrng - boot
 
 
-chroot $CHROOT /bin/ash -l -c "/install"
-# in chroot
-setup-keymap EOF<<
-us
-us-intl
-EOF
 
-setup-timezone EOF<<
-Europe/Warsaw
-EOF
-
-setup-hostname EOF<<
-miniadmin
-EOF
-
-setup-user EOF<<
-admin
-
-
-
-
-
-EOF
 
 # at boot time
 

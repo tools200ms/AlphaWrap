@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 [ -n "$PRETEND" ] && [[ $(echo "$PRETEND" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         RUN="echo" || RUN=
@@ -32,7 +32,8 @@ EOF
 }
 
 function bind_system() {
-  ch_root="$1"
+  local ch_root="$1"
+  local mnt_path
 
   mnt_path=$(realpath ${ch_root}/dev)
   if [ $(mount | grep "$mnt_path" | wc -l) -eq 0 ]; then
@@ -51,7 +52,8 @@ function bind_system() {
 }
 
 function unbind_system() {
-  ch_root="$1"
+  local ch_root="$1"
+  local mnt_path
 
   mnt_path=$(realpath ${ch_root}/dev)
   if [ $(mount | grep "$mnt_path" | wc -l) -ne 0 ]; then
@@ -70,8 +72,8 @@ function unbind_system() {
 }
 
 function bind_dir() {
-  ch_root="$1"
-  targets_dir="$2"
+  local ch_root="$1"
+  local targets_dir="$2"
 
   mnt_path=$(realpath ${ch_root}/usr/local/bin)
   if [ $(mount | grep "${mnt_path}" | wc -l) -eq 0 ]; then
@@ -80,7 +82,7 @@ function bind_dir() {
 }
 
 function unbind_dir() {
-  ch_root="$1"
+  local ch_root="$1"
 
   mnt_path=$(realpath ${ch_root}/usr/local/bin)
   if [ $(mount | grep "${mnt_path}" | wc -l) -ne 0 ]; then

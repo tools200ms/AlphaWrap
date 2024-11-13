@@ -5,4 +5,10 @@ setup-keymap
 setup-timezone
 setup-hostname
 
+# if network not se, set it: setup-interfaces && setup-proxy
+setup-apkrepos
+# add user password change
+
+rc-update del message default
+
 exit 0

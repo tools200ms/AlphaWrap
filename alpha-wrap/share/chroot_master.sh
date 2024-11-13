@@ -8,7 +8,9 @@
         set -xe || set -e
 
 readonly VERSION="0.0.2"
-readonly mirror="http://alpine.sakamoto.pl/alpine"
+readonly mirror="http://quantum-mirror.hu/mirrors/pub/alpine"
+# https://dl-cdn.alpinelinux.org/alpine/edge
+#"http://alpine.sakamoto.pl/alpine"
 
 # Chroot directories for Alpine ARMHF (32-bit) and AARCH64 (64-bit)
 readonly build_dir=("chroot.armhf" "chroot.aarch64")
@@ -29,6 +31,9 @@ $(basename $0) enter <chroot.armhf|chroot.aarch64>
 
 $(basename $0) exec <chroot.armhf|chroot.aarch64> "command"
   - execute command in selected chroot
+
+$(basename $0) close
+  - close (unmount) resources used by chroots
 
 $(basename $0) -v|--version
   - show version and credentials
@@ -177,17 +182,13 @@ TARGET_ARCH=$arch
 EOF
 
     chroot ${b_dir} /bin/ash -c "apk update && apk upgrade && apk add bash"
-    # chroot, install and configure necessary stuf
-    #$RUN chroot ${chroot_dir} /usr/local/bin/alpbase_builder.sh $arch
-
-  # unbind
   done
 }
 
 function unset_base() {
 
   for b_dir in ${build_dir[@]}; do
-    unbind_with_host ${b_dir}
+    unbind_from_host ${b_dir}
     unbind_scripts ${b_dir}
   done
 }

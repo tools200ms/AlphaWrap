@@ -1,7 +1,21 @@
 #!/bin/sh
 
+[ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+        set -xe || set -e
+
+
+if [ -z ${ROOT_UUID} ] || [ -z ${BOOT_UUID} ]; then
+  echo "'ROOT_UUID' or 'BOOT_UUID' has not been provided"
+  exit 1
+fi
+
+if [ -z ${ROOTFS} ]; then
+  echo "Provide ROOTFS type"
+  exit 2
+fi
+
 cat <<EOF
-UUID=${ROOT_UUID}  /       ext4    rw,discard,relatime 0 1
+UUID=${ROOT_UUID}  /       ${ROOTFS}   rw,discard,relatime 0 1
 UUID=${BOOT_UUID}  /boot   vfat    rw,discard,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro 0 2
 
 /dev/cdrom      /media/cdrom    iso9660 noauto,ro 0 0

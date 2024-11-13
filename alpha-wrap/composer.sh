@@ -39,6 +39,9 @@ if [ "$1" == "addtests" ]; then
   if [ ! -f ${TEMP_DIR}/_test/test_key ]; then
     ssh-keygen -t ed25519 -C "test@alpbase.200ms.net" -N "" -f ${TEMP_DIR}/_test/test_key
   fi
+elif [ ! -z $1 ]; then
+  echo "Unknown command: $1, the only commands are _none_ or 'addtests'"
+  exit 2
 fi
 
 
@@ -89,7 +92,6 @@ mount_and_sync() {
     if ${ADD_TESTS}; then
       echo "Adding tests"
       ${AW_RUN} command "/bin/ash -l -c 'touch /mnt/TESTING && mkdir -p /mnt/conf'"
-      ${AW_RUN} sync "${TEMP_DIR}/_test/test_key" "/mnt/conf/"
       ${AW_RUN} sync "${TEMP_DIR}/_test/test_key.pub" "/mnt/conf/"
     fi
 
@@ -111,7 +113,6 @@ res=0
 ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
 if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
   create_edition "super_light" "chroot.armhf" "450MB"
-
 else
   echo "No updates available, or image already exists"
   echo "Skipping build"

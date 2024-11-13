@@ -134,7 +134,7 @@ case $EDITION in
     ROOTFS=ext4
     #jffs2
     NTP=none
-    SSHD=dropbear
+    SSHD=none
     DESKTOP=none
   ;;
   just_light)
@@ -152,13 +152,13 @@ case $EDITION in
     ROOTFS=ext4
     #f2fs
     NTP=chrony
-    SSHD=dropbear
+    SSHD=none
     DESKTOP=standard
   ;;
   iam_tablet)
     DEVD=mdevd
     ROOTFS=jffs2
-    SSHD=dropbear
+    SSHD=none
     DESKTOP=tablet
   ;;
   *)
@@ -204,15 +204,16 @@ $RUN cat $RES_DIR/setup | \
       sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}\; NTP=${NTP}\; DESKTOP=${DESKTOP}" \
       > ${SETUP_ROOT}/etc/init.d/setup && chmod +x ${SETUP_ROOT}/etc/init.d/setup
 
-$RUN cat $RES_DIR/setup-msg > ${SETUP_ROOT}/etc/init.d/setup-msg && chmod +x ${SETUP_ROOT}/etc/init.d/setup-msg
+$RUN cat $RES_DIR/message > ${SETUP_ROOT}/etc/init.d/message && chmod +x ${SETUP_ROOT}/etc/init.d/message
 $RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chmod +x ${SETUP_ROOT}/usr/local/bin/setup-finish
 
 # === 1.3: Bind system directories for jumping into chroot:
-chroot_bind.sh system ${SETUP_ROOT}
+# DEBUG=${DEBUG} chroot_bind.sh system ${SETUP_ROOT}
 
 # === 2. Prepare edition:
 
 chroot ${SETUP_ROOT} rc-update add setup boot
+chroot ${SETUP_ROOT} rc-update add message default
 
 # 'setup-devd' does device scanning, hence install only necessary
 # packages and let to scann devices at a final device
@@ -254,14 +255,19 @@ case $ROOTFS in
   ;;
 esac
 
-case $NTP in
-  chrony)
-    echo "Install"
-  ;;
-esac
+if [ -n "$NTP" ] && [ $NTP != "none" ]; then
+  case $NTP in
+    chrony)
+      chroot ${SETUP_ROOT} apk add chrony
+    ;;
+  esac
+
+  echo "NTP to be setup at second boot (pass2) on device"
+fi
 
 # create user
-setup-user -a master
+chroot ${SETUP_ROOT} apk add sudo
+chroot ${SETUP_ROOT} setup-user -au master
 
 case $SSHD in
   dropbear)
@@ -296,56 +302,31 @@ if [ -n "$DESKTOP" ] && [ $DESKTOP != "none" ]; then
   chroot ${SETUP_ROOT} setup-desktop $DESKTOP_TYPE | tee ${LOG_FILE}
 fi
 
-# y - to scann for devices
-#chroot ${SETUP_ROOT} setup-devd <<EOF | tee ${LOG_FILE}
-#$DEVD
-#n
-#EOF
 
 # make corrections:
 BOOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}1)
 ROOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}2)
-BOOT_UUID=${BOOT_UUID} ROOT_UUID=${ROOT_UUID} fstab.gen > /mnt/etc/fstab.new
+BOOT_UUID=${BOOT_UUID} ROOT_UUID=${ROOT_UUID} ROOTFS=${ROOTFS} DEBUG=${DEBUG} fstab.gen > ${SETUP_ROOT}/etc/fstab.new
+touch ${SETUP_ROOT}/tmp/.keep
 
-chroot_bind.sh --unbind system ${SETUP_ROOT}
+#DEBUG=${DEBUG} chroot_bind.sh --unbind system ${SETUP_ROOT}
+df -h
+
 umount ${SETUP_ROOT}/boot
 umount ${SETUP_ROOT}
 
 $RUN sync
+fsck.vfat ${SETUP_DEV}1 -a
 
 echo "Installation done."
 
 exit 0
 
-setup-hostname <<EOF
-name
-EOF
-
-setup-user <<EOF
-EOF
 
 # /sbin/setup-acf # mini web server
 
+# chackout:
 /sbin/setup-apkcache
-/sbin/setup-apkrepos
-
-
-/sbin/setup-desktop
-
-/sbin/setup-interfaces
-/sbin/setup-dns
-
-/sbin/setup-lbu
-/sbin/setup-mta
-/sbin/setup-ntp
-/sbin/setup-proxy
-/sbin/setup-sshd
-
-# at first login:
-setup-keymap
-setup-timezone
-/sbin/setup-hostname
-
 /sbin/setup-wayland-base
 
 
