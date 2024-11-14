@@ -3,7 +3,7 @@
 # beginning after/before Alpine's 'firstboot''.
 # If installation is successful, script is not called again.
 
-readonly VERSION=0.5
+readonly VERSION=0.6
 
 # Setup configuration BEGIN
 
@@ -84,7 +84,7 @@ p
 w
 EOF
 
-    # 'Resource busy' message
+    # partprobe generates: 'Resource busy' message, so commented, seems no need to call it
     # $RUN partprobe ${sys_dev}
 
     $RUN ${resize_cmd} ${root_dev}
@@ -95,6 +95,16 @@ EOF
 find_blockdev_check_sizes_and_grow_fs() {
     local root_dev=$(realpath /dev/root)
     local sys_blkn=$(lsblk -no pkname ${root_dev})
+
+    if [[ ! "${root_dev}" =~ ^/dev/[a-z0-9\._-]{1,128}$ ]]; then
+        eerror "Incorrect device path: ${root_dev}"
+        return 1
+    fi
+
+    if [[ ! "${sys_blkn}" =~ ^[a-z0-9\._-]{1,128}$ ]]; then
+        eerror "Incorrect block name: ${sys_blkn}"
+        return 2
+    fi
 
     blkd_check_sizes_and_grow_fs "/dev/${sys_blkn}" ${root_dev}
 }
@@ -119,13 +129,14 @@ start() {
     ebegin "Starting ${RC_SVCNAME} (version: ${VERSION}) Pass: $pass_no"
 
     if [ $pass_no -eq 1 ]; then
-        fstrim -va
         find_blockdev_check_sizes_and_grow_fs
-
-        setup-devd $DEVD
 
         mount /boot
         [ -f /boot/TESTING ] && TESTING_ON=1 || true
+
+        fstrim -va
+
+        setup-devd $DEVD
 
         if [ -d "/boot/conf" ]; then
             dosetup && shred /boot/conf/* && rmdir /boot/conf
@@ -146,6 +157,7 @@ start() {
             [ -f /etc/init.d/ssh ] && rc-update add ssh default || awarn "'authorized_keys' exists but no SSH server available"
         fi
 
+        rm /root/.pass
         $RUN rm -f /etc/runlevels/*/$RC_SVCNAME
     fi
 

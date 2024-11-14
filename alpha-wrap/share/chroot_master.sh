@@ -181,7 +181,7 @@ function set_base() {
 TARGET_ARCH=$arch
 EOF
 
-    chroot ${b_dir} /bin/ash -c "apk update && apk upgrade && apk add bash"
+    chroot ${b_dir} /bin/ash -c "apk update && apk upgrade && apk add bash blkid"
   done
 }
 

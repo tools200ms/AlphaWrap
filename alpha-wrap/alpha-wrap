@@ -424,7 +424,7 @@ function parse_CREATE_dev_name() {
     return 1
   fi
 
-  if [[ ! "$name" =~ ^([a-zA-Z0-9\._-]){1,128}$ ]]; then
+  if [[ ! "$name" =~ ^[a-zA-Z0-9\._-]{1,128}$ ]]; then
     echo "Illegal machine (device) name"
     exit 3
   fi

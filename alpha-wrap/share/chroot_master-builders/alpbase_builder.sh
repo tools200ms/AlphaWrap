@@ -212,6 +212,9 @@ $RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chm
 
 # === 2. Prepare edition:
 
+# install Tools required by below (setup and message) scripts:
+chroot ${SETUP_ROOT} apk add lsblk util-linux-misc
+
 chroot ${SETUP_ROOT} rc-update add setup boot
 chroot ${SETUP_ROOT} rc-update add message default
 
@@ -266,7 +269,7 @@ if [ -n "$NTP" ] && [ $NTP != "none" ]; then
 fi
 
 # create user
-chroot ${SETUP_ROOT} apk add sudo
+#chroot ${SETUP_ROOT} apk add sudo
 chroot ${SETUP_ROOT} setup-user -au master
 
 case $SSHD in
@@ -306,11 +309,12 @@ fi
 # make corrections:
 BOOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}1)
 ROOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}2)
-BOOT_UUID=${BOOT_UUID} ROOT_UUID=${ROOT_UUID} ROOTFS=${ROOTFS} DEBUG=${DEBUG} fstab.gen > ${SETUP_ROOT}/etc/fstab.new
+BOOT_UUID="${BOOT_UUID}" ROOT_UUID="${ROOT_UUID}" ROOTFS=${ROOTFS} DEBUG=${DEBUG} fstab.gen > ${SETUP_ROOT}/etc/fstab.new
 touch ${SETUP_ROOT}/tmp/.keep
 
 #DEBUG=${DEBUG} chroot_bind.sh --unbind system ${SETUP_ROOT}
-df -h
+echo "Space after setup (si: 1000^x): "
+df -H | grep -e ^"${SETUP_DEV}"
 
 umount ${SETUP_ROOT}/boot
 umount ${SETUP_ROOT}

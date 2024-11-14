@@ -7,12 +7,20 @@ check_flag() {
 
 # Set RUN and CHROOTM_EXEC based on flags
 [ "$(check_flag "$PRETEND")" ] && RUN="echo" || RUN=""
-[ "$(check_flag "$DEBUG")" ] && set -xe && CHROOTM_EXEC="DEBUG=Y chroot_master.sh" || CHROOTM_EXEC="chroot_master.sh"
+
+if [ "$(check_flag "$DEBUG")" ]; then
+  set -xe
+  CHROOTM_EXEC="DEBUG=Y chroot_master.sh"
+else
+  set -e
+  CHROOTM_EXEC="chroot_master.sh"
+fi
 
 AW_RUN="$RUN ./alpha-wrap/alpha-wrap"
 TEMP_DIR=./build.temp
 ALPINE_SETUP_CMDLINE_FILE="./res/cmdline-alpine_setup.txt"
 
+UPDATE_CHECK_AVAILABILITY_VM_CHROOT_CMD="alpbase_builder.sh updates"
 
 # Initialize an index variable to track the current device
 DEVICE_INDEX=0
@@ -64,6 +72,14 @@ create_edition() {
     local boot_dir="${TEMP_DIR}/${edition}_boot"
     local image="images/alpbase-${edition}-$(date +%m-%Y_d%d%H%M).iso"
 
+    if [ ! -d "$(dirname "$image")" ]; then
+      echo "Attempted to create file: $image"
+      echo "    but failed as no parent directory(ies) exists."
+      echo "    Create appropriate directory(ies), so image file can be stored"
+      echo ""
+      return 2
+    fi
+
     echo "Creating ${edition^} Edition"
     ${AW_RUN} extstore add "${image}" "$size"
 
@@ -110,25 +126,30 @@ compress_image() {
 res=0
 # Creating Editions
 # Based on Alpine ARMHF
-${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
-if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
-  create_edition "super_light" "chroot.armhf" "450MB"
+#${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
+#if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+#  create_edition "super_light" "chroot.armhf" "450MB"
+#else
+#  echo "No updates available, or image already exists"
+#  echo "Skipping build"
+#fi
+
+# Based on Alpine AARCH64
+${AW_RUN} command "/bin/ash" "-l -c" ${CHROOTM_EXEC} exec "chroot.aarch64" $UPDATE_CHECK_AVAILABILITY_VM_CHROOT_CMD || res=$?
+if [ $res -eq 0 ] || [ $(ls images/alpbase-just_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+  create_edition "just_light" "chroot.aarch64" "500MB"
 else
   echo "No updates available, or image already exists"
   echo "Skipping build"
 fi
 
-# Based on Alpine AARCH64
-${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.aarch64" alpbase_builder.sh updates'" || res=$?
-if [ $res -eq 0 ] || \
-    [ $(ls images/alpbase-just_light*.iso 2>/dev/null | wc -l) -eq 0 ] || \
-    [ $(ls images/alpbase-be_desktop*.iso 2>/dev/null | wc -l) -eq 0 ]; then
-  create_edition "just_light" "chroot.aarch64" "500MB"
-  create_edition "be_desktop" "chroot.aarch64" "1500MB"
-else
-  echo "No updates available, or image already exists"
-  echo "Skipping build"
-fi
+#if [ $res -eq 0 ] || [ $(ls images/alpbase-be_desktop*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+#  create_edition "be_desktop" "chroot.aarch64" "1500MB"
+#else
+#  echo "No updates available, or image already exists"
+#  echo "Skipping build"
+#fi
+
 
 # Finalization and Testing
 # ${AW_RUN} stop

@@ -5,36 +5,47 @@ depend() {
         after *
 }
 
-start() {
-        einfo "Please login as 'master' (no password)"
-        einfo "    use 'setup-finish' to finalize setup."
+print_message() {
+
+    einfo "Please login as 'master' (no password)"
+    einfo "    use 'setup-finish' to finalize setup."
+    einfo ""
+
+    local assigned_inets=$(ip -o addr show | grep -v ' lo '| awk '{print $4}')
+
+    if [ -z "${assigned_inets}" ]; then
+        einfo "No IPs assigned"
+    else
+        einfo "Assigned IPs: "
+        IFS=$'\n'
+        for inet_addr in $assigned_inets; do
+            einfo "    - $inet_addr"
+        done
+    fi
+
+    einfo ""
+
+    [[ -s /home/master/.ssh/authorized_keys ]] && MASTER_SSH_KEYS_ON=1 || true
+    [[ -s /root/.ssh/authorized_keys ]] && ROOT_SSH_KEYS_ON=1 || true
+
+    if [ ! -z $MASTER_SSH_KEYS_ON ] || [ ! -z $ROOT_SSH_KEYS_ON ]; then
+        einfo "'authorized_keys' found, you can login: "
+        [ ! -z $MASTER_SSH_KEYS_ON ] && \
+            einfo "    ssh -i key_path root@<box ip>" || true
+
+        [ ! -z $ROOT_SSH_KEYS_ON ] && \
+            einfo "    ssh -i key_path root@<box ip>" || true
+
         einfo ""
+    fi
+}
 
-        local assigned_inets=$(ip -o addr show | grep -v ' lo '| awk '{print $4}')
+start() {
+    ebegin "Starting ${RC_SVCNAME}"
 
-        if [ -z ${assigned_inets} ]; then
-            einfo "No IPs assigned"
-        else
-            einfo "Assigned IPs: "
-            for inet_addr in ; do
-                einfo "    $inet_addr"
-            done
-        fi
+    print_message
 
-        [ -f /home/master/.ssh/authorized_keys ] MASTER_SSH_KEYS_ON=1 || true
-        [ -f /root/.ssh/authorized_keys ] ROOT_SSH_KEYS_ON=1 || true
-
-        if [ ! -z $MASTER_SSH_KEYS_ON ] || [ ! -z $ROOT_SSH_KEYS_ON ]; then
-            einfo ""
-            einfo "'authorized_keys' found, you can login: "
-            [ ! -z $MASTER_SSH_KEYS_ON ] && \
-                einfo "    ssh -i key_path root@<box ip>" || true
-
-            [ ! -z $ROOT_SSH_KEYS_ON ] && \
-                einfo "    ssh -i key_path root@<box ip>" || true
-        fi
-
-        eend 0
+    eend 0
 }
 
 

@@ -1,12 +1,29 @@
 #!/bin/sh
 set -e
 
+
+if ! $(/etc/init.d/ntpd -q status); then
+  echo "No time synchronisation, please setup 'nftd' service"
+fi
+
 setup-keymap
+echo "Keymap DONE."
+
 setup-timezone
+echo "Timezone DONE."
+
+echo "Setup hostname, if you have no idea what to "
+echo "choose bellow some inspiration words: "
+echo "    - "
+
 setup-hostname
 
+setup-apkcache /var/cache/apk
+
 # if network not se, set it: setup-interfaces && setup-proxy
-setup-apkrepos
+apk add ca-certificates wget && update-ca-certificates
+
+setup-apkrepos -c
 # add user password change
 
 rc-update del message default
