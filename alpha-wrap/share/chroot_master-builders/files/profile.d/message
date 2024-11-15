@@ -1,51 +1,42 @@
-#!/sbin/openrc-run
-
-depend() {
-        need localmount sysfs
-        after *
-}
+#!/bin/sh
 
 print_message() {
 
-    einfo "Please login as 'master' (no password)"
-    einfo "    use 'setup-finish' to finalize setup."
-    einfo ""
+    echo "Please login as 'master' (no password)"
+    echo "    use 'setup-finish' to finalize setup."
+    echo ""
 
     local assigned_inets=$(ip -o addr show | grep -v ' lo '| awk '{print $4}')
 
     if [ -z "${assigned_inets}" ]; then
-        einfo "No IPs assigned"
+        echo "No IPs assigned"
     else
-        einfo "Assigned IPs: "
+        echo "Assigned IPs: "
         IFS=$'\n'
         for inet_addr in $assigned_inets; do
-            einfo "    - $inet_addr"
+            echo "    - $inet_addr"
         done
     fi
 
-    einfo ""
+    echo ""
 
     [[ -s /home/master/.ssh/authorized_keys ]] && MASTER_SSH_KEYS_ON=1 || true
     [[ -s /root/.ssh/authorized_keys ]] && ROOT_SSH_KEYS_ON=1 || true
 
     if [ ! -z $MASTER_SSH_KEYS_ON ] || [ ! -z $ROOT_SSH_KEYS_ON ]; then
-        einfo "'authorized_keys' found, you can login: "
+        echo "'authorized_keys' found, you can login: "
         [ ! -z $MASTER_SSH_KEYS_ON ] && \
-            einfo "    ssh -i key_path root@<box ip>" || true
+            echo "    ssh -i key_path root@<box ip>" || true
 
         [ ! -z $ROOT_SSH_KEYS_ON ] && \
-            einfo "    ssh -i key_path root@<box ip>" || true
+            echo "    ssh -i key_path root@<box ip>" || true
 
-        einfo ""
+        echo ""
     fi
 }
 
-start() {
-    ebegin "Starting ${RC_SVCNAME}"
-
+if [ "$(tty)" != "/dev/tty1" ] || [ "$1" == "printanyway" ]; then
     print_message
+fi
 
-    eend 0
-}
-
-
+exit 0

@@ -1,31 +1,82 @@
 #!/bin/sh
 set -e
 
+[ -n "$PRETEND" ] && [[ $(echo "$PRETEND" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+        RUN="echo 'Now we shall run:'" || RUN=""
+
+[ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+        set -xe || set -e
+
 
 if ! $(/etc/init.d/ntpd -q status); then
-  echo "No time synchronisation, please setup 'nftd' service"
+  cat <<EOF
+No NTP service, system might not have a correct time
+that is necessary for SSH connections.
+
+Do you want to proceed?
+EOF
+
+  read -p "    yes(y) for continuation: " choose
+  if [[ ! $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|affirmative$ ]]; then
+    exit 1
+  fi
 fi
 
-setup-keymap
-echo "Keymap DONE."
+$RUN setup-keymap
+echo -e "Keymap DONE.\n"
 
-setup-timezone
-echo "Timezone DONE."
+$RUN setup-timezone
+echo -e "Timezone DONE.\n"
 
-echo "Setup hostname, if you have no idea what to "
-echo "choose bellow some inspiration words: "
-echo "    - "
-
-setup-hostname
-
-setup-apkcache /var/cache/apk
+$RUN setup-apkcache /var/cache/apk
 
 # if network not se, set it: setup-interfaces && setup-proxy
-apk add ca-certificates wget && update-ca-certificates
+$RUN apk add ca-certificates wget && $RUN update-ca-certificates
 
-setup-apkrepos -c
+$RUN setup-apkrepos -c
+echo -e "Repository configuration DONE.\n"
+
 # add user password change
 
-rc-update del message default
+get_inspiration_word() {
+  local word="inspiration"
+  local skip_words=32
+
+  while [ $skip_words -gt 0 ]; do
+    for w in $(fortune); do
+      if [ $(echo -n $w | wc -c) -gt 3 ]; then
+        word=$w
+      fi
+      skip_words=$((skip_words-1))
+    done
+  done
+  echo -n $word
+}
+
+cat <<EOF
+It's time to setup hostname, if you have no clue what to choose, type 'inspiration'.
+'setup-finish' will pick some random words from random quotations that can helpfully
+inspire you to come up with a hostname.
+
+(if you don't need inspiration just hit ENTER)
+(to serve inspiration words package 'fortune' will be automatically added)
+
+EOF
+read -p "    type 'inspiration': " choose
+if [[ $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^inspiration$ ]]; then
+  $RUN apk add fortune
+  while true; do
+    echo -e "Inspiration words are: \n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)', and \n     - '$(get_inspiration_word)'\n"
+    read -p "    do it again? (yes|no): " choose
+    if [[ ! $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^yes|y$ ]]; then
+      break
+    fi
+  done
+fi
+
+$RUN setup-hostname
+
+$RUN rc-update del message default
+$RUN chmod -x /etc/profile.d/message
 
 exit 0

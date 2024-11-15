@@ -111,11 +111,22 @@ find_blockdev_check_sizes_and_grow_fs() {
 
 
 dosetup() {
-    # ssh keys
-    for key_file in $(ls /boot/conf/*.pub 2>/dev/null); do
-        echo "Found key: $key_file"
-        #cat $key_file >> /home/master/.ssh/authorized_keys
-    done
+    local pub_keys=$(ls /boot/conf/*.pub 2>/dev/null)
+
+    if [ -n "${pub_keys}" ]; then
+        mkdir /home/master/.ssh/
+        chown master:master /home/master/.ssh/
+        chmod ugo-rwx /home/master/.ssh/
+        chmod u+rwx /home/master/.ssh/
+
+        for key_file in "${pub_keys}"; do
+            cat "$key_file" >> /home/master/.ssh/authorized_keys
+        done
+
+        chown master:master /home/master/.ssh/authorized_keys
+        chmod ugo-rwx /home/master/.ssh/authorized_keys
+        chmod u+rw /home/master/.ssh/authorized_keys
+    fi
 }
 
 start() {
@@ -136,14 +147,15 @@ start() {
 
         fstrim -va
 
-        setup-devd $DEVD
+        # Unnecessary
+        # setup-devd $DEVD
 
         if [ -d "/boot/conf" ]; then
-            dosetup && shred /boot/conf/* && rmdir /boot/conf
+            dosetup && shred -u /boot/conf/* && rmdir /boot/conf
         fi
         umount /boot
 
-        touch /root/.pass
+        echo "Pass 1: OK" > /root/.pass
         sync
     else
         mount /boot
@@ -151,14 +163,24 @@ start() {
         umount /boot
 
         setup-interfaces -a
-        [ -n "$NTP" ] && [ $NTP != "none" ] && setup-ntp $NTP || ewarn "No NTP configured"
+        [ -n "$NTP" ] && [ $NTP != "none" ] && setup-ntp $NTP || ewarn "No NTP configured!"
 
-        if [ -f /home/master/.ssh/authorized_keys ]; then
-            [ -f /etc/init.d/ssh ] && rc-update add ssh default || awarn "'authorized_keys' exists but no SSH server available"
+        if [[ -s /home/master/.ssh/authorized_keys ]] || [[ -s /root/.ssh/authorized_keys ]]; then
+
+            # add SSH service to runlevel if available,
+            # it will start later on (after net) as boot
+            # process progresses
+            if [ -f /etc/init.d/sshd ]; then
+                rc-update add sshd default
+            elif [ -f /etc/init.d/dropbear ]; then
+                rc-update add dropbear default
+            else
+                awarn "'authorized_keys' exists but no SSH server available"
+            fi
         fi
 
         rm /root/.pass
-        $RUN rm -f /etc/runlevels/*/$RC_SVCNAME
+        rm -f /etc/runlevels/*/$RC_SVCNAME
     fi
 
     eend $rc

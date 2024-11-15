@@ -204,7 +204,8 @@ $RUN cat $RES_DIR/setup | \
       sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}\; NTP=${NTP}\; DESKTOP=${DESKTOP}" \
       > ${SETUP_ROOT}/etc/init.d/setup && chmod +x ${SETUP_ROOT}/etc/init.d/setup
 
-$RUN cat $RES_DIR/message > ${SETUP_ROOT}/etc/init.d/message && chmod +x ${SETUP_ROOT}/etc/init.d/message
+$RUN cat $RES_DIR/init.d/message > ${SETUP_ROOT}/etc/init.d/message && chmod +x ${SETUP_ROOT}/etc/init.d/message
+$RUN cat $RES_DIR/profile.d/message > ${SETUP_ROOT}/etc/profile.d/message && chmod +x ${SETUP_ROOT}/etc/profile.d/message
 $RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chmod +x ${SETUP_ROOT}/usr/local/bin/setup-finish
 
 # === 1.3: Bind system directories for jumping into chroot:

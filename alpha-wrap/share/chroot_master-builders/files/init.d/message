@@ -1,0 +1,20 @@
+#!/sbin/openrc-run
+
+depend() {
+        need localmount sysfs
+        after *
+}
+
+
+start() {
+    ebegin "Message: "
+
+    # Print message, finally message is
+    # to be printed from script/program
+    # within '/usr/' that is also more
+    # generic
+    /etc/profile.d/message printanyway
+
+    eend 0
+}
+

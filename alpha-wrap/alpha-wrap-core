@@ -350,7 +350,7 @@ EOF
       $RUN chmod g+w -R ${DB_DIR}/${cont_name}
 
       # umount boot partition
-      # $_carg_CREATE_yesno_param && umount_boot || true
+      $_carg_CREATE_yesno_param && umount_boot || true
 }
 
 function op_run() {

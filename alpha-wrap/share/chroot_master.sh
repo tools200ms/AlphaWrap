@@ -7,10 +7,12 @@
 [ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         set -xe || set -e
 
-readonly VERSION="0.0.2"
-readonly mirror="http://quantum-mirror.hu/mirrors/pub/alpine"
+readonly VERSION="0.0.3"
+readonly mirror="https://dl-cdn.alpinelinux.org/alpine"
+# Other repos.:
+# http://quantum-mirror.hu/mirrors/pub/alpine
 # https://dl-cdn.alpinelinux.org/alpine/edge
-#"http://alpine.sakamoto.pl/alpine"
+# http://alpine.sakamoto.pl/alpine
 
 # Chroot directories for Alpine ARMHF (32-bit) and AARCH64 (64-bit)
 readonly build_dir=("chroot.armhf" "chroot.aarch64")
@@ -63,8 +65,11 @@ function deploy() {
     temp_dir=$(mktemp -du)
   fi
 
-  branch=$(curl -s ${mirror}/ | sed -n 's/.*href="\(.*\)".*/\1/p' | grep -e "v[0-9]\.[0-9][0-9]" | sort -V | tail -n 1)
-  branch=$(basename ${branch})
+  # branch=$(curl -s ${mirror}/ | sed -n 's/.*href="\(.*\)".*/\1/p' | grep -e "v[0-9]\.[0-9][0-9]" | sort -V | tail -n 1)
+  # $(basename ${branch})
+  # latest (as of nov. 2024) community repo. from 3.21 branch has ONLY loongarch64 arch.!
+  # use fixed value instead of ^^^
+  branch="v3.20"
 
   apk_tools_url=$(curl -s ${mirror}/${branch}/main/${arch}/ | \
                   sed -n 's/.*href="\(.*\)".*/\1/p' | grep -e "apk-tools-static-.*.apk")
