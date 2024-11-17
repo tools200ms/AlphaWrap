@@ -7,37 +7,7 @@ set -e
 [ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         set -xe || set -e
 
-
-if ! $(/etc/init.d/ntpd -q status); then
-  cat <<EOF
-No NTP service, system might not have a correct time
-that is necessary for SSH connections.
-
-Do you want to proceed?
-EOF
-
-  read -p "    yes(y) for continuation: " choose
-  if [[ ! $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|affirmative$ ]]; then
-    exit 1
-  fi
-fi
-
-$RUN setup-keymap
-echo -e "Keymap DONE.\n"
-
-$RUN setup-timezone
-echo -e "Timezone DONE.\n"
-
-$RUN setup-apkcache /var/cache/apk
-
-# if network not se, set it: setup-interfaces && setup-proxy
-$RUN apk add ca-certificates wget && $RUN update-ca-certificates
-
-$RUN setup-apkrepos -c
-echo -e "Repository configuration DONE.\n"
-
-# add user password change
-
+# functions:
 get_inspiration_word() {
   local word="inspiration"
   local skip_words=32
@@ -53,28 +23,79 @@ get_inspiration_word() {
   echo -n $word
 }
 
-cat <<EOF
+# texts:
+
+present_ntp_notification() {
+  local res=0
+  cat <<EOF
+No NTP service, system might not have a correct time
+that is necessary for SSH connections.
+
+Do you want to proceed?
+EOF
+
+  read -p "    yes(y) for continuation: " choose
+  [[ $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|affirmative$ ]] || res=$?
+
+  return $res
+}
+
+present_hostname_inspiration_option() {
+  local res=0
+  cat <<EOF
 It's time to setup hostname, if you have no clue what to choose, type 'inspiration'.
-'setup-finish' will pick some random words from random quotations that can helpfully
+'setup-finish' will pick some random words from random quotations that can hopefully
 inspire you to come up with a hostname.
 
 (if you don't need inspiration just hit ENTER)
 (to serve inspiration words package 'fortune' will be automatically added)
 
 EOF
-read -p "    type 'inspiration': " choose
-if [[ $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^inspiration$ ]]; then
+
+  read -p "    type 'inspiration': " choose
+  [[ ! $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^inspiration$ ]] || res=$?
+
+  return $res
+}
+
+present_hostname_inspiration_words() {
+  local res=0
+
+  echo -e "Inspiration words are: \n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)', and \n     - '$(get_inspiration_word)'\n"
+  read -p "    do it again? (yes|no): " choose
+
+  [[ $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^yes|y$ ]] || res=$?
+
+  return $res
+}
+
+if ! $(/etc/init.d/ntpd -q status); then
+  # exit if 'not yes'
+  present_ntp_notification
+fi
+
+$RUN setup-keymap && echo -e "Keymap DONE.\n"
+
+$RUN setup-timezone && echo -e "Timezone DONE.\n"
+
+$RUN setup-apkcache /var/cache/apk
+
+# if network not se, set it: setup-interfaces && setup-proxy
+$RUN apk add ca-certificates wget && $RUN update-ca-certificates
+
+if present_hostname_inspiration_option; then
   $RUN apk add fortune
-  while true; do
-    echo -e "Inspiration words are: \n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)', and \n     - '$(get_inspiration_word)'\n"
-    read -p "    do it again? (yes|no): " choose
-    if [[ ! $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^yes|y$ ]]; then
-      break
-    fi
-  done
+
+  while ! present_hostname_inspiration_words; do :; done
 fi
 
 $RUN setup-hostname
+
+# change repository:
+$RUN setup-apkrepos -c && echo -e "Repository configuration DONE.\n"
+
+# add user password change
+
 
 $RUN rc-update del message default
 $RUN chmod -x /etc/profile.d/message

@@ -147,7 +147,7 @@ start() {
 
         fstrim -va
 
-        # Unnecessary
+        # Unnecessary:
         # setup-devd $DEVD
 
         if [ -d "/boot/conf" ]; then
@@ -185,7 +185,7 @@ start() {
 
     eend $rc
 
-	if [ $pass -eq 1 ] && [ -z $TESTING_ON ]; then
+	if [ $pass_no -eq 1 ] && [ -z $TESTING_ON ]; then
 	    einfo "Setup successful, rebooting system"
 	    sleep .5
 	    reboot

@@ -1,0 +1,8 @@
+
+
+services:
+  depl_test:
+    image: 200ms/alpinenet_dev2:latest
+    container_name: depl_test
+    volumes:
+      - ../alpha-wrap/share:/usr/local/bin
