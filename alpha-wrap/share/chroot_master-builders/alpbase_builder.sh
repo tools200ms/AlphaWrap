@@ -270,8 +270,10 @@ if [ -n "$NTP" ] && [ $NTP != "none" ]; then
 fi
 
 # create user
-#chroot ${SETUP_ROOT} apk add sudo
+chroot ${SETUP_ROOT} apk add sudo
 chroot ${SETUP_ROOT} setup-user -au master
+echo "master ALL=(ALL) ALL" > ${SETUP_ROOT}/etc/sudoers.d/master
+chmod 440 ${SETUP_ROOT}/etc/sudoers.d/master
 
 case $SSHD in
   dropbear)

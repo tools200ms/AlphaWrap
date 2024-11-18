@@ -5,4 +5,8 @@ services:
     image: 200ms/alpinenet_dev2:latest
     container_name: depl_test
     volumes:
-      - ../alpha-wrap/share:/usr/local/bin
+      - ../alpha-wrap/share/chroot_master.sh:/usr/local/bin/chroot_master.sh
+      - ../alpha-wrap/share/chroot_master-builders/:/usr/local/bin/chroot_master-builders
+    environment:
+      - APKADD=fortune
+      #- PATH=$PATH:/usr/local/bin/chroot_master-builders/files

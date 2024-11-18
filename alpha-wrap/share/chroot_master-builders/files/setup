@@ -156,6 +156,8 @@ start() {
         umount /boot
 
         echo "Pass 1: OK" > /root/.pass
+        # remove .self from any runlevel where it is installed
+        rm -f /etc/runlevels/*/$RC_SVCNAME
         sync
     else
         mount /boot
@@ -175,12 +177,11 @@ start() {
             elif [ -f /etc/init.d/dropbear ]; then
                 rc-update add dropbear default
             else
-                awarn "'authorized_keys' exists but no SSH server available"
+                ewarn "'authorized_keys' exists but no SSH server available"
             fi
         fi
 
         rm /root/.pass
-        rm -f /etc/runlevels/*/$RC_SVCNAME
     fi
 
     eend $rc
@@ -194,3 +195,7 @@ start() {
 	fi
 }
 
+stop() {
+    ebegin "Setup DONE."
+    eend 0
+}

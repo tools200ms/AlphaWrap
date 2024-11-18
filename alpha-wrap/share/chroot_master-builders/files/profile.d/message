@@ -1,8 +1,8 @@
 #!/bin/sh
 
 print_message() {
-
-    echo "Please login as 'master' (no password)"
+  # first message
+    echo "Please login as 'root' (no password)"
     echo "    use 'setup-finish' to finalize setup."
     echo ""
 
@@ -26,7 +26,7 @@ print_message() {
     if [ ! -z $MASTER_SSH_KEYS_ON ] || [ ! -z $ROOT_SSH_KEYS_ON ]; then
         echo "'authorized_keys' found, you can login: "
         [ ! -z $MASTER_SSH_KEYS_ON ] && \
-            echo "    ssh -i key_path root@<box ip>" || true
+            echo "    ssh -i key_path master@<box ip>" || true
 
         [ ! -z $ROOT_SSH_KEYS_ON ] && \
             echo "    ssh -i key_path root@<box ip>" || true

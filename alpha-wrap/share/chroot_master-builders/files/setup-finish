@@ -1,25 +1,35 @@
 #!/bin/sh
-set -e
 
-[ -n "$PRETEND" ] && [[ $(echo "$PRETEND" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+[ -n "$PRETEND" ] && $(echo "$PRETEND" | tr '[:upper:]' '[:lower:]' | grep -Eq '^(y|yes|1|on)$') && \
         RUN="echo 'Now we shall run:'" || RUN=""
 
-[ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
+[ -n "$DEBUG" ] && $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]' | grep -Eq '^(y|yes|1|on)$') && \
         set -xe || set -e
 
 # functions:
 get_inspiration_word() {
   local word="inspiration"
   local skip_words=32
+  local quotation=
 
-  while [ $skip_words -gt 0 ]; do
-    for w in $(fortune); do
-      if [ $(echo -n $w | wc -c) -gt 3 ]; then
+  while [ $skip_words -gt -100 ]; do
+    quotation=$(fortune | sed -e s/\\\\/\\\\\\\\/g -e s/\"/\\\\\"/g -e s/\'/\\\\\'/g | tr '\n' ' ' | tr "," ' ' | xargs)
+
+    if [ -z "$quotation" ]; then
+      # strangely no output from fortune, just quit function
+      break
+    fi
+
+    for w in $quotation; do
+      if [ $(echo -n $w | wc -c) -gt 3 ] && [ $skip_words -lt 1 ]; then
         word=$w
+        skip_words=-100
+        break
       fi
       skip_words=$((skip_words-1))
     done
   done
+
   echo -n $word
 }
 
@@ -28,14 +38,14 @@ get_inspiration_word() {
 present_ntp_notification() {
   local res=0
   cat <<EOF
-No NTP service, system might not have a correct time
-that is necessary for SSH connections.
+No NTP service found, system might not have a correct time
+that is necessary for SSL connections.
 
 Do you want to proceed?
 EOF
 
   read -p "    yes(y) for continuation: " choose
-  [[ $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|affirmative$ ]] || res=$?
+  echo "$choose" | tr '[:upper:]' '[:lower:]' | grep -Eq '^(y|yes|affirmative)$' || res=$?
 
   return $res
 }
@@ -45,7 +55,7 @@ present_hostname_inspiration_option() {
   cat <<EOF
 It's time to setup hostname, if you have no clue what to choose, type 'inspiration'.
 'setup-finish' will pick some random words from random quotations that can hopefully
-inspire you to come up with a hostname.
+inspire you to come up with a name.
 
 (if you don't need inspiration just hit ENTER)
 (to serve inspiration words package 'fortune' will be automatically added)
@@ -53,51 +63,75 @@ inspire you to come up with a hostname.
 EOF
 
   read -p "    type 'inspiration': " choose
-  [[ ! $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^inspiration$ ]] || res=$?
+  $(echo "$choose" | tr '[:upper:]' '[:lower:]' | grep -Eq '^inspiration$') || res=$?
 
   return $res
 }
 
-present_hostname_inspiration_words() {
+
+setup_hostname_with_inspiration() {
   local res=0
 
-  echo -e "Inspiration words are: \n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)', and \n     - '$(get_inspiration_word)'\n"
-  read -p "    do it again? (yes|no): " choose
+  echo -e "Inspiration words are: \n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)'\n"
+  read -p "    Enter hostname (or hit ENTER for more inspiration words): " choose
 
-  [[ $(echo "$choose" | tr '[:upper:]' '[:lower:]') =~ ^yes|y$ ]] || res=$?
+  if [ -n "$choose" ]; then
+    $RUN setup-hostname "$choose" || res=$?
 
-  return $res
+    return $res
+  fi
+
+  return 1
 }
 
-if ! $(/etc/init.d/ntpd -q status); then
-  # exit if 'not yes'
-  present_ntp_notification
-fi
+present_passwd_upd() {
+cat <<EOF
+In the next step, the 'root' account will be disabled, and a password
+will be set for the 'master' user.
+EOF
+}
 
-$RUN setup-keymap && echo -e "Keymap DONE.\n"
+main() {
+  set -e
+  trap 'echo "An error occurred in my_function"; exit 1' ERR
 
-$RUN setup-timezone && echo -e "Timezone DONE.\n"
+  if ! $(/etc/init.d/ntpd -q status &> /dev/null); then
+    # exit if 'not yes'
+    present_ntp_notification
+  fi
 
-$RUN setup-apkcache /var/cache/apk
+  $RUN setup-keymap && echo -e ""
 
-# if network not se, set it: setup-interfaces && setup-proxy
-$RUN apk add ca-certificates wget && $RUN update-ca-certificates
+  $RUN setup-timezone && echo -e ""
 
-if present_hostname_inspiration_option; then
-  $RUN apk add fortune
+  $RUN setup-apkcache /var/cache/apk
 
-  while ! present_hostname_inspiration_words; do :; done
-fi
+  # if network not se, set it: setup-interfaces && setup-proxy
+  $RUN apk add ca-certificates wget && $RUN update-ca-certificates
 
-$RUN setup-hostname
+  if present_hostname_inspiration_option; then
+    $RUN apk add fortune
 
-# change repository:
-$RUN setup-apkrepos -c && echo -e "Repository configuration DONE.\n"
+    while ! setup_hostname_with_inspiration; do :; done
+  else
+    $RUN setup-hostname
+  fi
 
-# add user password change
+  # change repository:
+  $RUN setup-apkrepos -c && echo -e "Repository configuration DONE.\n"
 
+  present_passwd_upd
+  while true; do $RUN passwd master && break || true; done
+  $RUN passwd -l root
 
-$RUN rc-update del message default
-$RUN chmod -x /etc/profile.d/message
+  $RUN rc-update del message default
+  $RUN chmod -x /etc/profile.d/message
 
-exit 0
+  echo "All done, have a Happy Day!"
+}
+
+res=0
+
+main || res=$?
+
+exit $res
