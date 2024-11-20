@@ -160,11 +160,16 @@ start() {
         rm -f /etc/runlevels/*/$RC_SVCNAME
         sync
     else
+        # run this in default runlevel
         mount /boot
         [ -f /boot/TESTING ] && TESTING_ON=1 || true
         umount /boot
 
         setup-interfaces -a
+        rc-update add networking boot
+        service hostname start
+        service networking start
+
         [ -n "$NTP" ] && [ $NTP != "none" ] && setup-ntp $NTP || ewarn "No NTP configured!"
 
         if [[ -s /home/master/.ssh/authorized_keys ]] || [[ -s /root/.ssh/authorized_keys ]]; then
@@ -173,9 +178,9 @@ start() {
             # it will start later on (after net) as boot
             # process progresses
             if [ -f /etc/init.d/sshd ]; then
-                rc-update add sshd default
+                rc-update add sshd default && service sshd start
             elif [ -f /etc/init.d/dropbear ]; then
-                rc-update add dropbear default
+                rc-update add dropbear default && service dropbear start
             else
                 ewarn "'authorized_keys' exists but no SSH server available"
             fi

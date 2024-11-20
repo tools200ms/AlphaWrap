@@ -9,4 +9,5 @@ services:
       - ../alpha-wrap/share/chroot_master-builders/:/usr/local/bin/chroot_master-builders
     environment:
       - APKADD=fortune
+      - FEATURE=repath
       #- PATH=$PATH:/usr/local/bin/chroot_master-builders/files

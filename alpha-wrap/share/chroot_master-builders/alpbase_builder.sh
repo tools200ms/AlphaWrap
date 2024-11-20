@@ -133,6 +133,7 @@ case $EDITION in
     DEVD=mdev
     ROOTFS=ext4
     #jffs2
+    NET=networking
     NTP=none
     SSHD=none
     DESKTOP=none
@@ -142,6 +143,7 @@ case $EDITION in
     DEVD=mdevd
     ROOTFS=ext4
     #jffs2
+    NET=networking
     NTP=busybox
     SSHD=dropbear
     DESKTOP=none
@@ -151,13 +153,17 @@ case $EDITION in
     DEVD=udev
     ROOTFS=ext4
     #f2fs
+    NET=networkmanager
     NTP=chrony
     SSHD=none
     DESKTOP=standard
+    EXTR_APPS="firefox"
   ;;
   iam_tablet)
     DEVD=mdevd
     ROOTFS=jffs2
+    NET=networkmanager
+    NTP=busybox
     SSHD=none
     DESKTOP=tablet
   ;;
@@ -168,6 +174,8 @@ case $EDITION in
 esac
 
 readonly LOG_FILE=/var/log/alpbase_alpine-setup-$EDITION.log
+readonly PKG_LIST=/var/log/alpbase_alpine-pkgs-$EDITION.list
+
 echo "Installing: $EDITION edition"
 echo ""
 
@@ -213,11 +221,24 @@ $RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chm
 
 # === 2. Prepare edition:
 
+# Setup apk-cache for optimalisation
+#   $RUN setup-apkcache /var/cache/apk
+
 # install Tools required by below (setup and message) scripts:
 chroot ${SETUP_ROOT} apk add lsblk util-linux-misc
 
 chroot ${SETUP_ROOT} rc-update add setup boot
 chroot ${SETUP_ROOT} rc-update add message default
+
+chroot ${SETUP_ROOT} rc-update add modules boot
+chroot ${SETUP_ROOT} rc-update add swclock boot
+
+# requied by 'setup-keymap'
+# chroot ${SETUP_ROOT} apk add --quiet --virtual .setup-keymap-deps kbd-bkeymaps
+
+# install tools necessary for SSL/TLS connection
+chroot ${SETUP_ROOT} apk add ca-certificates wget
+chroot ${SETUP_ROOT} update-ca-certificates
 
 # 'setup-devd' does device scanning, hence install only necessary
 # packages and let to scann devices at a final device
@@ -259,10 +280,19 @@ case $ROOTFS in
   ;;
 esac
 
+# remove unused ntp packages:
+chroot ${SETUP_ROOT} apk del sntpc sntpc-openrc ntpsec ntpsec-dev ntpsec-doc ntpsec-doc-html ntpsec-openrc ntpsec-pyc
+
 if [ -n "$NTP" ] && [ $NTP != "none" ]; then
   case $NTP in
+    #busybox)
+    #  chroot ${SETUP_ROOT} apk del openntpd ntpsec
+    #;;
     chrony)
       chroot ${SETUP_ROOT} apk add chrony
+    ;;
+    openntpd)
+      chroot ${SETUP_ROOT} apk add openntpd
     ;;
   esac
 
@@ -315,9 +345,21 @@ ROOT_UUID=$(blkid -s UUID -o value ${SETUP_DEV}2)
 BOOT_UUID="${BOOT_UUID}" ROOT_UUID="${ROOT_UUID}" ROOTFS=${ROOTFS} DEBUG=${DEBUG} fstab.gen > ${SETUP_ROOT}/etc/fstab.new
 touch ${SETUP_ROOT}/tmp/.keep
 
+
+# remove pontencial orphant packages
+# apk del --purge $(apk info -D | grep -E '^[^ ]+ \[installed\]' | grep '\(auto\)' | awk '{print $1}')
+
+[ -f ${SETUP_ROOT}/mnt/etc/apk/repositories ] &&
+  rm ${SETUP_ROOT}/mnt/etc/apk/repositories || true
+
 #DEBUG=${DEBUG} chroot_bind.sh --unbind system ${SETUP_ROOT}
 echo "Space after setup (si: 1000^x): "
 df -H | grep -e ^"${SETUP_DEV}"
+
+# list all packages installed:
+#chroot ${SETUP_ROOT} apk cache clean
+chroot ${SETUP_ROOT} apk list > $PKG_LIST
+
 
 umount ${SETUP_ROOT}/boot
 umount ${SETUP_ROOT}
@@ -333,7 +375,6 @@ exit 0
 # /sbin/setup-acf # mini web server
 
 # chackout:
-/sbin/setup-apkcache
 /sbin/setup-wayland-base
 
 

@@ -1,0 +1,26 @@
+#!/sbin/openrc-run
+
+PRETTY_NAME=`awk -F= '$1=="PRETTY_NAME" { print $2 ;}' /etc/os-release | tr -d '"'`
+VERSION_ID=`awk -F= '$1=="VERSION_ID" { print $2 ;}' /etc/os-release`
+
+depend() {
+	after checkfs fsck dmcrypt networking nftables ntp-client
+}
+
+start() {
+	cat > /tmp/.info << EOF
+%+++++++++++++++++++ SERVER INFO ++++++++++++++++++++%
+%                                                    %
+        Name: `hostname`
+        Boot time: `date`
+
+        Kernel: `uname -r`
+        Distro: $PRETTY_NAME
+        Version $VERSION_ID
+
+        eth0 Address: `ifconfig eth0 | grep "inet addr" |  awk -F: '{print $2}' | awk '{print $1}'`
+        eth1 Address: `ifconfig eth1 | grep "inet addr" |  awk -F: '{print $2}' | awk '{print $1}'`
+%                                                    %
+%++++++++++++++++++++++++++++++++++++++++++++++++++++%
+EOF
+}

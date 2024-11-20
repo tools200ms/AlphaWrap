@@ -9,7 +9,7 @@
 # functions:
 get_inspiration_word() {
   local word="inspiration"
-  local skip_words=32
+  local skip_words=8
   local quotation=
 
   while [ $skip_words -gt -100 ]; do
@@ -38,13 +38,13 @@ get_inspiration_word() {
 present_ntp_notification() {
   local res=0
   cat <<EOF
-No NTP service found, system might not have a correct time
-that is necessary for SSL connections.
+No NTP service detected. The system may not have the correct time, which is
+essential for SSL/TLS connections and proper functionality.
 
-Do you want to proceed?
+Do you wish to continue?
 EOF
 
-  read -p "    yes(y) for continuation: " choose
+  read -p "    'yes' or 'y' to continue anyway: " choose
   echo "$choose" | tr '[:upper:]' '[:lower:]' | grep -Eq '^(y|yes|affirmative)$' || res=$?
 
   return $res
@@ -53,12 +53,13 @@ EOF
 present_hostname_inspiration_option() {
   local res=0
   cat <<EOF
-It's time to setup hostname, if you have no clue what to choose, type 'inspiration'.
-'setup-finish' will pick some random words from random quotations that can hopefully
-inspire you to come up with a name.
+It's time to setup hostname, if you have no clue what to choose, type
+'inspiration'. 'setup-finish' will pick some random words from random
+quotations that can hopefully inspire you to come up with a name.
 
 (if you don't need inspiration just hit ENTER)
-(to serve inspiration words package 'fortune' will be automatically added)
+(to serve inspiration words package 'fortune' will be automatically
+ added)
 
 EOF
 
@@ -72,7 +73,7 @@ EOF
 setup_hostname_with_inspiration() {
   local res=0
 
-  echo -e "Inspiration words are: \n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)'\n     - '$(get_inspiration_word)'\n"
+  echo -e "Inspiration words are: \n     - $(get_inspiration_word)\n     - $(get_inspiration_word)\n     - $(get_inspiration_word)\n"
   read -p "    Enter hostname (or hit ENTER for more inspiration words): " choose
 
   if [ -n "$choose" ]; then
@@ -91,23 +92,52 @@ will be set for the 'master' user.
 EOF
 }
 
-main() {
-  set -e
-  trap 'echo "An error occurred in my_function"; exit 1' ERR
+check_ntp() {
+  local res=
 
-  if ! $(/etc/init.d/ntpd -q status &> /dev/null); then
-    # exit if 'not yes'
-    present_ntp_notification
+  local runn_ntp=""
+  local aval_ntp=""
+
+  # search for NTP services
+  IFS=$' '; for ntp_srv in $(echo "ntpd chronyd openntpd"); do
+    service ${ntp_srv} status &> /dev/null; res=$?
+
+    case $res in
+      0) # service running
+        runn_ntp="${runn_ntp} ${ntp_srv}" ;;
+      3)
+        aval_ntp="${aval_ntp} ${ntp_srv}" ;;
+      *) # service not found
+        ;;
+    esac
+  done
+
+  if [ -z "$runn_ntp" ]; then
+    IFS=$' '; for ntp_srv in $(echo "${aval_ntp}"); do
+      service "$ntp_srv" start
+      runn_ntp=$ntp_srv
+      break
+    done
   fi
 
-  $RUN setup-keymap && echo -e ""
+  [ -n "$runn_ntp" ] && res=0 || res=$?
+  return $res
+}
 
-  $RUN setup-timezone && echo -e ""
+# main
 
-  $RUN setup-apkcache /var/cache/apk
+trap 'echo -e "\n\n'$(basename $0)' terminated by user.\n"; exit 1' SIGINT SIGTERM
 
-  # if network not se, set it: setup-interfaces && setup-proxy
-  $RUN apk add ca-certificates wget && $RUN update-ca-certificates
+  if ! check_ntp; then
+    # exit if 'not yes'
+    present_ntp_notification || return 0
+  fi
+
+    # set repository:
+  $RUN setup-apkrepos -c && echo ""
+
+  $RUN setup-keymap && echo ""
+  $RUN setup-timezone && echo ""
 
   if present_hostname_inspiration_option; then
     $RUN apk add fortune
@@ -117,8 +147,10 @@ main() {
     $RUN setup-hostname
   fi
 
-  # change repository:
-  $RUN setup-apkrepos -c && echo -e "Repository configuration DONE.\n"
+  rc-update add hostname boot
+  #service hostname status && \
+  #  service hostname restart || \
+  #  service hostname start
 
   present_passwd_upd
   while true; do $RUN passwd master && break || true; done
@@ -127,11 +159,6 @@ main() {
   $RUN rc-update del message default
   $RUN chmod -x /etc/profile.d/message
 
-  echo "All done, have a Happy Day!"
-}
+  echo "Setup finished, it's advised to reboot system"
 
-res=0
-
-main || res=$?
-
-exit $res
+exit 0
