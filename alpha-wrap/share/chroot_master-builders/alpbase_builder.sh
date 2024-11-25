@@ -51,8 +51,14 @@ function require_chroot() {
   fi
 }
 
-CACHE_TIMESTAMP_FILE="/var/tmp/ab_builder_update_timestamp"
-CACHE_DURATION=$((60 * 60))  # 1 hour in seconds
+readonly LOG_PATH="/var/log"
+
+readonly CACHE_TIMESTAMP_FILE="/var/tmp/ab_builder_update_timestamp"
+readonly CACHE_DURATION=$((60 * 60))  # 1 hour in seconds
+
+# Standard mount point, the same that is used by setup-disk
+readonly SETUP_ROOT="/mnt"
+
 
 function update_frequency_limit_check() {
     # If the cache file does not exist, or if it's more than an hour old
@@ -117,14 +123,15 @@ case $MODE in
   ;;
 esac
 
+readonly LOG_FILE="${LOG_PATH}/alpbase_alpine-setup-${EDITION}.log"
+readonly PKG_LIST="${LOG_PATH}/alpbase_alpine-pkgs-${EDITION}.list"
+
+
 if [ -z "${SETUP_DEV}" ] || [ ! -b "${SETUP_DEV}" ]; then
   echo "Provide block device"
   exit 3
 fi
 
-# Standard mount point, the same that is used by setup-disk
-readonly SETUP_ROOT=/mnt
-#/setup_${EDITION_SHORT}
 
 # === 0.1: Set settings specific for setup:
 case $EDITION in
@@ -137,6 +144,7 @@ case $EDITION in
     NTP=none
     SSHD=none
     DESKTOP=none
+    SWAP_REC=0
   ;;
   just_light)
     # multi-core CPU:
@@ -147,6 +155,7 @@ case $EDITION in
     NTP=busybox
     SSHD=dropbear
     DESKTOP=none
+    SWAP_REC=1.1
   ;;
   be_desktop)
     # fancy features
@@ -158,6 +167,7 @@ case $EDITION in
     SSHD=none
     DESKTOP=standard
     EXTR_APPS="firefox"
+    SWAP_REC=1.5
   ;;
   iam_tablet)
     DEVD=mdevd
@@ -166,6 +176,7 @@ case $EDITION in
     NTP=busybox
     SSHD=none
     DESKTOP=tablet
+    SWAP_REC=1.5
   ;;
   *)
     echo "This should not happen"
@@ -173,8 +184,6 @@ case $EDITION in
   ;;
 esac
 
-readonly LOG_FILE=/var/log/alpbase_alpine-setup-$EDITION.log
-readonly PKG_LIST=/var/log/alpbase_alpine-pkgs-$EDITION.list
 
 echo "Installing: $EDITION edition"
 echo ""
@@ -208,7 +217,10 @@ $RUN mount ${SETUP_DEV}1 ${SETUP_ROOT}/boot
 
 
 # === 1.2: Copy setup and add edition specific settings:
-$RUN cat $RES_DIR/setup | \
+
+$RUN cat $RES_DIR/init.d/partexpand > ${SETUP_ROOT}/etc/init.d/partexpand && chmod +x ${SETUP_ROOT}/etc/init.d/partexpand
+
+$RUN cat $RES_DIR/init.d/setup | \
       sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}\; NTP=${NTP}\; DESKTOP=${DESKTOP}" \
       > ${SETUP_ROOT}/etc/init.d/setup && chmod +x ${SETUP_ROOT}/etc/init.d/setup
 
@@ -227,11 +239,20 @@ $RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chm
 # install Tools required by below (setup and message) scripts:
 chroot ${SETUP_ROOT} apk add lsblk util-linux-misc
 
-chroot ${SETUP_ROOT} rc-update add setup boot
-chroot ${SETUP_ROOT} rc-update add message default
 
+chroot ${SETUP_ROOT} rc-update add seedrng sysinit
+chroot ${SETUP_ROOT} rc-update add localmount sysinit
 chroot ${SETUP_ROOT} rc-update add modules boot
 chroot ${SETUP_ROOT} rc-update add swclock boot
+chroot ${SETUP_ROOT} rc-update add acpid default
+
+[ "$EDITION_SHORT" == "jl" ] || [ "$EDITION_SHORT" == "bd" ] &&
+  chroot ${SETUP_ROOT} rc-update add savecache shutdown || true
+
+
+chroot ${SETUP_ROOT} rc-update add partexpand sysinit
+chroot ${SETUP_ROOT} rc-update add setup default
+
 
 # requied by 'setup-keymap'
 # chroot ${SETUP_ROOT} apk add --quiet --virtual .setup-keymap-deps kbd-bkeymaps
@@ -358,7 +379,7 @@ df -H | grep -e ^"${SETUP_DEV}"
 
 # list all packages installed:
 #chroot ${SETUP_ROOT} apk cache clean
-chroot ${SETUP_ROOT} apk list > $PKG_LIST
+chroot ${SETUP_ROOT} apk info > $PKG_LIST
 
 
 umount ${SETUP_ROOT}/boot

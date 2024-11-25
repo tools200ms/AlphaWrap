@@ -10,15 +10,19 @@ CHROOT=/mnt/dist
 #77 minimum_object_size 0
 
 # Alpine Installation:
-setup-alpine
 
-3. network (default - post_setup)
-4. proxy (default - post_setup)
 
-5. ntp (OK)
-6. user (ok)
-7. ssh (OK)
-8. disk (OK)
+sensors-detect
+No i2c device files found.
+but sensors work
+
+# lm_sensors does not exists
+# rc-update add lm_sensors default
+# rc-update add sensord default
+
+remove debugfs
+cat /boot/config-6.6.49-0-rpi | grep DEBUG | grep -v -e ^\#
+
 
 # default rc-update:
 acpid - sysinit

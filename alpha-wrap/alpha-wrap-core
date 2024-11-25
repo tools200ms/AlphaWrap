@@ -31,6 +31,16 @@ _CONTAINER_NAME=
 # Run-time globals
 _LOBOOT_DEV=
 
+function print_devices() {
+  local d=
+  local supported_devices=""
+
+  for d in "${!devices_dtb[@]}"; do
+    supported_devices="$supported_devices, $d"
+  done
+
+  echo "${supported_devices:2}"
+}
 
 function exit_if_not_root() {
   if [ $(id -u) -ne 0 ]; then
@@ -410,15 +420,6 @@ function op_run() {
 
     umount_boot
   fi
-
-  declare -A devices_dtb
-  declare -A devices_cpu
-  # arm:
-  devices_dtb["raspi0"]="alpine-standard/bcm2835-rpi-zero.dtb"
-  devices_cpu["raspi0"]="arm1176"
-  # aarch:
-  devices_dtb["raspi3b"]="raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb"
-  devices_cpu["raspi3b"]="cortex-a53"
 
   local m_cpu=${devices_cpu[${_carg_CREATE_dev_name_param}]}
   local m_dtd=${devices_dtb[${_carg_CREATE_dev_name_param}]}

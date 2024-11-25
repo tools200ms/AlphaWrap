@@ -23,6 +23,19 @@ export RUN
 export DEBUG
 
 export ARGS="$@"
+
+declare -A devices_dtb
+declare -A devices_cpu
+# arm:
+devices_dtb["raspi0"]="alpine-standard/bcm2835-rpi-zero.dtb"
+devices_cpu["raspi0"]="arm1176"
+# aarch:
+devices_dtb["raspi3b"]="raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb"
+devices_cpu["raspi3b"]="cortex-a53"
+
+export devices_dtb
+export devices_cpu
+
 include_all $0
 
 
@@ -34,6 +47,7 @@ Creating container:
 $SCRIPT_BASE --device|-d [raspi3b] <img file> [+SIZE] --imgboot|-i y|n <kernel> <initramfs> --cmdline|-C <path|cmdl> --name|-n <name>
 
   --device|-d      - Model of the emulated device (default: '${_carg_CREATE_dev_name_param}').
+                     Available devices: $(print_devices).
   <img file>       - Path to image file to be mounted as 'mmcblk0'.
   --imgboot|-i y|n - If 'y' load <kernel> and <initramfs> from a boot
                      partition of the image file.

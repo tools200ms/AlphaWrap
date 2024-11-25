@@ -9,12 +9,6 @@ depend() {
 start() {
     ebegin "Message: "
 
-    if [ -f /root/.pass ]; then
-        # pass2 of setup
-        /etc/init.d/setup start
-        /etc/init.d/setup stop
-    fi
-
     # Print message, finally message is
     # to be printed from script/program
     # within '/usr/' that is also more

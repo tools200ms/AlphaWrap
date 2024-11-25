@@ -1,0 +1,153 @@
+#!/sbin/openrc-run
+# Auto-setup service fo AlpBase, to be run at the
+# beginning after/before Alpine's 'firstboot''.
+# If installation is successful, script is not called again.
+
+readonly VERSION=0.6
+
+depend() {
+    after networking networkmanager
+    before message
+}
+
+# Setup configuration BEGIN
+# <==- Edition specific variable declarations place holder, do NOT remove NOR edit this commend -==>
+# END OF Setup configuration
+
+RUN=
+
+# Checkout for --dry-run flag
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run|-Z)
+        RUN="einfo [pretend] "
+    ;;
+    -v)
+        set -xe
+    ;;
+    -V)
+        echo "${RC_SVCNAME}, version: ${VERSION}"
+        return 0
+    ;;
+  esac
+done
+
+resize_rootfs() {
+    local root_dev=$(realpath /dev/root)
+    local resize_cmd=
+    local ret=0
+
+    case $(lsblk -no fstype ${root_dev}) in
+        ext4)
+            resize_cmd="resize2fs"
+        ;;
+        f2fs)
+            resize_cmd="resize.f2fs"
+        ;;
+        *)
+            eerror "Unsupported filesystem"
+            return 1
+        ;;
+    esac
+
+    # online resizing:
+    ${resize_cmd} ${root_dev} || ret=$?
+
+    return $ret
+}
+
+assign_unique_part_uuids() {
+    :
+}
+
+load_unitconf() {
+    local pub_keys=$(ls /boot/conf/*.pub 2>/dev/null)
+
+    if [ -n "${pub_keys}" ]; then
+        mkdir /home/master/.ssh/
+        chown master:master /home/master/.ssh/
+        chmod ugo-rwx /home/master/.ssh/
+        chmod u+rwx /home/master/.ssh/
+
+        for key_file in "${pub_keys}"; do
+            cat "$key_file" >> /home/master/.ssh/authorized_keys
+        done
+
+        chown master:master /home/master/.ssh/authorized_keys
+        chmod ugo-rwx /home/master/.ssh/authorized_keys
+        chmod u+rw /home/master/.ssh/authorized_keys
+    fi
+}
+
+setup_services() {
+    einfo "Setup interfaces"
+    setup-interfaces -a
+    rc-update add networking boot
+    #service hostname start
+    #service networking start
+
+    # this can bring networking up:
+    [ -n "$NTP" ] && [ $NTP != "none" ] && setup-ntp $NTP || ewarn "No NTP configured!"
+
+    if [[ -s /home/master/.ssh/authorized_keys ]] || [[ -s /root/.ssh/authorized_keys ]]; then
+
+        # add SSH service to runlevel if available,
+        # it will start later on (after net) as boot
+        # process progresses
+        if [ -f /etc/init.d/sshd ]; then
+            rc-update add sshd default
+        elif [ -f /etc/init.d/dropbear ]; then
+            rc-update add dropbear default
+        else
+            ewarn "'authorized_keys' exists but no SSH server available"
+        fi
+    fi
+}
+
+start() {
+    local rc=0
+
+    ebegin "Starting ${RC_SVCNAME} (version: ${VERSION})"
+
+    mount /boot
+    [ -f /boot/TESTING ] && TESTING_ON=1 || true
+
+    resize_rootfs && \
+            fstrim -va || rc=$?
+
+    mount /boot
+    [ -f /boot/TESTING ] && TESTING_ON=1 || true
+
+    if [ -d "/boot/conf" ]; then
+        load_unitconf && shred -u /boot/conf/* && rmdir /boot/conf
+    fi
+    umount /boot
+
+    setup_services
+
+    # Probably unnecessary, at least with mdevd:
+    # setup-devd $DEVD
+
+    # remove .self and 'partexpand' from any runlevel where it is installed
+    rm -f /etc/runlevels/*/$RC_SVCNAME
+    rm -f /etc/runlevels/*/partexpand
+
+    rc-update add message default
+
+    if [ -z $TESTING_ON ]; then
+        einfo "System ready, rebooting."
+        sleep 0.8
+        reboot
+	else
+	    einfo "Distribution TESTING mode ON."
+	    einfo "Normally system should reboot, but as it is TESTING mode "
+	    einfo "it's time to inspect manually if all went good."
+	fi
+
+    eend $rc
+}
+
+stop() {
+    ebegin "Setup DONE."
+    eend 0
+}

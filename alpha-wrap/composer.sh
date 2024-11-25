@@ -126,22 +126,22 @@ compress_image() {
 res=0
 # Creating Editions
 # Based on Alpine ARMHF
-#${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
-#if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
-#  create_edition "super_light" "chroot.armhf" "450MB"
-#else
-#  echo "No updates available, or image already exists"
-#  echo "Skipping build"
-#fi
-
-# Based on Alpine AARCH64
-${AW_RUN} command "/bin/ash" "-l -c" ${CHROOTM_EXEC} exec "chroot.aarch64" $UPDATE_CHECK_AVAILABILITY_VM_CHROOT_CMD || res=$?
-if [ $res -eq 0 ] || [ $(ls images/alpbase-just_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
-  create_edition "just_light" "chroot.aarch64" "500MB"
+${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec "chroot.armhf" alpbase_builder.sh updates'" || res=$?
+if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+  create_edition "super_light" "chroot.armhf" "450MB"
 else
   echo "No updates available, or image already exists"
   echo "Skipping build"
 fi
+
+# Based on Alpine AARCH64
+#${AW_RUN} command "/bin/ash" "-l -c" ${CHROOTM_EXEC} exec "chroot.aarch64" $UPDATE_CHECK_AVAILABILITY_VM_CHROOT_CMD || res=$?
+#if [ $res -eq 0 ] || [ $(ls images/alpbase-just_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+#  create_edition "just_light" "chroot.aarch64" "500MB"
+#else
+#  echo "No updates available, or image already exists"
+#  echo "Skipping build"
+#fi
 
 #if [ $res -eq 0 ] || [ $(ls images/alpbase-be_desktop*.iso 2>/dev/null | wc -l) -eq 0 ]; then
 #  create_edition "be_desktop" "chroot.aarch64" "1500MB"

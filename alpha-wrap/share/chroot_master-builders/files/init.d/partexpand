@@ -1,0 +1,98 @@
+#!/sbin/openrc-run
+
+description="Expanding root partition to cover un-partitioned space if it's the case"
+
+depend() {
+    after mdev mdevd udev
+    before localmount root
+}
+
+grow_part2() {
+    local sys_dev=$1
+
+    fdisk ${sys_dev} <<EOF > /dev/null
+d
+2
+n
+p
+2
+
+
+w
+EOF
+
+    return $?
+}
+
+check_sizes() {
+    local sys_dev=$1
+    local root_dev=$2
+    local ret=
+
+    # sizes in bytes ('--getsize64' option returns bytes):
+    local bdev_size=
+    local part_sum_size=0
+    local nopart_space=0
+
+    for blkd in $(ls ${sys_dev}*); do
+        if [ "${blkd}" == "${sys_dev}" ]; then
+            bdev_size=$(blockdev --getsize64 ${sys_dev})
+            continue;
+        fi
+        part_sum_size=$(( $(blockdev --getsize64 ${blkd}) + ${part_sum_size} ))
+    done
+
+    nopart_space=$(($bdev_size - $part_sum_size))
+
+    einfo "Found $((${nopart_space}/1048576))MiB of un-partitioned space"
+
+    [ ${nopart_space} -gt 1048576 ] && ret=0 || ret=$?
+    return $ret
+}
+
+check_and_grow() {
+    local root_dev=$(realpath /dev/root)
+    local sys_blkn=$(lsblk -no pkname ${root_dev})
+    local sys_dev=/dev/${sys_blkn}
+
+    if [[ ! "${root_dev}" =~ ^/dev/[a-z0-9\._-]{1,128}$ ]]; then
+        eerror "Incorrect device path: ${root_dev}"
+        return 1
+    fi
+
+    if [[ ! "${sys_blkn}" =~ ^[a-z0-9\._-]{1,128}$ ]]; then
+        eerror "Incorrect block name: ${sys_blkn}"
+        return 2
+    fi
+
+    if check_sizes ${sys_dev} ${root_dev}; then
+        grow_part2 ${sys_dev}
+        return $?
+    else
+        ewarn "No partition to grow"
+        return 1
+    fi
+}
+
+# TODO: add UUID update (change)
+start() {
+    ebegin "Starting ${RC_SVCNAME}"
+    local rc=0
+
+    check_and_grow || rc=$?
+
+    if [ $rc -eq 0 ]; then
+        partprobe && \
+            einfo "Partition schema has been altered" || \
+            rc=$?
+    fi
+
+    eend $rc "Failed"
+}
+
+
+stop() {
+    ebegin "Stopping ${RC_SVCNAME}"
+    einfo "Nothing to do"
+    eend 0
+}
