@@ -89,6 +89,9 @@ function deploy() {
     mkdir -p ${ch_root}/etc/apk
     echo "${mirror}/${branch}/main" > ${ch_root}/etc/apk/repositories
     echo "${mirror}/${branch}/community" >> ${ch_root}/etc/apk/repositories
+
+    # apply patches:
+    sed -i 's/\(apk add\)/apk --arch armhf add/' ${ch_root}/sbin/setup-disk
   else
     echo "Pretending that working hard on a basic system configuration ..."
     sleep 1 # o-<-<

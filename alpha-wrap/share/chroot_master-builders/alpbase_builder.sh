@@ -367,11 +367,14 @@ BOOT_UUID="${BOOT_UUID}" ROOT_UUID="${ROOT_UUID}" ROOTFS=${ROOTFS} DEBUG=${DEBUG
 touch ${SETUP_ROOT}/tmp/.keep
 
 
-# remove pontencial orphant packages
+# remove potential orphan packages
 # apk del --purge $(apk info -D | grep -E '^[^ ]+ \[installed\]' | grep '\(auto\)' | awk '{print $1}')
 
 [ -f ${SETUP_ROOT}/mnt/etc/apk/repositories ] &&
   rm ${SETUP_ROOT}/mnt/etc/apk/repositories || true
+
+# replace with e-mail notifications?
+rm ${SETUP_ROOT}/etc/motd
 
 #DEBUG=${DEBUG} chroot_bind.sh --unbind system ${SETUP_ROOT}
 echo "Space after setup (si: 1000^x): "
