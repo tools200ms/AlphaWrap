@@ -1,9 +1,11 @@
 
 
 # AlphaWrap
-This is a wrapper for `qemu-system-*` that allows on creation, launch and interaction with QEmu emulated machines in a manner that Docker does.
+This is a wrapper for `qemu-system-*` that allows on creation, launch and interaction with QEmu emulated machines. 
 
-It has been developed as a key tool to support the development and automation of AlpBase Linux, which is specifically designed for ARM platforms, particularly Raspberry Pi boards.
+`AlphaWrap` uses concept of `images`, and `containters`. Containers are crated from image, images are never modified, only containers can be modified.
+
+This tool has been developed to support the development and automation of AlpBase Linux, which is specifically designed for ARM platforms, particularly Raspberry Pi boards.
 
 ![Made with ChatGPT (accually ChatGPT made this)](./art/AlphaWrap-mini.png)
 
@@ -12,7 +14,9 @@ It has been developed as a key tool to support the development and automation of
 AlphaWrap uses system tools: `fdisk`, `dd` and `mkfs.*`, but it does not modify anything on a 'physical' hardware.
 It only operates within `/var/lib/alphawrap` and `/tmp` directories. 'Dangerous' operations are ONLY performed on ISO files desired for VMs.
 
-## How to not work as root ?
+## When root access is needed?
+
+If `--imgboot` is set to `yes` root is required, otherwise regular user is sufficient. This is becuse `--imgboot yes` do mount image using loopback, hence high privilages are needed.
 
 ## Features
 
@@ -22,20 +26,20 @@ In short, `AlphaWrap` provides:
 - Emulated USB storage.
 - Guest interaction via SSH.
 
-**Note:** `AlphaWrap` has been tested with `qemu-system-aarch64` and `qemu-system-arm`, however as this is only 'wrapper', other architectures, such as `qemu-system-riscv64` should not be an issue.
+**Note:** `AlphaWrap` has been tested with `qemu-system-aarch64` and `qemu-system-arm`, however, as this is only 'wrapper', other architectures, such as `qemu-system-riscv64` should not be an issue.
 
 ## Concept
 
-At the beginning there is an image (ARM image). To launch the image, the user specifies the device model to emulate (by default 'raspi3b' if omitted), along with the paths to the kernel, initramfs, and most importantly, the ARM image file.
+At the beginning, there is an image (ARM image). To launch the image, the user specifies the device model to emulate (by default 'raspi3b' if omitted), along with the paths to the kernel, initramfs, and most importantly, the ARM image file.
 
-The image will be turned into container, if option `--name` is provided, 'named' container is created. If `--name` is skipped, 'temporary' container is created - that will live only until VM is on. 'Named' container stays indefinitely, until is intentionally removed.
+`AlphaWrap` creates container basing on image, if option `--name` is provided, 'named' container is created. If `--name` is skipped, 'temporary' container is created that will live only until VM is on. 'Named' container stays indefinitely, until intentional removal.
 
-The benefit coming from this approach is that image stays intact. Some systems, such as Raspberry PI OS modify image upon first launch what is very practical for user. But, while experimenting and developing it's essential to keep track on what has changed, what not. Thus, distinction between images - that never change, and containers - that are prone for changes, is very practical.
+The benefit coming from this approach is that the image stays intact. Some systems, such as Raspberry PI OS modify image upon first launch what is very practical for user. But, while experimenting and developing, it's essential to keep track on what has changed, what not. Thus, the distinction between images - that never change, and containers - that are prone for changes, is very practical.
 Container name can be provided after parameter `--name`, if `--name` does not have any name afterward, random container name is given.
 
 Unlike Docker, `AlphaWrap` allows on launching only one VM (container). The reason is that there is actually no need for an interaction in between containers. Container is launched to do a certain job, such as build Linux distribution for ARM and exit.
 
-When container is created, user can attach "Attachable Storage" that is emulated "USB storage device", or execute (over SSH) certain command.
+When a container is created, user can attach "Attachable Storage" that is emulated "USB storage device", or execute (over SSH) certain command.
 
 Below, complete guide with an examples.
 
@@ -55,7 +59,7 @@ sudo cp -r alpha-wrap/dtbs/* /var/lib/alphawrap/_dtb
 
 sudo cp ./alpha-wrap/alpha-wrap /usr/local/bin/
 ```
-and finally initialize directory structure and databases: 
+and finally, initialize directory structure and databases: 
 ```bash
 alpha-wrap init
 ```
@@ -82,6 +86,15 @@ Below are the instructions on how to run popular Raspberry Pi Linuxes.
 ```bash
 alpha-wrap -d raspi3b <pathto>/<date>-raspios-<release_name>-arm64-lite.img \
         -i y kernel8.img initramfs8
+```
+
+##### Legacy version
+To run Raspberry Pi OS on emulated Raspberry Pi Zero (first version) download [legacy OS](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy).
+
+and run: 
+```bash
+alpha-wrap -d raspi0 <pathto>/<date>-raspios-<release_name>-armhf-lite.img \
+        -i y kernel8.img
 ```
 
 Once when `Raspberry Pi OS` is boot it will grow filesystem to span over entire space. `AlphaWrap` always creates a container based on image. Thus, any modification is saved into container, making image intact what is a convenience as the image stays in its original (downloaded) form.
