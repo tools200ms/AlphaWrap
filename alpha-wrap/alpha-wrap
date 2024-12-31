@@ -683,7 +683,7 @@ function check_CREATE() {
   fi
 
   # Create random name if user did not assign
-  if [ "${_carg_CREATE_name_flag}" == "1" ] && [ -z ${parse_CREATE_cont_name_param} ]; then
+  if [ "${_carg_CREATE_name_flag}" == "1" ] && [ -z ${_carg_CREATE_cont_name_param} ]; then
     _carg_CREATE_cont_name_param=$(get_random_name)
     echo "Random name assigned: ${_carg_CREATE_cont_name_param}"
   fi
