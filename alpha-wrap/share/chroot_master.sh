@@ -1,5 +1,6 @@
 #!/bin/bash
 # Based on: https://wiki.alpinelinux.org/wiki/Alpine_Linux_in_a_chroot
+# Create and manage Alpine Linux chroot
 
 [ -n "$PRETEND" ] && [[ $(echo "$PRETEND" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         RUN="echo" || RUN=

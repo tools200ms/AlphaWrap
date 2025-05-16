@@ -12,7 +12,7 @@ services:
       - ./prepare_image.sh:/usr/local/bin/prepare_image.sh
 
       - ../iso:/iso
-      - ../files/system:/system
+      - ../Depricated-Notes/system:/system
 
     networks:
       - nat-net

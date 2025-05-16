@@ -239,6 +239,10 @@ $RUN cat $RES_DIR/setup-finish > ${SETUP_ROOT}/usr/local/bin/setup-finish && chm
 # install Tools required by below (setup and message) scripts:
 chroot ${SETUP_ROOT} apk add lsblk util-linux-misc
 
+# MPY_INIT: Add experimental mpy_init:
+chroot ${SETUP_ROOT} apk add micropython
+# sync ...
+# MPY_INIT
 
 chroot ${SETUP_ROOT} rc-update add seedrng sysinit
 chroot ${SETUP_ROOT} rc-update add localmount sysinit

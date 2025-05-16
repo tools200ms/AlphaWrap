@@ -1,3 +1,0 @@
-
-
-DEBUG=Y ./alpha-wrap/alpha-wrap -d raspi3b images/other/prep/alpine-rpi-3.20.3-armhf.img -i y boot/vmlinuz-rpi boot/initramfs-rpi -n alpine-alpbase-factory-v1-armhf
