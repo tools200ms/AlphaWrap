@@ -31,25 +31,35 @@ If `--imgboot` is set to `yes` root is required, otherwise regular user is suffi
 
 ## AlphaWrap Guid
 
-### Installation
+### Pre-installation
+Ensure `qemu-system-arm` and `libvirt-daemon` is installed. 
 
+To install these on Ubuntu/Debian do: 
+```commandline
+sudo apt install qemu-system-arm qemu-utils libvirt-daemon
+# and run libvirtd: 
+sudo systemctl start libvirtd
+```
+
+### Installation
 Clone this repository: 
 ```bash
-git clone https://github.com/tools200ms/projectalpha_deployment.git
-cd projectalpha_deployment
+git clone https://github.com/tools200ms/AlphaWrap.git
+cd AlphaWrap/
 ```
 Copy DTB files and `alpha-wrap`:
 ```bash
-sudo mkdir -p /var/lib/alphawrap/_dtb
-sudo cp -r alpha-wrap/dtbs/* /var/lib/alphawrap/_dtb
+sudo mkdir /var/lib/alphawrap
+sudo cp -r alpha-wrap/dtbs /var/lib/alphawrap/_dtb
 
-sudo cp ./alpha-wrap/alpha-wrap /usr/local/bin/
+sudo cp ./alpha-wrap/alpha-wrap* /usr/local/bin/
+sudo chmod +x /usr/local/bin/alpha-wrap*
 ```
 and finally, initialize directory structure and databases: 
 ```bash
-alpha-wrap init
+sudo alpha-wrap init
 ```
-AlphaWrap uses `/var/lib/alphawrap` for storage, ensure that you have enough free space under this location. Containers might take a several GB of space, make sure you have good "space margin".
+AlphaWrap uses `/var/lib/alphawrap` for storage, ensure that you have enough free space under this location. Containers might take a several GB of storage.
 
 ### Running ARM Linux Image
 
