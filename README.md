@@ -123,6 +123,15 @@ alpha-wrap -d raspi3b <pathto>/alpine-rpi-<version>-aarch64.img \
 
 This will boot Alpine linux, to install login as root (no password) and issue `setup-alpine` for installation wizard.
 
+#### Running AlpBase
+
+To run [AlpBase](https://github.com/tools200ms/alpbase-linux), download the image and run:
+
+```bash
+alpha-wrap -d raspi3b iso/alpbase-<aarch64 edition>t-<version>.iso \
+        -i y vmlinuz-rpi initramfs-rpi
+```
+
 ### Listing containers
 To see the list of containers and its statuses use `ls` (`-f` for more detailed view): 
 ```bash
