@@ -545,7 +545,7 @@ function op_waitfor() {
   local wait_until=$((${ctime}+${WAIT_TIMEOUT}))
 
   while true; do
-    SSH_MSG=$(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost "[ $(rc-status -r) == "default" ]" 2>&1)
+    SSH_MSG=$(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost 'rc-status -r | grep -q default' 2>&1)
     cres=$?
 
     if [ $cres -eq 0 ]; then

@@ -1,0 +1,3510 @@
++ export RUN
++ export DEBUG
++ export ARGS=waitfor
++ ARGS=waitfor
++ declare -A devices_dtb
++ declare -A devices_cpu
++ devices_dtb["raspi0"]=alpine-standard/bcm2835-rpi-zero.dtb
++ devices_cpu["raspi0"]=arm1176
++ devices_dtb["raspi3b"]=raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb
++ devices_cpu["raspi3b"]=cortex-a53
++ export devices_dtb
++ export devices_cpu
++ include_all ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_PATH=./alpha-wrap/alpha-wrap
++ SCRIPT_PATH=./alpha-wrap/alpha-wrap
+++ basename ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_BASE=alpha-wrap
++ SCRIPT_BASE=alpha-wrap
+++ dirname ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_DIR=./alpha-wrap
++ SCRIPT_DIR=./alpha-wrap
+++ ls ./alpha-wrap/alpha-wrap-cargs ./alpha-wrap/alpha-wrap-core ./alpha-wrap/alpha-wrap-lib
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-cargs ']'
++ source ./alpha-wrap/alpha-wrap-cargs
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ _errors=
+++ _DBG_MSG=_carg_dbg_sink
+++ CARG=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-core ']'
++ source ./alpha-wrap/alpha-wrap-core
+++ '[' -n Y ']'
++++ tr '[:upper:]' '[:lower:]'
++++ echo Y
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly BOOT_MNT_DIR=/mnt/img.boot
+++ BOOT_MNT_DIR=/mnt/img.boot
+++ readonly AWSTORE_DIR=/var/lib/alphawrap
+++ AWSTORE_DIR=/var/lib/alphawrap
+++ readonly DTB_LIB=/var/lib/alphawrap/_dtb
+++ DTB_LIB=/var/lib/alphawrap/_dtb
+++ readonly DB_DIR=/var/lib/alphawrap/_db
+++ DB_DIR=/var/lib/alphawrap/_db
+++ readonly EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ readonly LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ readonly SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ readonly SHARE_SPACE_SIZE_MIB=100
+++ SHARE_SPACE_SIZE_MIB=100
+++ readonly QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ readonly SSH_GUEST_PORT=15022
+++ SSH_GUEST_PORT=15022
+++ readonly SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ readonly 'SSH_OPTIONS=-o ConnectTimeout=3 -o BatchMode=yes'
+++ SSH_OPTIONS='-o ConnectTimeout=3 -o BatchMode=yes'
+++ _NO_PART_TABLE_MODE=-1
+++ _CONTAINER_NAME=
+++ _LOBOOT_DEV=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-lib ']'
++ source ./alpha-wrap/alpha-wrap-lib
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly ONE_MIB=1048576
+++ ONE_MIB=1048576
+++ readonly ONE_GIB=1073741824
+++ ONE_GIB=1073741824
+++ _VERBS='run
+jump
+fly
+walk
+sing
+drive'
+++ _NOUNS='carpet
+house
+river
+road
+mountain
+car'
++ _RSYNC_LOCAL=
++ _RSYNC_REMOTE=/usr/local/bin
++ _RSYNC_REVERSE=0
++ _EXTSTORAGE_MODE=add
++ _EXTSTORAGE_REF=
++ _EXTSTORAGE_REF_ISINTERNAL=
++ _EXTSTORAGE_SIZE=
++ _carg_CREATE_dev_name_param=raspi3b
++ _carg_CREATE_kelner_param=vmlinuz
++ _carg_CREATE_initramfs_param=
++ _carg_COMMAND_arg_param=
++ _carg_SYNC_path_remote_param=/usr/local/bin/
++ main
++ local res=0
++ _carg_chain_parse 'help? --help-h? MODE? CREATE? RUN?'
++ local 'chain=help? --help-h? MODE? CREATE? RUN?'
++ local name=
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _'
++ return 0
++ _carg_dbg_sink '    help? --help-h? MODE? CREATE? RUN?'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link='help?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=help
++ tmp=lp
++ '[' h == - ']'
++ declare -F parse__help
++ chain_param_fn[$link_idx]=parse___autoparam
++ _carg_dbg_sink '      (0) adding param. fn.: parse___autoparam? expecting: '\''parse__help'\'' storing value into: '\''_carg__help_param'\'''
++ return 0
++ chain_arr[$link_idx]=help
++ for link_idx in ${!chain_arr[@]}
++ link='--help-h?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=--help-h
++ tmp=-h
++ '[' - == - ']'
++ [[ ! -h =~ ^-[0-9A-Za-z]$ ]]
++ cflag=h
++ tmp=--help
++ '[' -n --help ']'
++ [[ ! --help =~ ^--[0-9A-Za-z]{1,128}$ ]]
++ clflag=help
++ flag_conv[$cflag]=help
++ flag_conv[$clflag]=h
++ flag_subch_sidx[$cflag]=2
++ link=-h
++ _carg_dbg_sink '      (1) adding flag: help(h)?, assoc. var.: _carg__help_flag'
++ return 0
++ chain_param_fn[$link_idx]=
++ chain_arr[$link_idx]=-h
++ for link_idx in ${!chain_arr[@]}
++ link='MODE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=MODE
++ tmp=DE
++ '[' M == - ']'
++ declare -F parse__MODE
++ chain_param_fn[$link_idx]=parse__MODE
++ _carg_dbg_sink '      (2) adding param. fn.: parse__MODE? expecting: '\''parse__MODE'\'' storing value into: '\''_carg__MODE_param'\'''
++ return 0
++ chain_arr[$link_idx]=MODE
++ for link_idx in ${!chain_arr[@]}
++ link='CREATE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=CREATE
++ tmp=TE
++ '[' C == - ']'
++ declare -F parse__CREATE
++ chain_param_fn[$link_idx]=parse__CREATE
++ _carg_dbg_sink '      (3) adding param. fn.: parse__CREATE? expecting: '\''parse__CREATE'\'' storing value into: '\''_carg__CREATE_param'\'''
++ return 0
++ chain_arr[$link_idx]=CREATE
++ for link_idx in ${!chain_arr[@]}
++ link='RUN?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=RUN
++ tmp=UN
++ '[' R == - ']'
++ declare -F parse__RUN
++ chain_param_fn[$link_idx]=parse__RUN
++ _carg_dbg_sink '      (4) adding param. fn.: parse__RUN? expecting: '\''parse__RUN'\'' storing value into: '\''_carg__RUN_param'\'''
++ return 0
++ chain_arr[$link_idx]=RUN
++ link_idx=0
++ link_cnt=5
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg waitfor
+++ printf %s waitfor
++ CARG=waitfor
+++ last_args waitfor
+++ '[' -n waitfor ']'
+++ shift
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z waitfor ']'
++ _carg_dbg_sink '    Loading: waitfor'
++ return 0
++ carg_loc=waitfor
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ w == \- ]]
++ '[' 0 -ge 5 ']'
++ link=help
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :help?'
++ return 0
++ '[' -z parse___autoparam ']'
++ _carg_dbg_sink '    Testing arg. against parameter: help?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse___autoparam "" help waitfor h '
++ return 0
++ tailing_cnt=0
++ parse___autoparam '' help waitfor h
++ local cname=
++ local clink=help
++ local value=waitfor
++ '[' help == waitfor ']'
++ return 1
++ res=1
++ '[' 1 -eq 0 ']'
++ '[' -z '?' ']'
++ '[' 0 -ne 0 ']'
++ _carg_dbg_sink '      Param have not meet parser conditions, continue maching with a next link'
++ return 0
++ '[' '?' == '*' ']'
++ link_idx=1
++ true
++ '[' -z waitfor ']'
++ carg_loc=waitfor
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ w == \- ]]
++ '[' 1 -ge 5 ']'
++ link=-h
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :-h?'
++ return 0
++ '[' -z ']'
++ '[' -z '?' ']'
++ _carg_dbg_sink '    Flag in chain encountered: (-h)?, checking arg. with next chain link'
++ return 0
++ link_idx=2
++ continue
++ true
++ '[' -z waitfor ']'
++ carg_loc=waitfor
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ w == \- ]]
++ '[' 2 -ge 5 ']'
++ link=MODE
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :MODE?'
++ return 0
++ '[' -z parse__MODE ']'
++ _carg_dbg_sink '    Testing arg. against parameter: MODE?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse__MODE "" MODE waitfor h '
++ return 0
++ tailing_cnt=0
++ parse__MODE '' MODE waitfor h
++ local cname=
++ local clink=MODE
++ local cmd=waitfor
++ local res=0
++ case $cmd in
++ CARG=
++ cmd=waitfor
++ carg_set_param '' MODE waitfor
++ local cname=
++ local clink=MODE
++ local value=waitfor
++ '[' -z waitfor ']'
++ local param_name=_carg__MODE_param
++ '[' -z ']'
++ declare -gr _carg__MODE_param=waitfor
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set '' MODE
+++ local cname=
+++ local clink=MODE
+++ local var=_carg__MODE_param
+++ '[' -n waitfor ']'
+++ return 0
++ tmp=_carg__MODE_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg__MODE_param'\'' has been set with value: '\''waitfor'\'''
++ return 0
++ '[' '?' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=3
++ [[ MODE != \M\O\D\E ]]
++ _carg_dbg_sink '     Exited from chain: '\''_MODE'\''. Chain should always rewind argument to the one that has not been recognized'
++ return 0
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _ chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_
++ _carg_dbg_sink 'Calling checker: check_'
++ return 0
++ check_
++ '[' -n '' ']'
++ '[' -n '' ']'
++ '[' -z waitfor ']'
++ return 0
++ tmp=0
++ false
++ '[' -z ']'
++ '[' 0 -ne 0 ']'
++ '[' -n '' ']'
++ '[' 0 -ne 0 ']'
++ return 0
++ case $_carg__MODE_param in
++ load_containersettings
++ '[' '!' -e /tmp/alpha_wrap-run.lock ']'
+++ tail -n 1 /tmp/alpha_wrap-run.lock
++ _CONTAINER_NAME=Factory04
++ return 0
++ op_waitfor
++ local ssh_key_path=/var/lib/alphawrap/_db/Factory04/id_ed25519
++ local WAIT_TIMEOUT=300
++ local PING_INTERVAL=3
++ local SSH_MSG=
++ local cres=
++ echo -n 'Waiting for '\''Factory04'\'' to reach multi-user mode .'
+Waiting for 'Factory04' to reach multi-user mode .++ date +%s
++ local ctime=1747679119
++ local wait_until=1747679419
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679125 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679131 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679137 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679143 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679149 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679155 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679162 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679168 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679174 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'Connection timed out during banner exchange
+Connection to 127.0.0.1 port 15022 timed out'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679180 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='kex_exchange_identification: read: Connection reset by peer
+Connection reset by 127.0.0.1 port 15022'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'kex_exchange_identification: read: Connection reset by peer
+Connection reset by 127.0.0.1 port 15022'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679183 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='kex_exchange_identification: read: Connection reset by peer
+Connection reset by 127.0.0.1 port 15022'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ echo 'kex_exchange_identification: read: Connection reset by peer
+Connection reset by 127.0.0.1 port 15022'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679186 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG='kex_exchange_identification: read: Connection reset by peer
+Connection reset by 127.0.0.1 port 15022'
++ cres=255
++ '[' 255 -eq 0 ']'
+++ grep -q -e 'Connection refused' -e 'Connection timed out' -e 'No route to host' -e 'kex_exchange_identification: read: Connection reset by peer'
+++ echo 'kex_exchange_identification: read: Connection reset by peer
+Connection reset by 127.0.0.1 port 15022'
++ sleep 3
++ echo -n .
+.++ date +%s
++ '[' 1747679189 -gt 1747679419 ']'
++ true
+++ ssh -p 15022 -o ConnectTimeout=3 -o BatchMode=yes -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost 'rc-status -r | grep -q default'
++ SSH_MSG=
++ cres=0
++ '[' 0 -eq 0 ']'
++ break
++ echo ''
+
++ echo ''\''Factory04'\'' avaliable'
+'Factory04' avaliable
++ return 0
++ return 0
++ exit 0
++ export RUN
++ export DEBUG
++ export 'ARGS=command /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ ARGS='command /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ declare -A devices_dtb
++ declare -A devices_cpu
++ devices_dtb["raspi0"]=alpine-standard/bcm2835-rpi-zero.dtb
++ devices_cpu["raspi0"]=arm1176
++ devices_dtb["raspi3b"]=raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb
++ devices_cpu["raspi3b"]=cortex-a53
++ export devices_dtb
++ export devices_cpu
++ include_all ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_PATH=./alpha-wrap/alpha-wrap
++ SCRIPT_PATH=./alpha-wrap/alpha-wrap
+++ basename ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_BASE=alpha-wrap
++ SCRIPT_BASE=alpha-wrap
+++ dirname ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_DIR=./alpha-wrap
++ SCRIPT_DIR=./alpha-wrap
+++ ls ./alpha-wrap/alpha-wrap-cargs ./alpha-wrap/alpha-wrap-core ./alpha-wrap/alpha-wrap-lib
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-cargs ']'
++ source ./alpha-wrap/alpha-wrap-cargs
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ _errors=
+++ _DBG_MSG=_carg_dbg_sink
+++ CARG=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-core ']'
++ source ./alpha-wrap/alpha-wrap-core
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly BOOT_MNT_DIR=/mnt/img.boot
+++ BOOT_MNT_DIR=/mnt/img.boot
+++ readonly AWSTORE_DIR=/var/lib/alphawrap
+++ AWSTORE_DIR=/var/lib/alphawrap
+++ readonly DTB_LIB=/var/lib/alphawrap/_dtb
+++ DTB_LIB=/var/lib/alphawrap/_dtb
+++ readonly DB_DIR=/var/lib/alphawrap/_db
+++ DB_DIR=/var/lib/alphawrap/_db
+++ readonly EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ readonly LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ readonly SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ readonly SHARE_SPACE_SIZE_MIB=100
+++ SHARE_SPACE_SIZE_MIB=100
+++ readonly QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ readonly SSH_GUEST_PORT=15022
+++ SSH_GUEST_PORT=15022
+++ readonly SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ readonly 'SSH_OPTIONS=-o ConnectTimeout=3 -o BatchMode=yes'
+++ SSH_OPTIONS='-o ConnectTimeout=3 -o BatchMode=yes'
+++ _NO_PART_TABLE_MODE=-1
+++ _CONTAINER_NAME=
+++ _LOBOOT_DEV=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-lib ']'
++ source ./alpha-wrap/alpha-wrap-lib
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly ONE_MIB=1048576
+++ ONE_MIB=1048576
+++ readonly ONE_GIB=1073741824
+++ ONE_GIB=1073741824
+++ _VERBS='run
+jump
+fly
+walk
+sing
+drive'
+++ _NOUNS='carpet
+house
+river
+road
+mountain
+car'
++ _RSYNC_LOCAL=
++ _RSYNC_REMOTE=/usr/local/bin
++ _RSYNC_REVERSE=0
++ _EXTSTORAGE_MODE=add
++ _EXTSTORAGE_REF=
++ _EXTSTORAGE_REF_ISINTERNAL=
++ _EXTSTORAGE_SIZE=
++ _carg_CREATE_dev_name_param=raspi3b
++ _carg_CREATE_kelner_param=vmlinuz
++ _carg_CREATE_initramfs_param=
++ _carg_COMMAND_arg_param=
++ _carg_SYNC_path_remote_param=/usr/local/bin/
++ main
++ local res=0
++ _carg_chain_parse 'help? --help-h? MODE? CREATE? RUN?'
++ local 'chain=help? --help-h? MODE? CREATE? RUN?'
++ local name=
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _'
++ return 0
++ _carg_dbg_sink '    help? --help-h? MODE? CREATE? RUN?'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link='help?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=help
++ tmp=lp
++ '[' h == - ']'
++ declare -F parse__help
++ chain_param_fn[$link_idx]=parse___autoparam
++ _carg_dbg_sink '      (0) adding param. fn.: parse___autoparam? expecting: '\''parse__help'\'' storing value into: '\''_carg__help_param'\'''
++ return 0
++ chain_arr[$link_idx]=help
++ for link_idx in ${!chain_arr[@]}
++ link='--help-h?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=--help-h
++ tmp=-h
++ '[' - == - ']'
++ [[ ! -h =~ ^-[0-9A-Za-z]$ ]]
++ cflag=h
++ tmp=--help
++ '[' -n --help ']'
++ [[ ! --help =~ ^--[0-9A-Za-z]{1,128}$ ]]
++ clflag=help
++ flag_conv[$cflag]=help
++ flag_conv[$clflag]=h
++ flag_subch_sidx[$cflag]=2
++ link=-h
++ _carg_dbg_sink '      (1) adding flag: help(h)?, assoc. var.: _carg__help_flag'
++ return 0
++ chain_param_fn[$link_idx]=
++ chain_arr[$link_idx]=-h
++ for link_idx in ${!chain_arr[@]}
++ link='MODE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=MODE
++ tmp=DE
++ '[' M == - ']'
++ declare -F parse__MODE
++ chain_param_fn[$link_idx]=parse__MODE
++ _carg_dbg_sink '      (2) adding param. fn.: parse__MODE? expecting: '\''parse__MODE'\'' storing value into: '\''_carg__MODE_param'\'''
++ return 0
++ chain_arr[$link_idx]=MODE
++ for link_idx in ${!chain_arr[@]}
++ link='CREATE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=CREATE
++ tmp=TE
++ '[' C == - ']'
++ declare -F parse__CREATE
++ chain_param_fn[$link_idx]=parse__CREATE
++ _carg_dbg_sink '      (3) adding param. fn.: parse__CREATE? expecting: '\''parse__CREATE'\'' storing value into: '\''_carg__CREATE_param'\'''
++ return 0
++ chain_arr[$link_idx]=CREATE
++ for link_idx in ${!chain_arr[@]}
++ link='RUN?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=RUN
++ tmp=UN
++ '[' R == - ']'
++ declare -F parse__RUN
++ chain_param_fn[$link_idx]=parse__RUN
++ _carg_dbg_sink '      (4) adding param. fn.: parse__RUN? expecting: '\''parse__RUN'\'' storing value into: '\''_carg__RUN_param'\'''
++ return 0
++ chain_arr[$link_idx]=RUN
++ link_idx=0
++ link_cnt=5
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg command /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ printf %s command
++ CARG=command
+++ last_args command /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n command ']'
+++ shift
+++ '[' -z /bin/ash ']'
+++ printf %s /bin/ash
+++ shift
+++ for a in "$@"
+++ printf ' %s' -l
+++ for a in "$@"
+++ printf ' %s' -c
+++ for a in "$@"
+++ printf ' %s' chroot_master.sh
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='/bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ '[' -z command ']'
++ _carg_dbg_sink '    Loading: command'
++ return 0
++ carg_loc=command
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ c == \- ]]
++ '[' 0 -ge 5 ']'
++ link=help
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :help?'
++ return 0
++ '[' -z parse___autoparam ']'
++ _carg_dbg_sink '    Testing arg. against parameter: help?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse___autoparam "" help command h '
++ return 0
++ tailing_cnt=78
++ parse___autoparam '' help command h
++ local cname=
++ local clink=help
++ local value=command
++ '[' help == command ']'
++ return 1
++ res=1
++ '[' 1 -eq 0 ']'
++ '[' -z '?' ']'
++ '[' 78 -ne 78 ']'
++ _carg_dbg_sink '      Param have not meet parser conditions, continue maching with a next link'
++ return 0
++ '[' '?' == '*' ']'
++ link_idx=1
++ true
++ '[' -z command ']'
++ carg_loc=command
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ c == \- ]]
++ '[' 1 -ge 5 ']'
++ link=-h
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :-h?'
++ return 0
++ '[' -z ']'
++ '[' -z '?' ']'
++ _carg_dbg_sink '    Flag in chain encountered: (-h)?, checking arg. with next chain link'
++ return 0
++ link_idx=2
++ continue
++ true
++ '[' -z command ']'
++ carg_loc=command
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ c == \- ]]
++ '[' 2 -ge 5 ']'
++ link=MODE
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :MODE?'
++ return 0
++ '[' -z parse__MODE ']'
++ _carg_dbg_sink '    Testing arg. against parameter: MODE?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse__MODE "" MODE command h '
++ return 0
++ tailing_cnt=78
++ parse__MODE '' MODE command h
++ local cname=
++ local clink=MODE
++ local cmd=command
++ local res=0
++ case $cmd in
++ CARG=
++ cmd=command
++ _carg_chain_parse 'arg*' COMMAND
++ local 'chain=arg*'
++ local name=COMMAND
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _COMMAND'
++ return 0
++ _carg_dbg_sink '    arg*'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link='arg*'
++ tmp='*'
++ '[' '*' == '?' ']'
++ '[' '*' == '*' ']'
++ chain_qant[$link_idx]='*'
++ link=arg
++ tmp=rg
++ '[' a == - ']'
++ declare -F parse_COMMAND_arg
++ chain_param_fn[$link_idx]=parse_COMMAND_arg
++ _carg_dbg_sink '      (0) adding param. fn.: parse_COMMAND_arg* expecting: '\''parse_COMMAND_arg'\'' storing value into: '\''_carg_COMMAND_arg_param'\'''
++ return 0
++ chain_arr[$link_idx]=arg
++ link_idx=0
++ link_cnt=1
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ printf %s /bin/ash
++ CARG=/bin/ash
+++ last_args /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n /bin/ash ']'
+++ shift
+++ '[' -z -l ']'
+++ printf %s -l
+++ shift
+++ for a in "$@"
+++ printf ' %s' -c
+++ for a in "$@"
+++ printf ' %s' chroot_master.sh
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='-l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ '[' -z /bin/ash ']'
++ _carg_dbg_sink '    Loading: /bin/ash'
++ return 0
++ carg_loc=/bin/ash
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ / == \- ]]
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg /bin/ash  '
++ return 0
++ tailing_cnt=69
++ parse_COMMAND_arg COMMAND arg /bin/ash
++ local cname=COMMAND
++ local clink=arg
++ local arg=/bin/ash
++ _carg_COMMAND_arg_param=' /bin/ash'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ printf %s -l
++ CARG=-l
+++ last_args -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n -l ']'
+++ shift
+++ '[' -z -c ']'
+++ printf %s -c
+++ shift
+++ for a in "$@"
+++ printf ' %s' chroot_master.sh
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='-c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ '[' -z -l ']'
++ _carg_dbg_sink '    Loading: -l'
++ return 0
++ carg_loc=-l
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg -l  '
++ return 0
++ tailing_cnt=66
++ parse_COMMAND_arg COMMAND arg -l
++ local cname=COMMAND
++ local clink=arg
++ local arg=-l
++ _carg_COMMAND_arg_param=' /bin/ash -l'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ printf %s -c
++ CARG=-c
+++ last_args -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n -c ']'
+++ shift
+++ '[' -z chroot_master.sh ']'
+++ printf %s chroot_master.sh
+++ shift
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ '[' -z -c ']'
++ _carg_dbg_sink '    Loading: -c'
++ return 0
++ carg_loc=-c
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg -c  '
++ return 0
++ tailing_cnt=63
++ parse_COMMAND_arg COMMAND arg -c
++ local cname=COMMAND
++ local clink=arg
++ local arg=-c
++ _carg_COMMAND_arg_param=' /bin/ash -l -c'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ printf %s chroot_master.sh
++ CARG=chroot_master.sh
+++ last_args chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n chroot_master.sh ']'
+++ shift
+++ '[' -z exec ']'
+++ printf %s exec
+++ shift
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='exec chroot.aarch64 alpbase_builder.sh updates'
++ '[' -z chroot_master.sh ']'
++ _carg_dbg_sink '    Loading: chroot_master.sh'
++ return 0
++ carg_loc=chroot_master.sh
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg chroot_master.sh  '
++ return 0
++ tailing_cnt=46
++ parse_COMMAND_arg COMMAND arg chroot_master.sh
++ local cname=COMMAND
++ local clink=arg
++ local arg=chroot_master.sh
++ _carg_COMMAND_arg_param=' /bin/ash -l -c chroot_master.sh'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c chroot_master.sh' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c chroot_master.sh'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg exec chroot.aarch64 alpbase_builder.sh updates
+++ printf %s exec
++ CARG=exec
+++ last_args exec chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n exec ']'
+++ shift
+++ '[' -z chroot.aarch64 ']'
+++ printf %s chroot.aarch64
+++ shift
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='chroot.aarch64 alpbase_builder.sh updates'
++ '[' -z exec ']'
++ _carg_dbg_sink '    Loading: exec'
++ return 0
++ carg_loc=exec
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg exec  '
++ return 0
++ tailing_cnt=41
++ parse_COMMAND_arg COMMAND arg exec
++ local cname=COMMAND
++ local clink=arg
++ local arg=exec
++ _carg_COMMAND_arg_param=' /bin/ash -l -c chroot_master.sh exec'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c chroot_master.sh exec' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c chroot_master.sh exec'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg chroot.aarch64 alpbase_builder.sh updates
+++ printf %s chroot.aarch64
++ CARG=chroot.aarch64
+++ last_args chroot.aarch64 alpbase_builder.sh updates
+++ '[' -n chroot.aarch64 ']'
+++ shift
+++ '[' -z alpbase_builder.sh ']'
+++ printf %s alpbase_builder.sh
+++ shift
+++ for a in "$@"
+++ printf ' %s' updates
++ ARGS='alpbase_builder.sh updates'
++ '[' -z chroot.aarch64 ']'
++ _carg_dbg_sink '    Loading: chroot.aarch64'
++ return 0
++ carg_loc=chroot.aarch64
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg chroot.aarch64  '
++ return 0
++ tailing_cnt=26
++ parse_COMMAND_arg COMMAND arg chroot.aarch64
++ local cname=COMMAND
++ local clink=arg
++ local arg=chroot.aarch64
++ _carg_COMMAND_arg_param=' /bin/ash -l -c chroot_master.sh exec chroot.aarch64'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c chroot_master.sh exec chroot.aarch64' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c chroot_master.sh exec chroot.aarch64'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg alpbase_builder.sh updates
+++ printf %s alpbase_builder.sh
++ CARG=alpbase_builder.sh
+++ last_args alpbase_builder.sh updates
+++ '[' -n alpbase_builder.sh ']'
+++ shift
+++ '[' -z updates ']'
+++ printf %s updates
+++ shift
++ ARGS=updates
++ '[' -z alpbase_builder.sh ']'
++ _carg_dbg_sink '    Loading: alpbase_builder.sh'
++ return 0
++ carg_loc=alpbase_builder.sh
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg alpbase_builder.sh  '
++ return 0
++ tailing_cnt=7
++ parse_COMMAND_arg COMMAND arg alpbase_builder.sh
++ local cname=COMMAND
++ local clink=arg
++ local arg=alpbase_builder.sh
++ _carg_COMMAND_arg_param=' /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg updates
+++ printf %s updates
++ CARG=updates
+++ last_args updates
+++ '[' -n updates ']'
+++ shift
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z updates ']'
++ _carg_dbg_sink '    Loading: updates'
++ return 0
++ carg_loc=updates
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg updates  '
++ return 0
++ tailing_cnt=0
++ parse_COMMAND_arg COMMAND arg updates
++ local cname=COMMAND
++ local clink=arg
++ local arg=updates
++ _carg_COMMAND_arg_param=' /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _COMMAND chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_COMMAND
++ _carg_dbg_sink 'Calling checker: check_COMMAND'
++ return 0
++ check_COMMAND
++ return 0
++ tmp=0
++ false
++ '[' -z COMMAND ']'
++ return 0
++ res=0
++ carg_set_param '' MODE command
++ local cname=
++ local clink=MODE
++ local value=command
++ '[' -z command ']'
++ local param_name=_carg__MODE_param
++ '[' -z ']'
++ declare -gr _carg__MODE_param=command
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set '' MODE
+++ local cname=
+++ local clink=MODE
+++ local var=_carg__MODE_param
+++ '[' -n command ']'
+++ return 0
++ tmp=_carg__MODE_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg__MODE_param'\'' has been set with value: '\''command'\'''
++ return 0
++ '[' '?' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=3
++ [[ MODE != \M\O\D\E ]]
++ _carg_dbg_sink '     Exited from chain: '\''_MODE'\''. Chain should always rewind argument to the one that has not been recognized'
++ return 0
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _ chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_
++ _carg_dbg_sink 'Calling checker: check_'
++ return 0
++ check_
++ '[' -n '' ']'
++ '[' -n '' ']'
++ '[' -z command ']'
++ return 0
++ tmp=0
++ false
++ '[' -z ']'
++ '[' 0 -ne 0 ']'
++ '[' -n '' ']'
++ '[' 0 -ne 0 ']'
++ return 0
++ case $_carg__MODE_param in
++ load_containersettings
++ '[' '!' -e /tmp/alpha_wrap-run.lock ']'
+++ tail -n 1 /tmp/alpha_wrap-run.lock
++ _CONTAINER_NAME=Factory04
++ return 0
++ op_gcommand
++ local ssh_key_path=/var/lib/alphawrap/_db/Factory04/id_ed25519
++ ssh -p 15022 -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost /bin/ash -l -c chroot_master.sh exec chroot.aarch64 alpbase_builder.sh updates
++ return 0
++ exit 0
+Creating Just_light Edition
++ export RUN
++ export DEBUG
++ export 'ARGS=extstore add images/alpbase-just_light-05-2025_d192026.iso 500MB'
++ ARGS='extstore add images/alpbase-just_light-05-2025_d192026.iso 500MB'
++ declare -A devices_dtb
++ declare -A devices_cpu
++ devices_dtb["raspi0"]=alpine-standard/bcm2835-rpi-zero.dtb
++ devices_cpu["raspi0"]=arm1176
++ devices_dtb["raspi3b"]=raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb
++ devices_cpu["raspi3b"]=cortex-a53
++ export devices_dtb
++ export devices_cpu
++ include_all ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_PATH=./alpha-wrap/alpha-wrap
++ SCRIPT_PATH=./alpha-wrap/alpha-wrap
+++ basename ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_BASE=alpha-wrap
++ SCRIPT_BASE=alpha-wrap
+++ dirname ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_DIR=./alpha-wrap
++ SCRIPT_DIR=./alpha-wrap
+++ ls ./alpha-wrap/alpha-wrap-cargs ./alpha-wrap/alpha-wrap-core ./alpha-wrap/alpha-wrap-lib
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-cargs ']'
++ source ./alpha-wrap/alpha-wrap-cargs
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ _errors=
+++ _DBG_MSG=_carg_dbg_sink
+++ CARG=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-core ']'
++ source ./alpha-wrap/alpha-wrap-core
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly BOOT_MNT_DIR=/mnt/img.boot
+++ BOOT_MNT_DIR=/mnt/img.boot
+++ readonly AWSTORE_DIR=/var/lib/alphawrap
+++ AWSTORE_DIR=/var/lib/alphawrap
+++ readonly DTB_LIB=/var/lib/alphawrap/_dtb
+++ DTB_LIB=/var/lib/alphawrap/_dtb
+++ readonly DB_DIR=/var/lib/alphawrap/_db
+++ DB_DIR=/var/lib/alphawrap/_db
+++ readonly EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ readonly LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ readonly SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ readonly SHARE_SPACE_SIZE_MIB=100
+++ SHARE_SPACE_SIZE_MIB=100
+++ readonly QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ readonly SSH_GUEST_PORT=15022
+++ SSH_GUEST_PORT=15022
+++ readonly SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ readonly 'SSH_OPTIONS=-o ConnectTimeout=3 -o BatchMode=yes'
+++ SSH_OPTIONS='-o ConnectTimeout=3 -o BatchMode=yes'
+++ _NO_PART_TABLE_MODE=-1
+++ _CONTAINER_NAME=
+++ _LOBOOT_DEV=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-lib ']'
++ source ./alpha-wrap/alpha-wrap-lib
+++ '[' -n Y ']'
++++ tr '[:upper:]' '[:lower:]'
++++ echo Y
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly ONE_MIB=1048576
+++ ONE_MIB=1048576
+++ readonly ONE_GIB=1073741824
+++ ONE_GIB=1073741824
+++ _VERBS='run
+jump
+fly
+walk
+sing
+drive'
+++ _NOUNS='carpet
+house
+river
+road
+mountain
+car'
++ _RSYNC_LOCAL=
++ _RSYNC_REMOTE=/usr/local/bin
++ _RSYNC_REVERSE=0
++ _EXTSTORAGE_MODE=add
++ _EXTSTORAGE_REF=
++ _EXTSTORAGE_REF_ISINTERNAL=
++ _EXTSTORAGE_SIZE=
++ _carg_CREATE_dev_name_param=raspi3b
++ _carg_CREATE_kelner_param=vmlinuz
++ _carg_CREATE_initramfs_param=
++ _carg_COMMAND_arg_param=
++ _carg_SYNC_path_remote_param=/usr/local/bin/
++ main
++ local res=0
++ _carg_chain_parse 'help? --help-h? MODE? CREATE? RUN?'
++ local 'chain=help? --help-h? MODE? CREATE? RUN?'
++ local name=
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _'
++ return 0
++ _carg_dbg_sink '    help? --help-h? MODE? CREATE? RUN?'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link='help?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=help
++ tmp=lp
++ '[' h == - ']'
++ declare -F parse__help
++ chain_param_fn[$link_idx]=parse___autoparam
++ _carg_dbg_sink '      (0) adding param. fn.: parse___autoparam? expecting: '\''parse__help'\'' storing value into: '\''_carg__help_param'\'''
++ return 0
++ chain_arr[$link_idx]=help
++ for link_idx in ${!chain_arr[@]}
++ link='--help-h?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=--help-h
++ tmp=-h
++ '[' - == - ']'
++ [[ ! -h =~ ^-[0-9A-Za-z]$ ]]
++ cflag=h
++ tmp=--help
++ '[' -n --help ']'
++ [[ ! --help =~ ^--[0-9A-Za-z]{1,128}$ ]]
++ clflag=help
++ flag_conv[$cflag]=help
++ flag_conv[$clflag]=h
++ flag_subch_sidx[$cflag]=2
++ link=-h
++ _carg_dbg_sink '      (1) adding flag: help(h)?, assoc. var.: _carg__help_flag'
++ return 0
++ chain_param_fn[$link_idx]=
++ chain_arr[$link_idx]=-h
++ for link_idx in ${!chain_arr[@]}
++ link='MODE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=MODE
++ tmp=DE
++ '[' M == - ']'
++ declare -F parse__MODE
++ chain_param_fn[$link_idx]=parse__MODE
++ _carg_dbg_sink '      (2) adding param. fn.: parse__MODE? expecting: '\''parse__MODE'\'' storing value into: '\''_carg__MODE_param'\'''
++ return 0
++ chain_arr[$link_idx]=MODE
++ for link_idx in ${!chain_arr[@]}
++ link='CREATE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=CREATE
++ tmp=TE
++ '[' C == - ']'
++ declare -F parse__CREATE
++ chain_param_fn[$link_idx]=parse__CREATE
++ _carg_dbg_sink '      (3) adding param. fn.: parse__CREATE? expecting: '\''parse__CREATE'\'' storing value into: '\''_carg__CREATE_param'\'''
++ return 0
++ chain_arr[$link_idx]=CREATE
++ for link_idx in ${!chain_arr[@]}
++ link='RUN?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=RUN
++ tmp=UN
++ '[' R == - ']'
++ declare -F parse__RUN
++ chain_param_fn[$link_idx]=parse__RUN
++ _carg_dbg_sink '      (4) adding param. fn.: parse__RUN? expecting: '\''parse__RUN'\'' storing value into: '\''_carg__RUN_param'\'''
++ return 0
++ chain_arr[$link_idx]=RUN
++ link_idx=0
++ link_cnt=5
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg extstore add images/alpbase-just_light-05-2025_d192026.iso 500MB
+++ printf %s extstore
++ CARG=extstore
+++ last_args extstore add images/alpbase-just_light-05-2025_d192026.iso 500MB
+++ '[' -n extstore ']'
+++ shift
+++ '[' -z add ']'
+++ printf %s add
+++ shift
+++ for a in "$@"
+++ printf ' %s' images/alpbase-just_light-05-2025_d192026.iso
+++ for a in "$@"
+++ printf ' %s' 500MB
++ ARGS='add images/alpbase-just_light-05-2025_d192026.iso 500MB'
++ '[' -z extstore ']'
++ _carg_dbg_sink '    Loading: extstore'
++ return 0
++ carg_loc=extstore
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ e == \- ]]
++ '[' 0 -ge 5 ']'
++ link=help
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :help?'
++ return 0
++ '[' -z parse___autoparam ']'
++ _carg_dbg_sink '    Testing arg. against parameter: help?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse___autoparam "" help extstore h '
++ return 0
++ tailing_cnt=55
++ parse___autoparam '' help extstore h
++ local cname=
++ local clink=help
++ local value=extstore
++ '[' help == extstore ']'
++ return 1
++ res=1
++ '[' 1 -eq 0 ']'
++ '[' -z '?' ']'
++ '[' 55 -ne 55 ']'
++ _carg_dbg_sink '      Param have not meet parser conditions, continue maching with a next link'
++ return 0
++ '[' '?' == '*' ']'
++ link_idx=1
++ true
++ '[' -z extstore ']'
++ carg_loc=extstore
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ e == \- ]]
++ '[' 1 -ge 5 ']'
++ link=-h
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :-h?'
++ return 0
++ '[' -z ']'
++ '[' -z '?' ']'
++ _carg_dbg_sink '    Flag in chain encountered: (-h)?, checking arg. with next chain link'
++ return 0
++ link_idx=2
++ continue
++ true
++ '[' -z extstore ']'
++ carg_loc=extstore
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ e == \- ]]
++ '[' 2 -ge 5 ']'
++ link=MODE
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :MODE?'
++ return 0
++ '[' -z parse__MODE ']'
++ _carg_dbg_sink '    Testing arg. against parameter: MODE?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse__MODE "" MODE extstore h '
++ return 0
++ tailing_cnt=55
++ parse__MODE '' MODE extstore h
++ local cname=
++ local clink=MODE
++ local cmd=extstore
++ local res=0
++ case $cmd in
++ cmd=es
++ CARG=
++ _carg_chain_parse MODE ES
++ local chain=MODE
++ local name=ES
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _ES'
++ return 0
++ _carg_dbg_sink '    MODE'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link=MODE
++ tmp=E
++ '[' E == '?' ']'
++ '[' E == '*' ']'
++ chain_qant[$link_idx]=
++ tmp=DE
++ '[' M == - ']'
++ declare -F parse_ES_MODE
++ chain_param_fn[$link_idx]=parse_ES_MODE
++ _carg_dbg_sink '      (0) adding param. fn.: parse_ES_MODE expecting: '\''parse_ES_MODE'\'' storing value into: '\''_carg_ES_MODE_param'\'''
++ return 0
++ chain_arr[$link_idx]=MODE
++ link_idx=0
++ link_cnt=1
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg add images/alpbase-just_light-05-2025_d192026.iso 500MB
+++ printf %s add
++ CARG=add
+++ last_args add images/alpbase-just_light-05-2025_d192026.iso 500MB
+++ '[' -n add ']'
+++ shift
+++ '[' -z images/alpbase-just_light-05-2025_d192026.iso ']'
+++ printf %s images/alpbase-just_light-05-2025_d192026.iso
+++ shift
+++ for a in "$@"
+++ printf ' %s' 500MB
++ ARGS='images/alpbase-just_light-05-2025_d192026.iso 500MB'
++ '[' -z add ']'
++ _carg_dbg_sink '    Loading: add'
++ return 0
++ carg_loc=add
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ a == \- ]]
++ '[' 0 -ge 1 ']'
++ link=MODE
++ qant=
++ _carg_dbg_sink '    Parsing argument against: ES:MODE'
++ return 0
++ '[' -z parse_ES_MODE ']'
++ _carg_dbg_sink '    Testing arg. against parameter: MODE'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse_ES_MODE "ES" MODE add  '
++ return 0
++ tailing_cnt=51
++ parse_ES_MODE ES MODE add
++ local cname=ES
++ local clink=MODE
++ local subcmd=add
++ local res=0
++ case $subcmd in
++ _carg_chain_parse 'add ref size?' ES_ADD
++ local 'chain=add ref size?'
++ local name=ES_ADD
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _ES_ADD'
++ return 0
++ _carg_dbg_sink '    add ref size?'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link=add
++ tmp=d
++ '[' d == '?' ']'
++ '[' d == '*' ']'
++ chain_qant[$link_idx]=
++ tmp=dd
++ '[' a == - ']'
++ declare -F parse_ES_ADD_add
++ chain_param_fn[$link_idx]=parse___autoparam
++ _carg_dbg_sink '      (0) adding param. fn.: parse___autoparam expecting: '\''parse_ES_ADD_add'\'' storing value into: '\''_carg_ES_ADD_add_param'\'''
++ return 0
++ chain_arr[$link_idx]=add
++ for link_idx in ${!chain_arr[@]}
++ link=ref
++ tmp=f
++ '[' f == '?' ']'
++ '[' f == '*' ']'
++ chain_qant[$link_idx]=
++ tmp=ef
++ '[' r == - ']'
++ declare -F parse_ES_ADD_ref
++ chain_param_fn[$link_idx]=parse_ES_ADD_ref
++ _carg_dbg_sink '      (1) adding param. fn.: parse_ES_ADD_ref expecting: '\''parse_ES_ADD_ref'\'' storing value into: '\''_carg_ES_ADD_ref_param'\'''
++ return 0
++ chain_arr[$link_idx]=ref
++ for link_idx in ${!chain_arr[@]}
++ link='size?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=size
++ tmp=ze
++ '[' s == - ']'
++ declare -F parse_ES_ADD_size
++ chain_param_fn[$link_idx]=parse_ES_ADD_size
++ _carg_dbg_sink '      (2) adding param. fn.: parse_ES_ADD_size? expecting: '\''parse_ES_ADD_size'\'' storing value into: '\''_carg_ES_ADD_size_param'\'''
++ return 0
++ chain_arr[$link_idx]=size
++ link_idx=0
++ link_cnt=3
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z add ']'
++ carg_loc=add
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ a == \- ]]
++ '[' 0 -ge 3 ']'
++ link=add
++ qant=
++ _carg_dbg_sink '    Parsing argument against: ES_ADD:add'
++ return 0
++ '[' -z parse___autoparam ']'
++ _carg_dbg_sink '    Testing arg. against parameter: add'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse___autoparam "ES_ADD" add add  '
++ return 0
++ tailing_cnt=51
++ parse___autoparam ES_ADD add add
++ local cname=ES_ADD
++ local clink=add
++ local value=add
++ '[' add == add ']'
++ carg_set_param ES_ADD add 1
++ local cname=ES_ADD
++ local clink=add
++ local value=1
++ '[' -z 1 ']'
++ local param_name=_carg_ES_ADD_add_param
++ '[' -z ']'
++ declare -gr _carg_ES_ADD_add_param=1
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set ES_ADD add
+++ local cname=ES_ADD
+++ local clink=add
+++ local var=_carg_ES_ADD_add_param
+++ '[' -n 1 ']'
+++ return 0
++ tmp=_carg_ES_ADD_add_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_ES_ADD_add_param'\'' has been set with value: '\''1'\'''
++ return 0
++ '[' '' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=1
++ [[ ADD != \a\d\d ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg images/alpbase-just_light-05-2025_d192026.iso 500MB
+++ printf %s images/alpbase-just_light-05-2025_d192026.iso
++ CARG=images/alpbase-just_light-05-2025_d192026.iso
+++ last_args images/alpbase-just_light-05-2025_d192026.iso 500MB
+++ '[' -n images/alpbase-just_light-05-2025_d192026.iso ']'
+++ shift
+++ '[' -z 500MB ']'
+++ printf %s 500MB
+++ shift
++ ARGS=500MB
++ '[' -z images/alpbase-just_light-05-2025_d192026.iso ']'
++ _carg_dbg_sink '    Loading: images/alpbase-just_light-05-2025_d192026.iso'
++ return 0
++ carg_loc=images/alpbase-just_light-05-2025_d192026.iso
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ i == \- ]]
++ '[' 1 -ge 3 ']'
++ link=ref
++ qant=
++ _carg_dbg_sink '    Parsing argument against: ES_ADD:ref'
++ return 0
++ '[' -z parse_ES_ADD_ref ']'
++ _carg_dbg_sink '    Testing arg. against parameter: ref'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse_ES_ADD_ref "ES_ADD" ref images/alpbase-just_light-05-2025_d192026.iso  '
++ return 0
++ tailing_cnt=5
++ parse_ES_ADD_ref ES_ADD ref images/alpbase-just_light-05-2025_d192026.iso
++ local cname=ES_ADD
++ local clink=ref
++ local ref=images/alpbase-just_light-05-2025_d192026.iso
++ carg_set_param ES_ADD ref images/alpbase-just_light-05-2025_d192026.iso
++ local cname=ES_ADD
++ local clink=ref
++ local value=images/alpbase-just_light-05-2025_d192026.iso
++ '[' -z images/alpbase-just_light-05-2025_d192026.iso ']'
++ local param_name=_carg_ES_ADD_ref_param
++ '[' -z ']'
++ declare -gr _carg_ES_ADD_ref_param=images/alpbase-just_light-05-2025_d192026.iso
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set ES_ADD ref
+++ local cname=ES_ADD
+++ local clink=ref
+++ local var=_carg_ES_ADD_ref_param
+++ '[' -n images/alpbase-just_light-05-2025_d192026.iso ']'
+++ return 0
++ tmp=_carg_ES_ADD_ref_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_ES_ADD_ref_param'\'' has been set with value: '\''images/alpbase-just_light-05-2025_d192026.iso'\'''
++ return 0
++ '[' '' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=2
++ [[ REF != \r\e\f ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg 500MB
+++ printf %s 500MB
++ CARG=500MB
+++ last_args 500MB
+++ '[' -n 500MB ']'
+++ shift
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z 500MB ']'
++ _carg_dbg_sink '    Loading: 500MB'
++ return 0
++ carg_loc=500MB
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ 5 == \- ]]
++ '[' 2 -ge 3 ']'
++ link=size
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: ES_ADD:size?'
++ return 0
++ '[' -z parse_ES_ADD_size ']'
++ _carg_dbg_sink '    Testing arg. against parameter: size?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse_ES_ADD_size "ES_ADD" size 500MB  '
++ return 0
++ tailing_cnt=0
++ parse_ES_ADD_size ES_ADD size 500MB
++ local cname=ES_ADD
++ local clink=size
++ local size=500MB
+++ parse_size 500MB
+++ local input=500MB
+++ local number
+++ local unit
+++ local result
+++ local size
+++ [[ 500MB =~ ^([0-9]+(\.[0-9]+)?) ?(m|g|M|G|MB|GB|MiB|GiB)$ ]]
+++ number=500
+++ unit=MB
+++ case "$unit" in
++++ bc
++++ echo 'scale=2; 500 * 0.953674'
+++ result=476.837000
++++ echo 476.837000
++++ awk '{print ($1 == int($1)) ? $1 : int($1)+1}'
+++ size=477
+++ echo 477
+++ return 0
++ size=477
++ '[' 0 -ne 0 ']'
++ carg_set_param ES_ADD size 477
++ local cname=ES_ADD
++ local clink=size
++ local value=477
++ '[' -z 477 ']'
++ local param_name=_carg_ES_ADD_size_param
++ '[' -z ']'
++ declare -gr _carg_ES_ADD_size_param=477
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set ES_ADD size
+++ local cname=ES_ADD
+++ local clink=size
+++ local var=_carg_ES_ADD_size_param
+++ '[' -n 477 ']'
+++ return 0
++ tmp=_carg_ES_ADD_size_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_ES_ADD_size_param'\'' has been set with value: '\''477'\'''
++ return 0
++ '[' '?' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=3
++ [[ SIZE != \s\i\z\e ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _ES_ADD chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_ES_ADD
++ _carg_dbg_sink 'Calling checker: check_ES_ADD'
++ return 0
++ check_ES_ADD
++ local cont_name
++ local file_name
++ local path=
++ local is_internal=
++ '[' -n 477 ']'
++ '[' -e images/alpbase-just_light-05-2025_d192026.iso ']'
++ touch images/alpbase-just_light-05-2025_d192026.iso
++ '[' 0 -ne 0 ']'
+++ realpath images/alpbase-just_light-05-2025_d192026.iso
++ path=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
++ carg_set_param ES_ADD path /home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
++ local cname=ES_ADD
++ local clink=path
++ local value=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
++ '[' -z /home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso ']'
++ local param_name=_carg_ES_ADD_path_param
++ '[' -z ']'
++ declare -gr _carg_ES_ADD_path_param=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
++ return 0
++ tmp=0
++ false
++ '[' -z ES_ADD ']'
++ return 0
++ res=0
++ carg_set_param ES MODE add
++ local cname=ES
++ local clink=MODE
++ local value=add
++ '[' -z add ']'
++ local param_name=_carg_ES_MODE_param
++ '[' -z ']'
++ declare -gr _carg_ES_MODE_param=add
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set ES MODE
+++ local cname=ES
+++ local clink=MODE
+++ local var=_carg_ES_MODE_param
+++ '[' -n add ']'
+++ return 0
++ tmp=_carg_ES_MODE_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_ES_MODE_param'\'' has been set with value: '\''add'\'''
++ return 0
++ '[' '' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=1
++ [[ MODE != \M\O\D\E ]]
++ _carg_dbg_sink '     Exited from chain: '\''_MODE'\''. Chain should always rewind argument to the one that has not been recognized'
++ return 0
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _ES chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_ES
++ _carg_dbg_sink 'Calling checker: check_ES'
++ return 0
++ check_ES
++ '[' -z add ']'
++ return 0
++ tmp=0
++ false
++ '[' -z ES ']'
++ return 0
++ res=0
++ carg_set_param '' MODE es
++ local cname=
++ local clink=MODE
++ local value=es
++ '[' -z es ']'
++ local param_name=_carg__MODE_param
++ '[' -z ']'
++ declare -gr _carg__MODE_param=es
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set '' MODE
+++ local cname=
+++ local clink=MODE
+++ local var=_carg__MODE_param
+++ '[' -n es ']'
+++ return 0
++ tmp=_carg__MODE_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg__MODE_param'\'' has been set with value: '\''es'\'''
++ return 0
++ '[' '?' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=3
++ [[ MODE != \M\O\D\E ]]
++ _carg_dbg_sink '     Exited from chain: '\''_MODE'\''. Chain should always rewind argument to the one that has not been recognized'
++ return 0
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _ chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_
++ _carg_dbg_sink 'Calling checker: check_'
++ return 0
++ check_
++ '[' -n '' ']'
++ '[' -n '' ']'
++ '[' -z es ']'
++ return 0
++ tmp=0
++ false
++ '[' -z ']'
++ '[' 0 -ne 0 ']'
++ '[' -n '' ']'
++ '[' 0 -ne 0 ']'
++ return 0
++ case $_carg__MODE_param in
++ case $_carg_ES_MODE_param in
++ '[' -n 477 ']'
++ prepare_usbstick /home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso 477
++ local PATH=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
++ local SIZE_MB=477
++ /usr/bin/dd bs=1048576 count=477 if=/dev/zero of=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
+477+0 records in
+477+0 records out
+500170752 bytes (500 MB, 477 MiB) copied, 1.27844 s, 391 MB/s
++ insert_usbstick /home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
+++ realpath /home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
++ local PATH=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso
+++ /usr/bin/grep 'Product QEMU USB MSD'
+++ /usr/bin/nc -U /tmp/qemu-monitor -q 0
+++ /usr/bin/wc -l
++ local USB_STICK_CNT=0
++ local USB_DEV_ID=usbdrive0
++ /usr/bin/nc -U /tmp/qemu-monitor -q 0
+QEMU 8.2.2 monitor - type 'help' for more information
+(qemu) d[K[Ddr[K[D[Ddri[K[D[D[Ddriv[K[D[D[D[Ddrive[K[D[D[D[D[Ddrive_[K[D[D[D[D[D[Ddrive_a[K[D[D[D[D[D[D[Ddrive_ad[K[D[D[D[D[D[D[D[Ddrive_add[K[D[D[D[D[D[D[D[D[Ddrive_add [K[D[D[D[D[D[D[D[D[D[Ddrive_add 0[K[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 [K[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 i[K[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if[K[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=n[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=no[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=non[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,i[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=u[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=us[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usb[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbd[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdr[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdri[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdriv[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,f[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,fo[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,for[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,form[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,forma[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=r[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=ra[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,f[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,fi[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,fil[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/h[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/ho[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/hom[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/b[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/ba[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/bar[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barn[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barna[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnab[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/d[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/de[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/dev[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/deve[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.2[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.20[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200m[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/a[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/al[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alp[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alph[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alpha[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphaw[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawr[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawra[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/i[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/im[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/ima[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/imag[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/image[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/a[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/al[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alp[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpb[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpba[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbas[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-j[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-ju[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-jus[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_l[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_li[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_lig[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_ligh[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-0[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-20[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-202[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d1[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d19[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d1920[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d19202[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.i[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.is[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddrive_add 0 if=none,id=usbdrive0,format=raw,file=/home/barnaba/devel.200ms/alphawrap/images/alpbase-just_light-05-2025_d192026.iso[K
+OK
+(qemu) d[K[Dde[K[D[Ddev[K[D[D[Ddevi[K[D[D[D[Ddevic[K[D[D[D[D[Ddevice[K[D[D[D[D[D[Ddevice_[K[D[D[D[D[D[D[Ddevice_a[K[D[D[D[D[D[D[D[Ddevice_ad[K[D[D[D[D[D[D[D[D[Ddevice_add[K[D[D[D[D[D[D[D[D[D[Ddevice_add [K[D[D[D[D[D[D[D[D[D[D[Ddevice_add u[K[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add us[K[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb[K[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-s[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-st[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-sto[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-stor[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-stora[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storag[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,d[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,dr[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,dri[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,driv[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=u[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=us[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usb[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbd[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdr[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdri[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdriv[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,b[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bu[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=u[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=us[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb-[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb-b[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb-bu[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb-bus[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb-bus.[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Ddevice_add usb-storage,drive=usbdrive0,bus=usb-bus.0[K
+(qemu) + echo 'USB mass storage device inserted: usbdrive0'
+USB mass storage device inserted: usbdrive0
++ return 0
++ exit 0
+    setup disk: /dev/sda
++ export RUN
++ export DEBUG
++ export 'ARGS=command /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ ARGS='command /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ declare -A devices_dtb
++ declare -A devices_cpu
++ devices_dtb["raspi0"]=alpine-standard/bcm2835-rpi-zero.dtb
++ devices_cpu["raspi0"]=arm1176
++ devices_dtb["raspi3b"]=raspios-bookworm-arm64/bcm2710-rpi-3-b.dtb
++ devices_cpu["raspi3b"]=cortex-a53
++ export devices_dtb
++ export devices_cpu
++ include_all ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_PATH=./alpha-wrap/alpha-wrap
++ SCRIPT_PATH=./alpha-wrap/alpha-wrap
+++ basename ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_BASE=alpha-wrap
++ SCRIPT_BASE=alpha-wrap
+++ dirname ./alpha-wrap/alpha-wrap
++ readonly SCRIPT_DIR=./alpha-wrap
++ SCRIPT_DIR=./alpha-wrap
+++ ls ./alpha-wrap/alpha-wrap-cargs ./alpha-wrap/alpha-wrap-core ./alpha-wrap/alpha-wrap-lib
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-cargs ']'
++ source ./alpha-wrap/alpha-wrap-cargs
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ _errors=
+++ _DBG_MSG=_carg_dbg_sink
+++ CARG=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-core ']'
++ source ./alpha-wrap/alpha-wrap-core
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly BOOT_MNT_DIR=/mnt/img.boot
+++ BOOT_MNT_DIR=/mnt/img.boot
+++ readonly AWSTORE_DIR=/var/lib/alphawrap
+++ AWSTORE_DIR=/var/lib/alphawrap
+++ readonly DTB_LIB=/var/lib/alphawrap/_dtb
+++ DTB_LIB=/var/lib/alphawrap/_dtb
+++ readonly DB_DIR=/var/lib/alphawrap/_db
+++ DB_DIR=/var/lib/alphawrap/_db
+++ readonly EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ EXTSTORE_DIR=/var/lib/alphawrap/ext_storage
+++ readonly LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ LOCK_FILE=/tmp/alpha_wrap-run.lock
+++ readonly SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ SHARE_SPACE_FILE=/var/lib/alphawrap/__share_space.iso
+++ readonly SHARE_SPACE_SIZE_MIB=100
+++ SHARE_SPACE_SIZE_MIB=100
+++ readonly QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ QEMU_MONITOR_UNIXSOCKET=/tmp/qemu-monitor
+++ readonly SSH_GUEST_PORT=15022
+++ SSH_GUEST_PORT=15022
+++ readonly SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ SSH_DEF_PRIV_KEY_NAME=id_ed25519
+++ readonly 'SSH_OPTIONS=-o ConnectTimeout=3 -o BatchMode=yes'
+++ SSH_OPTIONS='-o ConnectTimeout=3 -o BatchMode=yes'
+++ _NO_PART_TABLE_MODE=-1
+++ _CONTAINER_NAME=
+++ _LOBOOT_DEV=
++ for script in $(ls ${SCRIPT_DIR}/${SCRIPT_BASE}-* 2> /dev/null)
++ '[' -x ./alpha-wrap/alpha-wrap-lib ']'
++ source ./alpha-wrap/alpha-wrap-lib
+++ '[' -n Y ']'
++++ echo Y
++++ tr '[:upper:]' '[:lower:]'
+++ [[ y =~ ^y|yes|1|on$ ]]
+++ set -xe
+++ readonly ONE_MIB=1048576
+++ ONE_MIB=1048576
+++ readonly ONE_GIB=1073741824
+++ ONE_GIB=1073741824
+++ _VERBS='run
+jump
+fly
+walk
+sing
+drive'
+++ _NOUNS='carpet
+house
+river
+road
+mountain
+car'
++ _RSYNC_LOCAL=
++ _RSYNC_REMOTE=/usr/local/bin
++ _RSYNC_REVERSE=0
++ _EXTSTORAGE_MODE=add
++ _EXTSTORAGE_REF=
++ _EXTSTORAGE_REF_ISINTERNAL=
++ _EXTSTORAGE_SIZE=
++ _carg_CREATE_dev_name_param=raspi3b
++ _carg_CREATE_kelner_param=vmlinuz
++ _carg_CREATE_initramfs_param=
++ _carg_COMMAND_arg_param=
++ _carg_SYNC_path_remote_param=/usr/local/bin/
++ main
++ local res=0
++ _carg_chain_parse 'help? --help-h? MODE? CREATE? RUN?'
++ local 'chain=help? --help-h? MODE? CREATE? RUN?'
++ local name=
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _'
++ return 0
++ _carg_dbg_sink '    help? --help-h? MODE? CREATE? RUN?'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link='help?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=help
++ tmp=lp
++ '[' h == - ']'
++ declare -F parse__help
++ chain_param_fn[$link_idx]=parse___autoparam
++ _carg_dbg_sink '      (0) adding param. fn.: parse___autoparam? expecting: '\''parse__help'\'' storing value into: '\''_carg__help_param'\'''
++ return 0
++ chain_arr[$link_idx]=help
++ for link_idx in ${!chain_arr[@]}
++ link='--help-h?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=--help-h
++ tmp=-h
++ '[' - == - ']'
++ [[ ! -h =~ ^-[0-9A-Za-z]$ ]]
++ cflag=h
++ tmp=--help
++ '[' -n --help ']'
++ [[ ! --help =~ ^--[0-9A-Za-z]{1,128}$ ]]
++ clflag=help
++ flag_conv[$cflag]=help
++ flag_conv[$clflag]=h
++ flag_subch_sidx[$cflag]=2
++ link=-h
++ _carg_dbg_sink '      (1) adding flag: help(h)?, assoc. var.: _carg__help_flag'
++ return 0
++ chain_param_fn[$link_idx]=
++ chain_arr[$link_idx]=-h
++ for link_idx in ${!chain_arr[@]}
++ link='MODE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=MODE
++ tmp=DE
++ '[' M == - ']'
++ declare -F parse__MODE
++ chain_param_fn[$link_idx]=parse__MODE
++ _carg_dbg_sink '      (2) adding param. fn.: parse__MODE? expecting: '\''parse__MODE'\'' storing value into: '\''_carg__MODE_param'\'''
++ return 0
++ chain_arr[$link_idx]=MODE
++ for link_idx in ${!chain_arr[@]}
++ link='CREATE?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=CREATE
++ tmp=TE
++ '[' C == - ']'
++ declare -F parse__CREATE
++ chain_param_fn[$link_idx]=parse__CREATE
++ _carg_dbg_sink '      (3) adding param. fn.: parse__CREATE? expecting: '\''parse__CREATE'\'' storing value into: '\''_carg__CREATE_param'\'''
++ return 0
++ chain_arr[$link_idx]=CREATE
++ for link_idx in ${!chain_arr[@]}
++ link='RUN?'
++ tmp='?'
++ '[' '?' == '?' ']'
++ chain_qant[$link_idx]='?'
++ link=RUN
++ tmp=UN
++ '[' R == - ']'
++ declare -F parse__RUN
++ chain_param_fn[$link_idx]=parse__RUN
++ _carg_dbg_sink '      (4) adding param. fn.: parse__RUN? expecting: '\''parse__RUN'\'' storing value into: '\''_carg__RUN_param'\'''
++ return 0
++ chain_arr[$link_idx]=RUN
++ link_idx=0
++ link_cnt=5
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg command /bin/ash -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s command
++ CARG=command
+++ last_args command /bin/ash -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n command ']'
+++ shift
+++ '[' -z /bin/ash ']'
+++ printf %s /bin/ash
+++ shift
+++ for a in "$@"
+++ printf ' %s' -l
+++ for a in "$@"
+++ printf ' %s' -c
+++ for a in "$@"
+++ printf ' %s' ''\''chroot_master.sh'
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='/bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z command ']'
++ _carg_dbg_sink '    Loading: command'
++ return 0
++ carg_loc=command
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ c == \- ]]
++ '[' 0 -ge 5 ']'
++ link=help
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :help?'
++ return 0
++ '[' -z parse___autoparam ']'
++ _carg_dbg_sink '    Testing arg. against parameter: help?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse___autoparam "" help command h '
++ return 0
++ tailing_cnt=92
++ parse___autoparam '' help command h
++ local cname=
++ local clink=help
++ local value=command
++ '[' help == command ']'
++ return 1
++ res=1
++ '[' 1 -eq 0 ']'
++ '[' -z '?' ']'
++ '[' 92 -ne 92 ']'
++ _carg_dbg_sink '      Param have not meet parser conditions, continue maching with a next link'
++ return 0
++ '[' '?' == '*' ']'
++ link_idx=1
++ true
++ '[' -z command ']'
++ carg_loc=command
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ c == \- ]]
++ '[' 1 -ge 5 ']'
++ link=-h
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :-h?'
++ return 0
++ '[' -z ']'
++ '[' -z '?' ']'
++ _carg_dbg_sink '    Flag in chain encountered: (-h)?, checking arg. with next chain link'
++ return 0
++ link_idx=2
++ continue
++ true
++ '[' -z command ']'
++ carg_loc=command
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ c == \- ]]
++ '[' 2 -ge 5 ']'
++ link=MODE
++ qant='?'
++ _carg_dbg_sink '    Parsing argument against: :MODE?'
++ return 0
++ '[' -z parse__MODE ']'
++ _carg_dbg_sink '    Testing arg. against parameter: MODE?'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse__MODE "" MODE command h '
++ return 0
++ tailing_cnt=92
++ parse__MODE '' MODE command h
++ local cname=
++ local clink=MODE
++ local cmd=command
++ local res=0
++ case $cmd in
++ CARG=
++ cmd=command
++ _carg_chain_parse 'arg*' COMMAND
++ local 'chain=arg*'
++ local name=COMMAND
++ local arg_type=
++ declare -A flag_conv
++ declare -A flag_subch_sidx
++ declare -A chain_qant
++ declare -A chain_param_fn
++ local cflag=
++ local clflag=
++ local cflag_dist=
++ local qant=
++ local res=0
++ local tmp=
++ local chain_arr
++ read -a chain_arr
++ local link=
++ local link_idx=0
++ _carg_dbg_sink 'Loading chain: _COMMAND'
++ return 0
++ _carg_dbg_sink '    arg*'
++ return 0
++ for link_idx in ${!chain_arr[@]}
++ link='arg*'
++ tmp='*'
++ '[' '*' == '?' ']'
++ '[' '*' == '*' ']'
++ chain_qant[$link_idx]='*'
++ link=arg
++ tmp=rg
++ '[' a == - ']'
++ declare -F parse_COMMAND_arg
++ chain_param_fn[$link_idx]=parse_COMMAND_arg
++ _carg_dbg_sink '      (0) adding param. fn.: parse_COMMAND_arg* expecting: '\''parse_COMMAND_arg'\'' storing value into: '\''_carg_COMMAND_arg_param'\'''
++ return 0
++ chain_arr[$link_idx]=arg
++ link_idx=0
++ link_cnt=1
++ local carg_loc=
++ local flag_as_param=
++ local pass_flag_to_next_chain=false
++ local pass_flag_to_mcast_link=false
++ local tailing_cnt=
++ local arg_consumed_but_failed=false
++ _carg_dbg_sink 'Parsing arguments: '
++ return 0
++ true
++ '[' -z '' ']'
+++ first_arg /bin/ash -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s /bin/ash
++ CARG=/bin/ash
+++ last_args /bin/ash -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n /bin/ash ']'
+++ shift
+++ '[' -z -l ']'
+++ printf %s -l
+++ shift
+++ for a in "$@"
+++ printf ' %s' -c
+++ for a in "$@"
+++ printf ' %s' ''\''chroot_master.sh'
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='-l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z /bin/ash ']'
++ _carg_dbg_sink '    Loading: /bin/ash'
++ return 0
++ carg_loc=/bin/ash
+++ false
+++ false
+++ echo false
++ flag_as_param=false
++ false
++ [[ / == \- ]]
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ false
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg /bin/ash  '
++ return 0
++ tailing_cnt=83
++ parse_COMMAND_arg COMMAND arg /bin/ash
++ local cname=COMMAND
++ local clink=arg
++ local arg=/bin/ash
++ _carg_COMMAND_arg_param=' /bin/ash'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s -l
++ CARG=-l
+++ last_args -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n -l ']'
+++ shift
+++ '[' -z -c ']'
+++ printf %s -c
+++ shift
+++ for a in "$@"
+++ printf ' %s' ''\''chroot_master.sh'
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='-c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z -l ']'
++ _carg_dbg_sink '    Loading: -l'
++ return 0
++ carg_loc=-l
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg -l  '
++ return 0
++ tailing_cnt=80
++ parse_COMMAND_arg COMMAND arg -l
++ local cname=COMMAND
++ local clink=arg
++ local arg=-l
++ _carg_COMMAND_arg_param=' /bin/ash -l'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s -c
++ CARG=-c
+++ last_args -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n -c ']'
+++ shift
+++ '[' -z ''\''chroot_master.sh' ']'
+++ printf %s ''\''chroot_master.sh'
+++ shift
+++ for a in "$@"
+++ printf ' %s' exec
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS=''\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z -c ']'
++ _carg_dbg_sink '    Loading: -c'
++ return 0
++ carg_loc=-c
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg -c  '
++ return 0
++ tailing_cnt=77
++ parse_COMMAND_arg COMMAND arg -c
++ local cname=COMMAND
++ local clink=arg
++ local arg=-c
++ _carg_COMMAND_arg_param=' /bin/ash -l -c'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s ''\''chroot_master.sh'
++ CARG=''\''chroot_master.sh'
+++ last_args ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n ''\''chroot_master.sh' ']'
+++ shift
+++ '[' -z exec ']'
+++ printf %s exec
+++ shift
+++ for a in "$@"
+++ printf ' %s' chroot.aarch64
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z ''\''chroot_master.sh' ']'
++ _carg_dbg_sink '    Loading: '\''chroot_master.sh'
++ return 0
++ carg_loc=''\''chroot_master.sh'
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg '\''chroot_master.sh  '
++ return 0
++ tailing_cnt=59
++ parse_COMMAND_arg COMMAND arg ''\''chroot_master.sh'
++ local cname=COMMAND
++ local clink=arg
++ local 'arg='\''chroot_master.sh'
++ _carg_COMMAND_arg_param=' /bin/ash -l -c '\''chroot_master.sh'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c '\''chroot_master.sh' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c '\''chroot_master.sh'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s exec
++ CARG=exec
+++ last_args exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n exec ']'
+++ shift
+++ '[' -z chroot.aarch64 ']'
+++ printf %s chroot.aarch64
+++ shift
+++ for a in "$@"
+++ printf ' %s' alpbase_builder.sh
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z exec ']'
++ _carg_dbg_sink '    Loading: exec'
++ return 0
++ carg_loc=exec
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg exec  '
++ return 0
++ tailing_cnt=54
++ parse_COMMAND_arg COMMAND arg exec
++ local cname=COMMAND
++ local clink=arg
++ local arg=exec
++ _carg_COMMAND_arg_param=' /bin/ash -l -c '\''chroot_master.sh exec'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c '\''chroot_master.sh exec' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c '\''chroot_master.sh exec'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s chroot.aarch64
++ CARG=chroot.aarch64
+++ last_args chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n chroot.aarch64 ']'
+++ shift
+++ '[' -z alpbase_builder.sh ']'
+++ printf %s alpbase_builder.sh
+++ shift
+++ for a in "$@"
+++ printf ' %s' just_light
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='alpbase_builder.sh just_light /dev/sda'\'''
++ '[' -z chroot.aarch64 ']'
++ _carg_dbg_sink '    Loading: chroot.aarch64'
++ return 0
++ carg_loc=chroot.aarch64
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg chroot.aarch64  '
++ return 0
++ tailing_cnt=39
++ parse_COMMAND_arg COMMAND arg chroot.aarch64
++ local cname=COMMAND
++ local clink=arg
++ local arg=chroot.aarch64
++ _carg_COMMAND_arg_param=' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg alpbase_builder.sh just_light '/dev/sda'\'''
+++ printf %s alpbase_builder.sh
++ CARG=alpbase_builder.sh
+++ last_args alpbase_builder.sh just_light '/dev/sda'\'''
+++ '[' -n alpbase_builder.sh ']'
+++ shift
+++ '[' -z just_light ']'
+++ printf %s just_light
+++ shift
+++ for a in "$@"
+++ printf ' %s' '/dev/sda'\'''
++ ARGS='just_light /dev/sda'\'''
++ '[' -z alpbase_builder.sh ']'
++ _carg_dbg_sink '    Loading: alpbase_builder.sh'
++ return 0
++ carg_loc=alpbase_builder.sh
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg alpbase_builder.sh  '
++ return 0
++ tailing_cnt=20
++ parse_COMMAND_arg COMMAND arg alpbase_builder.sh
++ local cname=COMMAND
++ local clink=arg
++ local arg=alpbase_builder.sh
++ _carg_COMMAND_arg_param=' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg just_light '/dev/sda'\'''
+++ printf %s just_light
++ CARG=just_light
+++ last_args just_light '/dev/sda'\'''
+++ '[' -n just_light ']'
+++ shift
+++ '[' -z '/dev/sda'\''' ']'
+++ printf %s '/dev/sda'\'''
+++ shift
++ ARGS='/dev/sda'\'''
++ '[' -z just_light ']'
++ _carg_dbg_sink '    Loading: just_light'
++ return 0
++ carg_loc=just_light
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg just_light  '
++ return 0
++ tailing_cnt=9
++ parse_COMMAND_arg COMMAND arg just_light
++ local cname=COMMAND
++ local clink=arg
++ local arg=just_light
++ _carg_COMMAND_arg_param=' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light'
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light'\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg '/dev/sda'\'''
+++ printf %s '/dev/sda'\'''
++ CARG='/dev/sda'\'''
+++ last_args '/dev/sda'\'''
+++ '[' -n '/dev/sda'\''' ']'
+++ shift
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '/dev/sda'\''' ']'
++ _carg_dbg_sink '    Loading: /dev/sda'\'''
++ return 0
++ carg_loc='/dev/sda'\'''
+++ false
+++ true
+++ echo true
++ flag_as_param=true
++ true
++ '[' 0 -ge 1 ']'
++ link=arg
++ qant='*'
++ _carg_dbg_sink '    Parsing argument against: COMMAND:arg*'
++ return 0
++ '[' -z parse_COMMAND_arg ']'
++ _carg_dbg_sink '    Testing arg. against parameter: arg*'
++ return 0
++ '[' -n '' ']'
++ false
++ true
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '      Calling: parse_COMMAND_arg "COMMAND" arg /dev/sda'\''  '
++ return 0
++ tailing_cnt=0
++ parse_COMMAND_arg COMMAND arg '/dev/sda'\'''
++ local cname=COMMAND
++ local clink=arg
++ local 'arg=/dev/sda'\'''
++ _carg_COMMAND_arg_param=' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set COMMAND arg
+++ local cname=COMMAND
+++ local clink=arg
+++ local var=_carg_COMMAND_arg_param
+++ '[' -n ' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\''' ']'
+++ return 0
++ tmp=_carg_COMMAND_arg_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg_COMMAND_arg_param'\'' has been set with value: '\'' /bin/ash -l -c '\''chroot_master.sh exec chroot.aarch64 alpbase_builder.sh just_light /dev/sda'\'''\'''
++ return 0
++ '[' '*' '!=' '*' ']'
++ _carg_dbg_sink '     mcast quantifier, match against '\''COMMAND:arg'\'', including flags'
++ return 0
++ pass_flag_to_mcast_link=true
++ [[ ARG != \a\r\g ]]
++ CARG=
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _COMMAND chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_COMMAND
++ _carg_dbg_sink 'Calling checker: check_COMMAND'
++ return 0
++ check_COMMAND
++ return 0
++ tmp=0
++ false
++ '[' -z COMMAND ']'
++ return 0
++ res=0
++ carg_set_param '' MODE command
++ local cname=
++ local clink=MODE
++ local value=command
++ '[' -z command ']'
++ local param_name=_carg__MODE_param
++ '[' -z ']'
++ declare -gr _carg__MODE_param=command
++ return 0
++ res=0
++ '[' 0 -eq 0 ']'
+++ carg_isparam_set '' MODE
+++ local cname=
+++ local clink=MODE
+++ local var=_carg__MODE_param
+++ '[' -n command ']'
+++ return 0
++ tmp=_carg__MODE_param
++ false
++ _carg_dbg_sink '      Param variable '\''_carg__MODE_param'\'' has been set with value: '\''command'\'''
++ return 0
++ '[' '?' '!=' '*' ']'
++ _carg_dbg_sink '     Trying next link'
++ return 0
++ link_idx=3
++ [[ MODE != \M\O\D\E ]]
++ _carg_dbg_sink '     Exited from chain: '\''_MODE'\''. Chain should always rewind argument to the one that has not been recognized'
++ return 0
++ continue
++ true
++ '[' -z '' ']'
+++ first_arg
+++ printf %s ''
++ CARG=
+++ last_args
+++ '[' -n '' ']'
+++ '[' -z ']'
+++ return
++ ARGS=
++ '[' -z '' ']'
++ _carg_dbg_sink '      All arguments exploited, exiting _ chain'
++ return 0
++ '[' 0 -ne 0 ']'
++ break
++ declare -F check_
++ _carg_dbg_sink 'Calling checker: check_'
++ return 0
++ check_
++ '[' -n '' ']'
++ '[' -n '' ']'
++ '[' -z command ']'
++ return 0
++ tmp=0
++ false
++ '[' -z ']'
++ '[' 0 -ne 0 ']'
++ '[' -n '' ']'
++ '[' 0 -ne 0 ']'
++ return 0
++ case $_carg__MODE_param in
++ load_containersettings
++ '[' '!' -e /tmp/alpha_wrap-run.lock ']'
+++ tail -n 1 /tmp/alpha_wrap-run.lock
++ _CONTAINER_NAME=Factory04
++ return 0
++ op_gcommand
++ local ssh_key_path=/var/lib/alphawrap/_db/Factory04/id_ed25519
++ ssh -p 15022 -i /var/lib/alphawrap/_db/Factory04/id_ed25519 root@localhost /bin/ash -l -c ''\''chroot_master.sh' exec chroot.aarch64 alpbase_builder.sh just_light '/dev/sda'\'''
+Installing: just_light edition
+
+
+The following disk is selected:
+  sda	(0.5 GB QEMU     QEMU HARDDISK   )
+
+How would you like to use it? ('sys', 'data', 'crypt', 'lvm' or '?' for help) [?] 
+WARNING: The following disk(s) will be erased:
+  sda	(0.5 GB QEMU     QEMU HARDDISK   )
+
+WARNING: Erase the above disk(s) and continue? (y/n) [n] modprobe: can't change directory to '/lib/modules': No such file or directory
+Creating file systems...
+mkfs.fat 4.2 (2021-01-31)
+Installing system on /dev/sda2:
+7  0%                                             8[0K7  2%                                             8[0K7  2% █                                           8[0K7  3% █                                           8[0K7  4% █                                           8[0K7  4% ██                                          8[0K7  5% ██                                          8[0K7  7% ███                                         8[0K7  9% ███                                         8[0K7  9% ████                                        8[0K7 10% ████                                        8[0K7 11% ████                                        8[0K7 11% █████                                       8[0K7 12% █████                                       8[0K7 13% █████                                       8[0K7 13% ██████                                      8[0K7 14% ██████                                      8[0K7 15% ██████                                      8[0K7 16% ███████                                     8[0K7 17% ███████                                     8[0K7 18% ███████                                     8[0K7 18% ████████                                    8[0K7 19% ████████                                    8[0K7 20% ████████                                    8[0K7 20% █████████                                   8[0K7 21% █████████                                   8[0K7 22% █████████                                   8[0K7 23% ██████████                                  8[0K7 24% ██████████                                  8[0K7 25% ███████████                                 8[0K7 26% ███████████                                 8[0K7 27% ████████████                                8[0K7 28% ████████████                                8[0K7 29% ████████████                                8[0K7 29% █████████████                               8[0K7 30% █████████████                               8[0K7 31% █████████████                               8[0K7 32% ██████████████                              8[0K7 33% ██████████████                              8[0K7 34% ███████████████                             8[0K7 35% ███████████████                             8[0K7 36% ████████████████                            8[0K7 37% ████████████████                            8[0K7 38% ████████████████                            8[0K7 38% █████████████████                           8[0K7 39% █████████████████                           8[0K7 40% █████████████████                           8[0K7 41% ██████████████████                          8[0K7 42% ██████████████████                          8[0K7 43% ███████████████████                         8[0K7 44% ███████████████████                         8[0K7 46% ████████████████████                        8[0K7 47% ████████████████████                        8[0K7 48% █████████████████████                       8[0K7 51% ██████████████████████                      8[0K7 52% ██████████████████████                      8[0K7 52% ███████████████████████                     8[0K7 53% ███████████████████████                     8[0K7 54% ███████████████████████                     8[0K7 54% ████████████████████████                    8[0K7 55% ████████████████████████                    8[0K7 58% █████████████████████████                   8[0K7 60% ██████████████████████████                  8[0K7 63% ███████████████████████████                 8[0K7 63% ████████████████████████████                8[0K7 64% ████████████████████████████                8[0K7 65% ████████████████████████████                8[0K7 65% █████████████████████████████               8[0K7 66% █████████████████████████████               8[0K7 67% █████████████████████████████               8[0K7 68% █████████████████████████████               8[0K7 68% ██████████████████████████████              8[0K7 69% ██████████████████████████████              8[0K7 70% ██████████████████████████████              8[0K7 70% ███████████████████████████████             8[0K7 71% ███████████████████████████████             8[0K7 72% ███████████████████████████████             8[0K7 72% ████████████████████████████████            8[0K7 73% ████████████████████████████████            8[0K7 74% ████████████████████████████████            8[0K7 75% █████████████████████████████████           8[0K7 76% █████████████████████████████████           8[0K7 77% █████████████████████████████████           8[0K7 77% ██████████████████████████████████          

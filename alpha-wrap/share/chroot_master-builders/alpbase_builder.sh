@@ -205,6 +205,7 @@ echo ""
 
 # === 1: Install base:
 # this script (for installation) does mount ${SETUP_DEV} under '/mnt'
+# TODO - installs jl with wrong arch.
 setup-disk ${SETUP_DEV} <<EOF | tee ${LOG_FILE}
 sys
 y
