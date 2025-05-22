@@ -8,8 +8,10 @@
 [ -n "$DEBUG" ] && [[ $(echo "$DEBUG" | tr '[:upper:]' '[:lower:]') =~ ^y|yes|1|on$ ]] && \
         set -xe || set -e
 
-readonly VERSION="0.0.3"
+readonly VERSION="0.0.5"
 readonly mirror="https://dl-cdn.alpinelinux.org/alpine"
+readonly branch="latest-stable"
+
 # Other repos.:
 # http://quantum-mirror.hu/mirrors/pub/alpine
 # https://dl-cdn.alpinelinux.org/alpine/edge
@@ -39,14 +41,14 @@ $(basename $0) close
   - close (unmount) resources used by chroots
 
 $(basename $0) -v|--version
-  - show version and credentials
+  - show version and about info
 
 EOF
 }
 
 function print_version() {
   cat <<EOF
-$(basename $0) - AlphaWraper - ARM VM management tool
+$(basename $0) - Tool for creating and managing AlpineLinux chroot's
 Version:
   ${VERSION}
 by:
@@ -65,12 +67,6 @@ function deploy() {
   else
     temp_dir=$(mktemp -du)
   fi
-
-  # branch=$(curl -s ${mirror}/ | sed -n 's/.*href="\(.*\)".*/\1/p' | grep -e "v[0-9]\.[0-9][0-9]" | sort -V | tail -n 1)
-  # $(basename ${branch})
-  # latest (as of nov. 2024) community repo. from 3.21 branch has ONLY loongarch64 arch.!
-  # use fixed value instead of ^^^
-  branch="v3.20"
 
   apk_tools_url=$(curl -s ${mirror}/${branch}/main/${arch}/ | \
                   sed -n 's/.*href="\(.*\)".*/\1/p' | grep -e "apk-tools-static-.*.apk")
@@ -92,7 +88,8 @@ function deploy() {
     echo "${mirror}/${branch}/community" >> ${ch_root}/etc/apk/repositories
 
     # apply patches:
-    sed -i 's/\(apk add\)/apk --arch armhf add/' ${ch_root}/sbin/setup-disk
+    # TODO: replace with: APKARCH=... in 'alpbase_builder.sh'
+    sed -i "s/\(apk add\)/apk --arch ${arch} add/" ${ch_root}/usr/sbin/setup-disk
   else
     echo "Pretending that working hard on a basic system configuration ..."
     sleep 1 # o-<-<
