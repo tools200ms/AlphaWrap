@@ -33,7 +33,9 @@ for arg in "$@"; do
 done
 
 resize_rootfs() {
-    local root_dev=$(realpath /dev/root)
+    local ROOT_REF=$(cat /proc/cmdline | tr ' ' '\n' | grep '^root=' | cut -c 6-)
+    local root_dev=$(findfs $ROOT_REF)
+    #realpath /dev/root)
     local resize_cmd=
     local ret=0
 
