@@ -33,9 +33,10 @@ for arg in "$@"; do
 done
 
 resize_rootfs() {
-    local ROOT_REF=$(cat /proc/cmdline | tr ' ' '\n' | grep '^root=' | cut -c 6-)
-    local root_dev=$(findfs $ROOT_REF)
-    #realpath /dev/root)
+    #local ROOT_REF=$(cat /proc/cmdline | tr ' ' '\n' | grep '^root=' | cut -c 6-)
+    #local root_dev=$(findfs $ROOT_REF)
+    local root_dev=$(realpath /dev/root)
+
     local resize_cmd=
     local ret=0
 
@@ -115,9 +116,11 @@ start() {
     [ -f /boot/TESTING ] && TESTING_ON=1 || true
 
     resize_rootfs && \
-            fstrim -va || rc=$?
+            fstrim -v / || rc=$?
 
-    mount /boot
+    if ! mountpoint -q "/boot"; then
+        mount /boot
+    fi
     [ -f /boot/TESTING ] && TESTING_ON=1 || true
 
     if [ -d "/boot/conf" ]; then
@@ -127,8 +130,11 @@ start() {
 
     setup_services
 
-    # Probably unnecessary, at least with mdevd:
-    # setup-devd $DEVD
+    # If other 'device manager' then simple busybox's mdev is set to be used:
+    if [ $DEVD != "mdev" ]; then
+        rc-update del mdev sysinit
+        setup-devd $DEVD
+    fi
 
     # remove .self and 'partexpand' from any runlevel where it is installed
     rm -f /etc/runlevels/*/$RC_SVCNAME

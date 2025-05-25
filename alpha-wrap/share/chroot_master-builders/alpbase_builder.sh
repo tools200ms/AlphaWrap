@@ -255,7 +255,9 @@ chroot ${SETUP_ROOT} rc-update add acpid default
   chroot ${SETUP_ROOT} rc-update add savecache shutdown || true
 
 
+# Adds service that expands partition to ocupy remaining size
 chroot ${SETUP_ROOT} rc-update add partexpand sysinit
+# Adds service that does initialisations and resizes FS
 chroot ${SETUP_ROOT} rc-update add setup default
 
 
@@ -266,6 +268,7 @@ chroot ${SETUP_ROOT} rc-update add setup default
 chroot ${SETUP_ROOT} apk add ca-certificates wget
 chroot ${SETUP_ROOT} update-ca-certificates
 
+# ===== INSTALL DEVD
 # 'setup-devd' does device scanning, hence install only necessary
 # packages and let to scann devices at a final device
 case $DEVD in
@@ -285,6 +288,11 @@ case $DEVD in
     exit 222
   ;;
 esac
+
+# Add basic device manager:
+chroot ${SETUP_ROOT} rc-update add mdev sysinit
+
+# ===== FS TOOLS
 
 case $ROOTFS in
   ext4)
