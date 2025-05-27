@@ -3,7 +3,6 @@
 description="Expanding root partition to cover un-partitioned space if it's the case"
 
 depend() {
-    after mdev mdevd udev
     before localmount root
 }
 
@@ -51,7 +50,8 @@ check_sizes() {
 }
 
 check_and_grow() {
-    local root_dev=$(realpath /dev/root)
+    local ROOT_REF=$(cat /proc/cmdline | tr ' ' '\n' | grep '^root=' | cut -c 6-)
+    local root_dev=$(findfs $ROOT_REF)
     local sys_blkn=$(lsblk -no pkname ${root_dev})
     local sys_dev=/dev/${sys_blkn}
 

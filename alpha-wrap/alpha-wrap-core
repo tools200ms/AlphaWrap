@@ -195,7 +195,7 @@ function _op_run() {
 
   local extr_opt=""
   #if [ ${_OPTION_DETACH} -eq 1 ]; then
-    extr_opt="${extr_opt} -daemonize"
+    extr_opt="${extr_opt} -daemonize -S"
   #fi
 
   $RUN /usr/bin/qemu-system-aarch64 \

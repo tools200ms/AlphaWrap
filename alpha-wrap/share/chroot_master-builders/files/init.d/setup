@@ -3,10 +3,10 @@
 # beginning after/before Alpine's 'firstboot''.
 # If installation is successful, script is not called again.
 
-readonly VERSION=0.6
+readonly VERSION=0.8
 
 depend() {
-    after networking networkmanager
+    need initdevd
     before message
 }
 
@@ -33,8 +33,6 @@ for arg in "$@"; do
 done
 
 resize_rootfs() {
-    #local ROOT_REF=$(cat /proc/cmdline | tr ' ' '\n' | grep '^root=' | cut -c 6-)
-    #local root_dev=$(findfs $ROOT_REF)
     local root_dev=$(realpath /dev/root)
 
     local resize_cmd=
@@ -84,14 +82,25 @@ load_unitconf() {
 
 setup_services() {
     einfo "Setup interfaces"
+
     setup-interfaces -a
     rc-update add networking boot
-    #service hostname start
-    #service networking start
 
-    # this can bring networking up:
-    [ -n "$NTP" ] && [ $NTP != "none" ] && setup-ntp $NTP || ewarn "No NTP configured!"
+    # Ensure network is up for NTP time synchronisation (if NTP is on - highly recommended)
+    service -q hostname status || service hostname start
+    service -q networking status || service networking start
 
+    # Install NTP service:
+    if [ -n "$NTP" ] && [ $NTP != "none" ]; then
+        # time should be synced.
+        setup-ntp $NTP
+        service -q ntpd status || service ntpd start
+    else
+        ewarn "No NTP configured!"
+    fi
+
+    # If any key has been added from '/boot/conf/' (previously called 'load_unitconf' function),
+    # then enable SSH service:
     if [[ -s /home/master/.ssh/authorized_keys ]] || [[ -s /root/.ssh/authorized_keys ]]; then
 
         # add SSH service to runlevel if available,
@@ -110,46 +119,45 @@ setup_services() {
 start() {
     local rc=0
 
-    ebegin "Starting ${RC_SVCNAME} (version: ${VERSION})"
+    [ -e /etc/runlevels/default/message ] && PASS=2 || PASS=1
 
-    mount /boot
-    [ -f /boot/TESTING ] && TESTING_ON=1 || true
+    ebegin "Starting ${RC_SVCNAME}, pass${PASS} (version: ${VERSION})"
 
-    resize_rootfs && \
+    # Pass 1
+    if [ ${PASS} -eq 1 ]; then
+        resize_rootfs && \
             fstrim -v / || rc=$?
 
-    if ! mountpoint -q "/boot"; then
-        mount /boot
-    fi
-    [ -f /boot/TESTING ] && TESTING_ON=1 || true
+        if ! mountpoint -q "/boot"; then
+            mount /boot
+        fi
 
-    if [ -d "/boot/conf" ]; then
-        load_unitconf && shred -u /boot/conf/* && rmdir /boot/conf
-    fi
-    umount /boot
+        [ -f /boot/TEST ] || [ -f /boot/TESTING ] && TESTING_ON=1 || true
 
-    setup_services
+        if [ -d "/boot/conf" ]; then
+            load_unitconf && shred -u /boot/conf/* && rmdir /boot/conf
+        fi
 
-    # If other 'device manager' then simple busybox's mdev is set to be used:
-    if [ $DEVD != "mdev" ]; then
-        rc-update del mdev sysinit
-        setup-devd $DEVD
-    fi
+        # remove 'initdevd' and 'partexpand' from any runlevel where it is installed
+        rm -f /etc/runlevels/*/partexpand
+        rm -f /etc/runlevels/*/initdevd
 
-    # remove .self and 'partexpand' from any runlevel where it is installed
-    rm -f /etc/runlevels/*/$RC_SVCNAME
-    rm -f /etc/runlevels/*/partexpand
+        rc-update add message default
 
-    rc-update add message default
-
-    if [ -z $TESTING_ON ]; then
-        einfo "System ready, rebooting."
-        sleep 0.8
-        reboot
+        if [ -z $TESTING_ON ]; then
+            einfo "System ready, current time is: $(date)"
+            einfo "Rebooting in a few seconds..."
+            sleep 3
+            reboot
+	    else
+	        einfo "Distribution TESTING mode ON."
+	        einfo "Normally system should reboot, but as it is TESTING mode "
+	        einfo "it's time to inspect manually if all went good."
+	    fi
 	else
-	    einfo "Distribution TESTING mode ON."
-	    einfo "Normally system should reboot, but as it is TESTING mode "
-	    einfo "it's time to inspect manually if all went good."
+	    setup_services
+	    # remove .self
+	    rm -f /etc/runlevels/*/$RC_SVCNAME
 	fi
 
     eend $rc

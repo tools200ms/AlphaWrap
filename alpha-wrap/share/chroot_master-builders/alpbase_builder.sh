@@ -221,8 +221,12 @@ $RUN mount ${SETUP_DEV}1 ${SETUP_ROOT}/boot
 
 $RUN cat $RES_DIR/init.d/partexpand > ${SETUP_ROOT}/etc/init.d/partexpand && chmod +x ${SETUP_ROOT}/etc/init.d/partexpand
 
+$RUN cat $RES_DIR/init.d/initdevd | \
+      sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}" \
+      > ${SETUP_ROOT}/etc/init.d/initdevd && chmod +x ${SETUP_ROOT}/etc/init.d/initdevd
+
 $RUN cat $RES_DIR/init.d/setup | \
-      sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; DEVD=${DEVD}\; NTP=${NTP}\; DESKTOP=${DESKTOP}" \
+      sed "/Edition\ specific\ variable\ declarations/c\EDITION=${EDITION}\; NTP=${NTP}\; DESKTOP=${DESKTOP}" \
       > ${SETUP_ROOT}/etc/init.d/setup && chmod +x ${SETUP_ROOT}/etc/init.d/setup
 
 $RUN cat $RES_DIR/init.d/message > ${SETUP_ROOT}/etc/init.d/message && chmod +x ${SETUP_ROOT}/etc/init.d/message
@@ -247,6 +251,7 @@ chroot ${SETUP_ROOT} apk add micropython
 
 chroot ${SETUP_ROOT} rc-update add seedrng sysinit
 chroot ${SETUP_ROOT} rc-update add localmount sysinit
+chroot ${SETUP_ROOT} rc-update add hwdrivers sysinit
 chroot ${SETUP_ROOT} rc-update add modules boot
 chroot ${SETUP_ROOT} rc-update add swclock boot
 chroot ${SETUP_ROOT} rc-update add acpid default
@@ -254,9 +259,10 @@ chroot ${SETUP_ROOT} rc-update add acpid default
 [ "$EDITION_SHORT" == "jl" ] || [ "$EDITION_SHORT" == "bd" ] &&
   chroot ${SETUP_ROOT} rc-update add savecache shutdown || true
 
-
 # Adds service that expands partition to ocupy remaining size
 chroot ${SETUP_ROOT} rc-update add partexpand sysinit
+# Adds service that initializes '/dev'
+chroot ${SETUP_ROOT} rc-update add initdevd sysinit
 # Adds service that does initialisations and resizes FS
 chroot ${SETUP_ROOT} rc-update add setup default
 
@@ -290,7 +296,7 @@ case $DEVD in
 esac
 
 # Add basic device manager:
-chroot ${SETUP_ROOT} rc-update add mdev sysinit
+# chroot ${SETUP_ROOT} rc-update add mdev sysinit
 
 # ===== FS TOOLS
 

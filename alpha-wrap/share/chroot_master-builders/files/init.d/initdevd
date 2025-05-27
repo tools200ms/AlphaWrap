@@ -1,0 +1,28 @@
+#!/sbin/openrc-run
+
+depend() {
+    need sysfs dev-mount
+    after partexpand localmount
+    before modules
+    keyword -containers -vserver -lxc
+}
+
+# Setup configuration BEGIN
+# <==- Edition specific variable declarations place holder, do NOT remove NOR edit this commend -==>
+# END OF Setup configuration
+
+start() {
+    ebegin "Initializing $DEVD"
+
+    if ! service -q $DEVD status; then
+        setup-devd $DEVD
+
+        if [ -x "/etc/init.d/${DEVD}-init" ]; then
+            service -q "${DEVD}-init" status || service "${DEVD}-init" start
+        fi
+
+        service -q $DEVD status || service $DEVD start
+    fi
+
+    eend 0
+}
