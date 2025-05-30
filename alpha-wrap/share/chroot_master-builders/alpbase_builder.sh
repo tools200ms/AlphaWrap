@@ -376,6 +376,9 @@ if [ -n "$DESKTOP" ] && [ $DESKTOP != "none" ]; then
 
   echo "Desktop to be installed: $DESKTOP_TYPE"
   chroot ${SETUP_ROOT} setup-desktop $DESKTOP_TYPE | tee ${LOG_FILE}
+
+  ## chackout:
+  # /sbin/setup-wayland-base
 fi
 
 
@@ -416,9 +419,5 @@ exit 0
 
 
 # /sbin/setup-acf # mini web server
-
-# chackout:
-/sbin/setup-wayland-base
-
 
 exit 0

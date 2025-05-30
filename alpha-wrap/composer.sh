@@ -90,6 +90,9 @@ create_edition() {
 
     mount_and_sync "${device}1" "$boot_dir"
     compress_image "$image"
+
+    # Get package list
+    ${AW_RUN} sync -r ./images/ ${chroot}/var/log/alpbase_alpine-pkgs-${edition}.list
     next_device
 }
 
