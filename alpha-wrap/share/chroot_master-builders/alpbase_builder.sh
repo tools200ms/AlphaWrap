@@ -254,7 +254,9 @@ chroot ${SETUP_ROOT} rc-update add localmount sysinit
 chroot ${SETUP_ROOT} rc-update add hwdrivers sysinit
 chroot ${SETUP_ROOT} rc-update add modules boot
 chroot ${SETUP_ROOT} rc-update add swclock boot
-chroot ${SETUP_ROOT} rc-update add acpid default
+# Acpid crashes on raspberry pi (it's normal, nothing to concern about)
+#chroot ${SETUP_ROOT} rc-update add acpid default
+
 
 [ "$EDITION_SHORT" == "jl" ] || [ "$EDITION_SHORT" == "bd" ] &&
   chroot ${SETUP_ROOT} rc-update add savecache shutdown || true
