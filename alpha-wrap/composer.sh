@@ -67,10 +67,19 @@ create_edition() {
     local edition=$1
     local chroot=$2
     local size=$3
+    local use_mpyinit=${4:-false}
 
     local device=
     local boot_dir="${TEMP_DIR}/${edition}_boot"
-    local image="images/alpbase-${edition}-$(date +%m-%Y_d%d%H%M).iso"
+
+    local builder_options=""
+    [ "$use_mpyinit" = true ] && builder_options="-mpyinit"
+    
+    local options=""
+    [ "$use_mpyinit" = true ] && options="-mpyinit"
+    [ "${ADD_TESTS}" = true ] && options="${options}-WITH_TESTS"
+    
+    local image="images/alpbase-${edition}${options}-$(date +%m-%Y_d%d%H%M).iso"
 
     if [ ! -d "$(dirname "$image")" ]; then
       echo "Attempted to create file: $image"
@@ -86,7 +95,12 @@ create_edition() {
     device=$(get_device)
     echo "    setup disk: ${device}"
 
-    ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec ${chroot} alpbase_builder.sh ${edition} ${device}'"
+    local mpyinit_flag=""
+    if [ "$use_mpyinit" = true ]; then
+        mpyinit_flag="--mpyinit"
+    fi
+
+    ${AW_RUN} command "/bin/ash -l -c '${CHROOTM_EXEC} exec ${chroot} alpbase_builder.sh ${mpyinit_flag} ${edition} ${device}'"
 
     mount_and_sync "${device}1" "$boot_dir"
     compress_image "$image"
@@ -132,6 +146,7 @@ res=0
 ${AW_RUN} command "/bin/ash" "-l -c" ${CHROOTM_EXEC} exec "chroot.armhf" $UPDATE_CHECK_AVAILABILITY_VM_CHROOT_CMD || res=$?
 if [ $res -eq 0 ] || [ $(ls images/alpbase-super_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
   create_edition "super_light" "chroot.armhf" "450MB"
+  create_edition "super_light" "chroot.armhf" "450MB" true
 else
   echo "No updates available, or image already exists"
   echo "Skipping build"
@@ -141,17 +156,18 @@ fi
 ${AW_RUN} command "/bin/ash" "-l -c" ${CHROOTM_EXEC} exec "chroot.aarch64" $UPDATE_CHECK_AVAILABILITY_VM_CHROOT_CMD || res=$?
 if [ $res -eq 0 ] || [ $(ls images/alpbase-just_light*.iso 2>/dev/null | wc -l) -eq 0 ]; then
   create_edition "just_light" "chroot.aarch64" "500MB"
+  create_edition "just_light" "chroot.aarch64" "500MB" true
 else
   echo "No updates available, or image already exists"
   echo "Skipping build"
 fi
 
-#if [ $res -eq 0 ] || [ $(ls images/alpbase-be_desktop*.iso 2>/dev/null | wc -l) -eq 0 ]; then
-#  create_edition "be_desktop" "chroot.aarch64" "1500MB"
-#else
-#  echo "No updates available, or image already exists"
-#  echo "Skipping build"
-#fi
+if [ $res -eq 0 ] || [ $(ls images/alpbase-be_desktop*.iso 2>/dev/null | wc -l) -eq 0 ]; then
+  create_edition "be_desktop" "chroot.aarch64" "1500MB"
+else
+  echo "No updates available, or image already exists"
+  echo "Skipping build"
+fi
 
 
 # Finalization and Testing

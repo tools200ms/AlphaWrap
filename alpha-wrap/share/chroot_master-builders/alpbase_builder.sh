@@ -395,11 +395,12 @@ if [ -n "$DESKTOP" ] && [ $DESKTOP != "none" ]; then
     ;;
   esac
 
+  # If no ACPID in default 'setup-wayland-base' complains about it
+  chroot ${SETUP_ROOT} rc-update add acpid default | tee ${LOG_FILE}
+  chroot ${SETUP_ROOT} setup-wayland-base | tee ${LOG_FILE}
+
   echo "Desktop to be installed: $DESKTOP_TYPE"
   chroot ${SETUP_ROOT} setup-desktop $DESKTOP_TYPE | tee ${LOG_FILE}
-
-  ## chackout:
-  # /sbin/setup-wayland-base
 fi
 
 
