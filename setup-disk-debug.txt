@@ -1,0 +1,281 @@
++ PREFIX=
++ : /lib
++ . /lib/libalpine.sh
++ PREFIX=
++ basename /sbin/setup-disk
++ PROGRAM=setup-disk
++ : /
++ '[' / '='  ]
++ '[' / '='  ]
++ . /lib/dasd-functions.sh
++ eckd_dasd=
++ fba_dasd=
++ MBR=/usr/share/syslinux/mbr.bin
++ ROOTFS=ext4
++ BOOTFS=ext4
++ VARFS=ext4
++ DISKLABEL=dos
++ KERNELOPTS=quiet
++ SYSROOT=/mnt
++ uname -r
++ kver=6.12.13-0-rpi
++ KERNEL_FLAVOR=rpi
++ '[' -n  ]
++ USE_CRYPT=
++ DISK_MODE=
++ USE_LVM=
++ getopts hek:Lm:o:qrs:vw: opt
++ shift 0
++ '['  '=' none ]
++ '[' /dev/sda '=' none ]
++ is_rpi
++ grep -q 'Raspberry Pi' /proc/device-tree/model
++ : raspberrypi-bootloader
++ BOOTFS=vfat
++ SWAP_SIZE=0
++ is_efi
++ '[' -d /sys/firmware/efi ]
++ return 1
++ '[' -n  ]
++ '[' dos '=' gpt ]
++ apk --print-arch
++ ARCH=aarch64
++ : raspberrypi-bootloader
++ '[' -d /dev/sda ]
++ reset_var
++ find_mount_dev /var
++ local 'mnt=/var'
++ awk '$2 == "/var" { print $1 }' /proc/mounts
++ tail -n 1
++ '[' -z  ]
++ return 0
++ swapoff -a
++ vgchange --ignorelockingfailure -a n
++ '[' -n  ]
++ check_dasd
++ eckd_dasd= fba_dasd=
++ get_bootopt dasd
++ local 'opt=dasd'
++ cat /proc/cmdline
++ set -- 'root=UUID=fdb1da3f-e293-4346-aa73-ab1c36682f83' 'modules=sd-mod,usb-storage,ext4' quiet 'rootfstype=ext4'
++ local 'dasd='
++ tr , ' '+ echo
+
++ '[' -n  ]
++ diskdevs=
++ '[' -z  ]
++ find_disks
++ local 'p='
++ local 'dev=/sys/block/mmcblk0'
++ dev=mmcblk0
++ is_available_disk mmcblk0
++ local 'dev=mmcblk0'
++ has_mounted_part mmcblk0
++ local p
++ echo mmcblk0
++ sed 's:/:!:g'
++ local 'sysfsdev=mmcblk0'
++ awk '$1 ~ /^\/dev\// {gsub("/dev/", "", $1); gsub("/", "!", $1); print $1}' /proc/mounts
++ '[' mmcblk0p2 '=' mmcblk0 ]
++ '[' -e /sys/block/mmcblk0/mmcblk0p2 ]
++ return 0
++ return 1
++ local 'dev=/sys/block/sda'
++ dev=sda
++ is_available_disk sda
++ local 'dev=sda'
++ has_mounted_part sda
++ local p
++ echo sda
++ sed 's:/:!:g'
++ local 'sysfsdev=sda'
++ awk '$1 ~ /^\/dev\// {gsub("/dev/", "", $1); gsub("/", "!", $1); print $1}' /proc/mounts
++ '[' mmcblk0p2 '=' sda ]
++ '[' -e /sys/block/sda/mmcblk0p2 ]
++ return 1
++ has_holders /sys/block/sda
++ local i
++ '[' -e '/sys/block/sda/holders/*' ]
++ '[' -e '/sys/block/sda/*/holders/*' ]
++ return 1
++ return 0
++ printf '%s' ' sda'
++ disks=' sda'
++ '[' -n ' sda' ]
++ break
++ '[' 1 -gt 0 ]
++ readlink -f /dev/sda
++ sed 's:^/dev/::; s:/:!:g'
++ j=sda
++ '[' -e /sys/block/sda/device ]
++ diskdevs=' /dev/sda'
++ '[' -n ' /dev/sda' ]
++ '[' -z  ]
++ resp=
++ disk_is_or_disks_are='disk is'
++ it_them=it
++ set -- /dev/sda
++ '[' 1 -gt 1 ]
++ true
++ printf '\nThe following %s selected' 'disk is'
++ '[' -n  ]
++ '[' -z  ]
++ '[' -n  ]
++ '[' -n  ]
++ printf ':\n'
++ show_disk_info /dev/sda
++ local
+The following disk is selected 'disk=' 'vendor=' 'model=' 'd=' 'size=' 'busid='
+:
++ local 'dev=sda'
++ echo sda
++ sed 's:/:!:g'
++ d=sda
++ cat /sys/block/sda/device/vendor
++ vendor='QEMU    '
++ cat /sys/block/sda/device/model
++ model='QEMU HARDDISK   '
++ readlink -f /sys/block/sda/device
++ busid=/sys/devices/platform/soc/3f980000.usb/usb1/1-1/1-1.3/1-1.3:1.0/host0/target0:0:0/0:0:0:0
++ awk '{gb = ($1 * 512)/1000000000; printf "%.1f GB\n", gb}' /sys/block/sda/size
++ size='0.5 GB'
++ is_dasd sda eckd
++ local 'disk=sda' 'dasd_type=eckd'
++ eval 'echo $eckd_dasd'
++ echo
++ return 1
++ echo '  sda	(0.5 GB QEMU     QEMU HARDDISK   )'
+  sda	(0.5 GB QEMU     QEMU HARDDISK   )
++ '[' -z  ]
++ '[' -z  ]
++ echo ', '"'"'crypt'"'"
++ _crypt=', '"'"'crypt'"'"
++ _lvm=', '"'"'lvm'"'"
++ printf '\n'
+
++ ask 'How would you like to use it? ('"'"'sys'"'"', '"'"'data'"'"', '"'"'crypt'"'"', '"'"'lvm'"'"' or '"'"'?'"'"' for help)' '?'
++ local '_question=How would you like to use it? ('"'"'sys'"'"', '"'"'data'"'"', '"'"'crypt'"'"', '"'"'lvm'"'"' or '"'"'?'"'"' for help)' '_default=?'
++ :
++ printf '%s' 'How would you like to use it? ('"'"'sys'"'"', '"'"'data'"'"', '"'"'crypt'"'"', '"'"'lvm'"'"' or '"'"'?'"'"' for help) '
++ '['How would you like to use it? ('sys', 'data', 'crypt', 'lvm' or '?' for help)  -z '?' ]
++ printf '[%s] ' '?'
++ [?] _ask
++ local '_redo=0'
++ read resp
+sys
++ return 0
++ : sys
++ break
++ break
++ DISK_MODE=sys
++ '[' -z 0 ]
++ '[' -n  ]
++ set -- /dev/sda
++ is_dasd /dev/sda eckd
++ local 'disk=sda' 'dasd_type=eckd'
++ eval 'echo $eckd_dasd'
++ echo
++ return 1
++ '[' 1 -gt 1 ]
++ dmesg -n1
++ '[' -n  ]
++ write_disk_mode
++ '[' -n  ]
++ native_disk_install /dev/sda
++ partition_id prep
++ local id
++ '[' dos '=' gpt ]
++ '[' dos '=' dos ]
++ id=41
++ echo 41
++ local 'prep_part_type=41'
++ partition_id linux
++ local id
++ '[' dos '=' gpt ]
++ '[' dos '=' dos ]
++ id=83
++ echo 83
++ local 'root_part_type=83'
++ partition_id swap
++ local id
++ '[' dos '=' gpt ]
++ '[' dos '=' dos ]
++ id=82
++ echo 82
++ local 'swap_part_type=82'
++ partition_id linux
++ local id
++ '[' dos '=' gpt ]
++ '[' dos '=' dos ]
++ id=83
++ echo 83
++ local 'boot_part_type=83'
++ local 'prep_size=8'
++ local 'boot_size=300'
++ local 'swap_size=0'
++ local 'root_size='
++ local 'root_dev=' 'boot_dev=' 'swap_dev=' 'biosboot='
++ select_bootloader_pkg
++ '[' raspberrypi-bootloader '=' none ]
++ local 'bootloader=raspberrypi-bootloader'
++ '[' aarch64 '=' ppc64le ]
++ '[' aarch64 '=' s390x ]
++ '[' -n  ]
++ '[' raspberrypi-bootloader '=' grub ]
++ echo raspberrypi-bootloader
++ init_progs raspberrypi-bootloader
++ local 'raidpkg=' 'lvmpkg=' 'cryptpkg=' 'fs=' 'fstools=' 'grub='
++ '[' -n  ]
++ '[' -n  ]
++ '[' -n  ]
++ grep -q -w vfat /proc/filesystems
++ fstools=' dosfstools'
++ grep -q -w ext4 /proc/filesystems
++ fstools=' dosfstools e2fsprogs'
++ grep -q -w ext4 /proc/filesystems
++ fstools=' dosfstools e2fsprogs e2fsprogs'
+
+https://git.alpinelinux.org/alpine-conf/tree/setup-disk.in?h=fix-boot-size
+LIN: 820
++ apk --arch armhf add --quiet sfdisk dosfstools e2fsprogs e2fsprogs raspberrypi-bootloader
++ confirm_erase /dev/sda
++ local 'erasedisks=/dev/sda'
++ '['  '=' /dev/sda ]
++ printf '\n'
++ echo 'WARNING: The following disk(s) will be erased:'
+
+WARNING: The following disk(s) will be erased:
++ show_disk_info /dev/sda
++ local 'disk=' 'vendor=' 'model=' 'd=' 'size=' 'busid='
++ local 'dev=sda'
++ echo sda
++ sed 's:/:!:g'
++ d=sda
++ cat /sys/block/sda/device/vendor
++ vendor='QEMU    '
++ cat /sys/block/sda/device/model
++ model='QEMU HARDDISK   '
++ readlink -f /sys/block/sda/device
++ busid=/sys/devices/platform/soc/3f980000.usb/usb1/1-1/1-1.3/1-1.3:1.0/host0/target0:0:0/0:0:0:0
++ awk '{gb = ($1 * 512)/1000000000; printf "%.1f GB\n", gb}' /sys/block/sda/size
++ size='0.5 GB'
++ is_dasd sda eckd
++ local 'disk=sda' 'dasd_type=eckd'
++ eval 'echo $eckd_dasd'
++ echo
++ return 1
++ echo '  sda	(0.5 GB QEMU     QEMU HARDDISK   )'
+  sda	(0.5 GB QEMU     QEMU HARDDISK   )
++ printf '\n'
++ ask_yesno
+ 'WARNING: Erase the above disk(s) and continue? (y/n)' n
++ true
++ ask 'WARNING: Erase the above disk(s) and continue? (y/n)' n
++ local '_question=WARNING: Erase the above disk(s) and continue? (y/n)' '_default=n'
++ :
++ printf '%s' 'WARNING: Erase the above disk(s) and continue? (y/n) '
++ '[' -z n ]
+WARNING: Erase the above disk(s) and continue? (y/n) + printf '[%s] ' n
+[n] + _ask
++ local '_redo=0'
++ read resp
