@@ -195,7 +195,7 @@ function _op_run() {
 
   local extr_opt=""
   #if [ ${_OPTION_DETACH} -eq 1 ]; then
-    extr_opt="${extr_opt} -daemonize -S"
+    extr_opt="${extr_opt} -daemonize"
   #fi
 
   $RUN /usr/bin/qemu-system-aarch64 \
@@ -211,7 +211,6 @@ function _op_run() {
     -device usb-net,bus=usb-bus.0,netdev=net0 \
     -dtb ${dtbf} \
     -rtc base=localtime \
-    ${ALPHAWRAP_QEMU_ARGS} \
     ${extr_opt} -name "${mach} emulator"
 
     # lock file is removed by 'stop' command
@@ -546,7 +545,7 @@ function op_waitfor() {
   local wait_until=$((${ctime}+${WAIT_TIMEOUT}))
 
   while true; do
-    SSH_MSG=$(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost 'rc-status -r | grep -q default' 2>&1)
+    SSH_MSG=$(ssh -p ${SSH_GUEST_PORT} ${SSH_OPTIONS} -i ${ssh_key_path} root@localhost "[ $(rc-status -r) == "default" ]" 2>&1)
     cres=$?
 
     if [ $cres -eq 0 ]; then
