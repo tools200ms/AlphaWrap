@@ -211,6 +211,7 @@ function _op_run() {
     -device usb-net,bus=usb-bus.0,netdev=net0 \
     -dtb ${dtbf} \
     -rtc base=localtime \
+    ${ALPHAWRAP_QEMU_ARGS} \
     ${extr_opt} -name "${mach} emulator"
 
     # lock file is removed by 'stop' command
