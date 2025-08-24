@@ -406,16 +406,16 @@ function op_run() {
 
     mount_boot ${cont_file}
 
-    if ! $(cmp $BOOT_MNT_DIR/$(basename ${kern}) ${kern}); then
+    if ! cmp -s $BOOT_MNT_DIR/$(basename ${kern}) ${kern}; then
       # update kernel:
       $RUN cp $BOOT_MNT_DIR/$(basename ${kern}) ${kern}
     fi
 
-    if [ -n "${irfs}" ] && ! $(cmp $BOOT_MNT_DIR/$(basename ${irfs}) ${irfs}); then
+    if [ -n "${irfs}" ] && ! cmp -s $BOOT_MNT_DIR/$(basename ${irfs}) ${irfs}; then
       $RUN cp $BOOT_MNT_DIR/$(basename ${irfs}) ${irfs}
     fi
 
-    if [ -n "${cmdl_file}" ] && ! $(cmp ${BOOT_MNT_DIR}/cmdline.txt ${cmdl_file}); then
+    if [ -n "${cmdl_file}" ] && ! cmp -s ${BOOT_MNT_DIR}/cmdline.txt ${cmdl_file}; then
       $RUN cp $BOOT_MNT_DIR/cmdline.txt ${cmdl_file}
     fi
 
