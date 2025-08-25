@@ -132,18 +132,18 @@ function mount_boot() {
 
   # mount first partition, or if no partition table mount filesystem directly
   if [ -e ${_LOBOOT_DEV}p1 ]; then
-    $RUN mount ${_LOBOOT_DEV}p1 $BOOT_MNT_DIR -o ro || true
+    $RUN mount ${_LOBOOT_DEV}p1 $BOOT_MNT_DIR -o rw || true
     _NO_PART_TABLE_MODE=0
 
     if findmnt -rno TARGET "${_LOBOOT_DEV}p1" >/dev/null; then
       echo "Partition ${_LOBOOT_DEV}p1 is mounted."
     else
       echo "Falling back to mnount without partition table"
-      $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o ro
+      $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o rw
       _NO_PART_TABLE_MODE=1;
     fi
   else
-    $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o ro
+    $RUN mount ${_LOBOOT_DEV} $BOOT_MNT_DIR -o rw
     _NO_PART_TABLE_MODE=1
   fi
 }
