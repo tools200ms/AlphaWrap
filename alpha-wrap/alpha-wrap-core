@@ -333,8 +333,10 @@ function op_create() {
 # Set with '--cmdline' flag
 ${_carg_CREATE_cmdline_param}
 EOF
+    cp ${DB_DIR}/${cont_name}/cmdline.txt ${DB_DIR}/${cont_name}/.cmdline.txt
   elif [ -n "${cmdline}" ]; then
     $RUN cp ${cmdline} ${DB_DIR}/${cont_name}/cmdline.txt
+    cp ${DB_DIR}/${cont_name}/cmdline.txt ${DB_DIR}/${cont_name}/.cmdline.txt
   fi
 
   if [ -n "${initrd}" ]; then
@@ -369,6 +371,7 @@ function op_run() {
   local skip_mount=$2
   local cont_file=
   local cmdl_file=
+  local cmdl_file_prev=
   local mach
   local imgb
   local kern
@@ -391,6 +394,10 @@ function op_run() {
 
   if [ -f "${DB_DIR}/${cont_name}/cmdline.txt" ]; then
     cmdl_file=${DB_DIR}/${cont_name}/cmdline.txt
+    cmdl_file_prev=${DB_DIR}/${cont_name}/.cmdline.txt
+    if [ ! -f "${cmdl_file_prev}" ]; then
+      cp ${cmdl_file} ${cmdl_file_prev}
+    fi
   fi
 
   cont_file=${AWSTORE_DIR}/${cont_name}.img
@@ -416,7 +423,13 @@ function op_run() {
     fi
 
     if [ -n "${cmdl_file}" ] && ! cmp -s ${BOOT_MNT_DIR}/cmdline.txt ${cmdl_file}; then
-      $RUN cp $BOOT_MNT_DIR/cmdline.txt ${cmdl_file}
+      if cmp -s cmdl_file cmdl_file_prev; then
+        $RUN cp $BOOT_MNT_DIR/cmdline.txt ${cmdl_file}
+        $RUN cp $BOOT_MNT_DIR/cmdline.txt ${cmdl_file_prev}
+      else
+        $RUN cp ${cmdl_file} $BOOT_MNT_DIR/cmdline.txt
+        $RUN cp ${cmdl_file} ${cmdl_file_prev}
+      fi
     fi
 
     umount_boot
